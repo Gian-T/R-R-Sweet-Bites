@@ -1,3 +1,13 @@
+<?php
+declare(strict_types=1);
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
+}
+if (!isset($_SESSION['csrf_token'])) {
+  $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -681,6 +691,55 @@
       gap: 1rem;
     }
 
+    .availability-admin {
+      border-block: 1px solid var(--color-border);
+      margin: 1.5rem 0;
+      padding: 1.25rem 0;
+    }
+
+    .availability-admin h3 {
+      font-family: var(--font-header);
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+    }
+
+    .availability-admin form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 0.8rem;
+      align-items: end;
+    }
+
+    .availability-admin label {
+      display: grid;
+      gap: 0.35rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .availability-admin input,
+    .availability-admin select {
+      width: 100%;
+      min-height: 42px;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--color-text-dark);
+      font: inherit;
+    }
+
+    .availability-admin button {
+      min-height: 42px;
+    }
+
+    .availability-message {
+      min-height: 1.5em;
+      margin-top: 0.65rem;
+      color: var(--color-text-muted);
+      font-size: 0.9rem;
+    }
+
     /* --- Toast Notification --- */
     .toast {
       position: fixed;
@@ -837,8 +896,8 @@
 
     <ul class="nav-links" id="nav-list">
       <li><a href="#home">Home</a></li>
-      <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#submit-request" class="active">Submit Request</a></li>
+      <li><a href="Cake-Gallery.php">Gallery</a></li>
+      <li><a href="Weekly-Availability.php" class="active">Submit Request</a></li>
       <li><a href="#my-order">My Order</a></li>
       <li><a href="#messages">Messages</a></li>
     </ul>
@@ -879,15 +938,38 @@
             <span>Open</span>
           </div>
           <div class="legend-item">
-            <span class="dot limited"></span>
-            <span>Limited Slots</span>
-          </div>
-          <div class="legend-item">
             <span class="dot booked"></span>
             <span>Fully booked</span>
           </div>
         </div>
       </div>
+
+      <?php if (!empty($_SESSION['admin_id'])): ?>
+        <section class="availability-admin" aria-labelledby="availability-admin-title">
+          <h3 id="availability-admin-title">Manage Weekly Availability</h3>
+          <form id="availability-admin-form">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+            <label>
+              Week starts
+              <input type="date" id="week-start-date" name="week_start_date" value="<?= (new DateTimeImmutable('monday this week'))->format('Y-m-d') ?>" required>
+            </label>
+            <label>
+              Week ends
+              <input type="date" id="week-end-date" name="week_end_date" value="<?= (new DateTimeImmutable('monday this week'))->modify('+6 days')->format('Y-m-d') ?>" readonly required>
+            </label>
+            <label>
+              Availability
+              <select name="status" required>
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+                <option value="fully_booked">Fully booked</option>
+              </select>
+            </label>
+            <button class="btn btn-primary" type="submit">Save week</button>
+          </form>
+          <p class="availability-message" id="availability-message" role="status" aria-live="polite"></p>
+        </section>
+      <?php endif; ?>
 
       <!-- Calendar Grid -->
       <div class="calendar-grid" id="calendar-grid">
@@ -928,7 +1010,7 @@
         <button class="modal-close" id="close-rush-modal">&times;</button>
       </div>
       <div class="modal-body">
-        <p>You have selected a date with limited or fully booked availability (<strong id="rush-modal-date">Oct 8, 2026</strong>).</p>
+        <p>You have selected a closed or fully booked date (<strong id="rush-modal-date">Oct 8, 2026</strong>).</p>
         <p>Rush requests are subject to kitchen capacity and an additional expediting fee. Please fill out details below for quick review:</p>
         <div class="modal-field">
           <label>Event Type / Theme</label>
@@ -982,75 +1064,17 @@
 
     const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-    const calendarDataset = {
-      "2026-09": {
-        year: 2026,
-        month: 8, // September
-        startDayOffset: 2,
-        daysInMonth: 30,
-        statuses: {
-          5: { status: "booked", label: "BOOKED" },
-          12: { status: "limited", label: "1 SLOT" },
-          20: { status: "booked", label: "BOOKED" }
-        }
-      },
-      "2026-10": {
-        year: 2026,
-        month: 9, // October
-        startDayOffset: 4,
-        daysInMonth: 31,
-        prevMonthDays: [27, 28, 29, 30],
-        statuses: {
-          1: { status: "open", label: "OPEN" },
-          2: { status: "open", label: "OPEN" },
-          3: { status: "open", label: "OPEN" },
-          4: { status: "open", label: "OPEN" },
-          5: { status: "open", label: "OPEN" },
-          6: { status: "limited", label: "2 SLOT" },
-          7: { status: "open", label: "OPEN" },
-          8: { status: "booked", label: "BOOKED" },
-          9: { status: "limited", label: "1 SLOT" },
-          10: { status: "booked", label: "BOOKED" },
-          11: { status: "open", label: "OPEN" },
-          12: { status: "booked", label: "BOOKED" },
-          13: { status: "open", label: "OPEN" },
-          14: { status: "open", label: "OPEN" },
-          15: { status: "limited", label: "3 SLOT" },
-          16: { status: "open", label: "OPEN" },
-          17: { status: "booked", label: "BOOKED" },
-          18: { status: "open", label: "OPEN" },
-          19: { status: "open", label: "OPEN" },
-          20: { status: "booked", label: "BOOKED" },
-          21: { status: "open", label: "OPEN" },
-          22: { status: "open", label: "OPEN" },
-          23: { status: "limited", label: "1 SLOT" },
-          24: { status: "booked", label: "BOOKED" },
-          25: { status: "open", label: "OPEN" },
-          26: { status: "open", label: "OPEN" },
-          27: { status: "open", label: "OPEN" },
-          28: { status: "booked", label: "BOOKED" },
-          29: { status: "booked", label: "BOOKED" },
-          30: { status: "open", label: "OPEN" },
-          31: { status: "open", label: "OPEN" }
-        }
-      },
-      "2026-11": {
-        year: 2026,
-        month: 10, // November
-        startDayOffset: 0,
-        daysInMonth: 30,
-        statuses: {
-          1: { status: "limited", label: "2 SLOT" },
-          7: { status: "booked", label: "BOOKED" },
-          14: { status: "booked", label: "BOOKED" },
-          26: { status: "booked", label: "BOOKED" }
-        }
-      }
+    let availabilityWeeks = [];
+    const availabilityCache = new Map();
+    let renderRequestId = 0;
+    const today = new Date();
+    let currentYear = today.getFullYear();
+    let currentMonth = today.getMonth();
+    let selectedDateObj = {
+      year: today.getFullYear(),
+      month: today.getMonth(),
+      date: today.getDate()
     };
-
-    let currentYear = 2026;
-    let currentMonth = 9; // October
-    let selectedDateObj = { year: 2026, month: 9, date: 1 };
 
     const monthDisplay = document.getElementById('month-display');
     const calendarGrid = document.getElementById('calendar-grid');
@@ -1085,13 +1109,47 @@
       };
     }
 
-    function renderCalendar(year, month) {
+    function getAvailabilityForDate(year, month, day) {
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const week = availabilityWeeks.find(item => dateKey >= item.week_start_date && dateKey <= item.week_end_date);
+      if (!week || week.status === 'open') {
+        return { status: 'open', label: 'OPEN', footerLabel: 'Open', databaseStatus: 'open' };
+      }
+      if (week.status === 'closed') {
+        return { status: 'booked', label: 'CLOSED', footerLabel: 'Closed', databaseStatus: 'closed' };
+      }
+      return { status: 'booked', label: 'FULLY BOOKED', footerLabel: 'Fully booked', databaseStatus: 'fully_booked' };
+    }
+
+    async function renderCalendar(year, month) {
       const key = getMonthKey(year, month);
+      const requestId = ++renderRequestId;
       monthDisplay.textContent = `${monthNames[month]} ${year}`;
 
       calendarGrid.classList.add('fade-out');
 
+      try {
+        if (availabilityCache.has(key)) {
+          availabilityWeeks = availabilityCache.get(key);
+        } else {
+          const response = await fetch(`api/weekly-availability.php?year=${year}&month=${month + 1}`);
+          const result = await response.json();
+          if (!response.ok || !result.success || !Array.isArray(result.weeks)) {
+            throw new Error(result.error || 'Availability could not be loaded.');
+          }
+          availabilityWeeks = result.weeks;
+          availabilityCache.set(key, availabilityWeeks);
+        }
+      } catch (error) {
+        if (requestId !== renderRequestId) return;
+        availabilityWeeks = [];
+        showToast(error.message || 'Availability could not be loaded.');
+      }
+
+      if (requestId !== renderRequestId) return;
+
       setTimeout(() => {
+        if (requestId !== renderRequestId) return;
         calendarGrid.innerHTML = '';
 
         const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -1102,29 +1160,19 @@
           calendarGrid.appendChild(header);
         });
 
-        const monthData = calendarDataset[key] || generateFallbackMonth(year, month);
-
-        if (monthData.prevMonthDays && monthData.prevMonthDays.length > 0) {
-          monthData.prevMonthDays.forEach(dayNum => {
-            const card = document.createElement('div');
-            card.className = 'day-card muted';
-            card.innerHTML = `<span class="day-number">${dayNum}</span>`;
-            calendarGrid.appendChild(card);
-          });
-        } else {
-          for (let i = 0; i < monthData.startDayOffset; i++) {
-            const card = document.createElement('div');
-            card.className = 'day-card muted';
-            card.innerHTML = `<span class="day-number"></span>`;
-            calendarGrid.appendChild(card);
-          }
+        const monthData = generateFallbackMonth(year, month);
+        for (let i = 0; i < monthData.startDayOffset; i++) {
+          const card = document.createElement('div');
+          card.className = 'day-card muted';
+          card.innerHTML = `<span class="day-number"></span>`;
+          calendarGrid.appendChild(card);
         }
 
         for (let d = 1; d <= monthData.daysInMonth; d++) {
           const dayCard = document.createElement('div');
           dayCard.className = 'day-card';
 
-          const dayInfo = monthData.statuses[d] || { status: "open", label: "OPEN" };
+          const dayInfo = getAvailabilityForDate(year, month, d);
           const isSelected = (selectedDateObj.year === year &&
                               selectedDateObj.month === month &&
                               selectedDateObj.date === d);
@@ -1153,6 +1201,11 @@
           calendarGrid.appendChild(dayCard);
         }
 
+        updateFooterUI(getAvailabilityForDate(
+          selectedDateObj.year,
+          selectedDateObj.month,
+          selectedDateObj.date
+        ));
         calendarGrid.classList.remove('fade-out');
       }, 150);
     }
@@ -1165,9 +1218,9 @@
       selectedDateText.textContent = `Selected Date: ${dayOfWeek}, ${monthStr} ${selectedDateObj.date}, ${selectedDateObj.year}`;
 
       statusDot.className = `dot ${dayInfo.status}`;
-      statusText.textContent = dayInfo.status === "limited" ? `${dayInfo.label} (Limited)` : dayInfo.status;
+      statusText.textContent = dayInfo.footerLabel;
 
-      if (dayInfo.status === "booked") {
+      if (dayInfo.databaseStatus !== 'open') {
         btnProceed.disabled = true;
         btnRush.disabled = false;
       } else {
@@ -1210,8 +1263,8 @@
     });
 
     btnProceed.addEventListener('click', () => {
-      document.getElementById('custom-modal-date').textContent = `${monthNames[selectedDateObj.month]} ${selectedDateObj.date}, ${selectedDateObj.year}`;
-      customModal.classList.add('active');
+      const preferredDate = `${selectedDateObj.year}-${String(selectedDateObj.month + 1).padStart(2, '0')}-${String(selectedDateObj.date).padStart(2, '0')}`;
+      window.location.href = `Custom-Cake-Request.php?preferred_date=${preferredDate}`;
     });
 
     // Close Modals
@@ -1241,6 +1294,42 @@
       showToast("You have 2 pending notifications");
       setTimeout(() => this.classList.remove('clicked'), 600);
     };
+
+    const availabilityAdminForm = document.getElementById('availability-admin-form');
+    if (availabilityAdminForm) {
+      const weekStartInput = document.getElementById('week-start-date');
+      const weekEndInput = document.getElementById('week-end-date');
+      const availabilityMessage = document.getElementById('availability-message');
+
+      weekStartInput.addEventListener('change', () => {
+        if (!weekStartInput.value) return;
+        const weekEnd = new Date(`${weekStartInput.value}T00:00:00`);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        weekEndInput.value = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
+      });
+
+      availabilityAdminForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        availabilityMessage.textContent = 'Saving availability...';
+
+        try {
+          const response = await fetch('api/weekly-availability.php', {
+            method: 'POST',
+            body: new FormData(availabilityAdminForm)
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Unable to update weekly availability.');
+          }
+
+          availabilityCache.clear();
+          await renderCalendar(currentYear, currentMonth);
+          availabilityMessage.textContent = result.message;
+        } catch (error) {
+          availabilityMessage.textContent = error.message || 'Unable to update weekly availability.';
+        }
+      });
+    }
 
     // Initial Render
     renderCalendar(currentYear, currentMonth);

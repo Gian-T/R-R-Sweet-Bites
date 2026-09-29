@@ -1,3 +1,13 @@
+<?php
+declare(strict_types=1);
+
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
+}
+if (!isset($_SESSION['csrf_token'])) {
+  $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -286,7 +296,7 @@
     /* --- Cake Type Toggle Grid --- */
     .cake-type-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 1rem;
     }
 
@@ -645,8 +655,8 @@
 
     <ul class="nav-links" id="nav-list">
       <li><a href="#home">Home</a></li>
-      <li><a href="#gallery">Gallery</a></li>
-      <li><a href="#submit-request" class="active">Submit Request</a></li>
+      <li><a href="Cake-Gallery.php">Gallery</a></li>
+      <li><a href="Weekly-Availability.php" class="active">Submit Request</a></li>
       <li><a href="#my-order">My Order</a></li>
       <li><a href="#messages">Messages</a></li>
     </ul>
@@ -673,30 +683,28 @@
         <p>Tell us your vision, and we'll compute a custom quotation matching your flavor, serving scale, and intricate details.</p>
       </div>
 
-      <form id="cakeRequestForm">
+      <form id="cakeRequestForm" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
         <!-- 1. Cake Type Section -->
         <div class="form-section">
           <div class="section-title">Cake Type</div>
-          <div class="section-subtitle">What's the occasion?</div>
+          <div class="section-subtitle">Choose the product for your request.</div>
 
           <div class="cake-type-grid">
-            <div class="type-option selected" data-value="birthday">
+            <div class="type-option selected" data-value="cake">
               <svg viewBox="0 0 24 24"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v3"/><path d="M12 8v3"/><path d="M17 8v3"/><path d="M7 4h0"/><path d="M12 4h0"/><path d="M17 4h0"/></svg>
-              <span>Birthday</span>
+              <span>Cake</span>
             </div>
-            <div class="type-option" data-value="wedding">
+            <div class="type-option" data-value="cupcake">
               <svg viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-              <span>Wedding</span>
+              <span>Cupcakes</span>
             </div>
-            <div class="type-option" data-value="celebration">
+            <div class="type-option" data-value="number_shaped_cake">
               <svg viewBox="0 0 24 24"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9"/></svg>
-              <span>Celebration</span>
-            </div>
-            <div class="type-option" data-value="custom-theme">
-              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              <span>Custom Theme</span>
+              <span>Number / shaped cake</span>
             </div>
           </div>
+          <input type="hidden" name="cake_type" id="cakeType" value="cake">
         </div>
 
         <!-- 2. Preferred Size Section -->
@@ -705,16 +713,16 @@
           <div class="field-grid">
             <div class="form-group">
               <label class="form-label">Tiers <span class="required">*</span></label>
-              <select class="select-control" required>
+              <select class="select-control" name="num_tiers" required>
                 <option value="1">1 Tier</option>
                 <option value="2">2 Tiers</option>
                 <option value="3">3 Tiers</option>
-                <option value="4+">4+ Tiers</option>
+                <option value="4">4+ Tiers</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Layers <span class="required">*</span></label>
-              <select class="select-control" required>
+              <select class="select-control" name="num_layers" required>
                 <option value="3">3 Layers</option>
                 <option value="2">2 Layers</option>
                 <option value="4">4 Layers</option>
@@ -729,7 +737,7 @@
           <div class="field-grid">
             <div class="form-group">
               <label class="form-label">Cake Base Flavor <span class="required">*</span></label>
-              <select class="select-control" required>
+              <select class="select-control" name="flavor" required>
                 <option value="chocolate">Chocolate</option>
                 <option value="vanilla">Vanilla Sponge</option>
                 <option value="red-velvet">Red Velvet</option>
@@ -738,7 +746,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Internal Filling <span class="required">*</span></label>
-              <select class="select-control" required>
+              <select class="select-control" name="filling" required>
                 <option value="vanilla">Vanilla</option>
                 <option value="chocolate-ganache">Chocolate Ganache</option>
                 <option value="cream-cheese">Cream Cheese</option>
@@ -749,7 +757,7 @@
           <div class="field-grid" style="margin-top: 1rem;">
             <div class="form-group">
               <label class="form-label">Outer Frosting <span class="required">*</span></label>
-              <select class="select-control" required>
+              <select class="select-control" name="frosting" required>
                 <option value="strawberry">Strawberry</option>
                 <option value="buttercream">Vanilla Buttercream</option>
                 <option value="swiss-meringue">Swiss Meringue</option>
@@ -761,9 +769,20 @@
 
         <!-- 4. Decoration & Design Details Section -->
         <div class="form-section">
-          <div class="section-title">Decoration &amp; Design Details &amp; Allergy Warnings</div>
+          <div class="section-title">Decoration &amp; Design Details</div>
           <div class="form-group">
-            <textarea class="textarea-control" placeholder="Please tell us how you want your design and decoration..."></textarea>
+            <label class="form-label" for="designDescription">Design details <span class="required">*</span></label>
+            <textarea class="textarea-control" id="designDescription" name="design_description" maxlength="10000" placeholder="Please tell us how you want your design and decoration..." required></textarea>
+            <label class="form-label" for="structuralRequirements">Structural requirements</label>
+            <textarea class="textarea-control" id="structuralRequirements" name="structural_requirements" maxlength="2000" placeholder="For example, supports for a tall or multi-tier design"></textarea>
+            <label class="form-label" for="intricacyRating">Design intricacy (1 = simple, 5 = highly detailed) <span class="required">*</span></label>
+            <select class="select-control" id="intricacyRating" name="design_intricacy_rating" required>
+              <option value="1">1 - Simple</option>
+              <option value="2">2</option>
+              <option value="3" selected>3 - Moderate</option>
+              <option value="4">4</option>
+              <option value="5">5 - Highly detailed</option>
+            </select>
           </div>
         </div>
 
@@ -777,7 +796,7 @@
             <div class="upload-title">Upload an image</div>
             <div class="upload-hint">PNG, JPG up to 10MB (Max 3 images)</div>
             <button type="button" class="btn-browse" onclick="document.getElementById('fileInput').click()">Browse Files</button>
-            <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+            <input type="file" id="fileInput" name="reference_images[]" accept="image/jpeg,image/png,image/webp" multiple style="display: none;">
           </div>
           <div class="image-previews" id="previewContainer"></div>
         </div>
@@ -788,28 +807,32 @@
           <div class="field-grid">
             <div class="form-group">
               <label class="form-label">Customer Name <span class="required">*</span></label>
-              <input type="text" class="input-control" placeholder="Full Name" required>
+              <input type="text" class="input-control" name="customer_name" placeholder="Full Name" maxlength="150" required>
             </div>
             <div class="form-group">
               <label class="form-label">Requested Delivery Date <span class="required">*</span></label>
-              <input type="date" class="input-control" required>
+              <input type="date" class="input-control" name="preferred_date" min="<?= date('Y-m-d') ?>" required>
             </div>
           </div>
           <div class="field-grid" style="margin-top: 1rem;">
             <div class="form-group">
               <label class="form-label">Email Address <span class="required">*</span></label>
-              <input type="email" class="input-control" placeholder="example@gmail.com" required>
+              <input type="email" class="input-control" name="email" placeholder="example@gmail.com" maxlength="255" required>
             </div>
             <div class="form-group">
               <label class="form-label">Phone Number <span class="required">*</span></label>
-              <input type="tel" class="input-control" placeholder="0917 XXX XXXX" required>
+              <input type="tel" class="input-control" name="phone" placeholder="0917 XXX XXXX" maxlength="30" required>
             </div>
           </div>
+          <label class="form-label" style="display:flex; align-items:center; gap:.5rem; margin-top:1rem;">
+            <input type="checkbox" name="is_rush" value="1"> This is a rush-order request
+          </label>
         </div>
 
         <!-- Submit Button -->
         <div class="submit-btn-wrapper">
           <button type="submit" class="btn-submit">Submit Request</button>
+          <p id="requestStatus" role="alert" aria-live="polite"></p>
         </div>
       </form>
     </div>
@@ -819,7 +842,7 @@
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-box">
       <h3>Request Submitted!</h3>
-      <p>Thank you! Your custom cake inquiry has been transmitted. We will review your selections and send a calculated quote shortly.</p>
+      <p id="modalMessage">Your request has been submitted.</p>
       <button class="btn-browse" onclick="closeModal()">Awesome</button>
     </div>
   </div>
@@ -894,13 +917,39 @@
         });
       }
 
-      // 4. Form Submission Simulation & Modal
+      // 4. Submit the request to the PHP backend.
       const cakeForm = document.getElementById('cakeRequestForm');
       const modalOverlay = document.getElementById('modalOverlay');
+      const requestStatus = document.getElementById('requestStatus');
+      const submitButton = cakeForm.querySelector('[type="submit"]');
+      const requestedDate = new URLSearchParams(window.location.search).get('preferred_date');
+      const preferredDateInput = cakeForm.elements.namedItem('preferred_date');
+      if (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) && requestedDate >= preferredDateInput.min) {
+        preferredDateInput.value = requestedDate;
+      }
 
-      cakeForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        modalOverlay.classList.add('active');
+      cakeForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        requestStatus.textContent = '';
+        submitButton.disabled = true;
+
+        try {
+          const response = await fetch('api/custom-cake-request.php', {
+            method: 'POST',
+            body: new FormData(cakeForm)
+          });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.error || 'Unable to submit your request.');
+          }
+
+          document.getElementById('modalMessage').textContent = result.message;
+          modalOverlay.classList.add('active');
+        } catch (error) {
+          requestStatus.textContent = error.message || 'Unable to submit your request. Please try again.';
+        } finally {
+          submitButton.disabled = false;
+        }
       });
     });
 

@@ -543,8 +543,8 @@
 
     <ul class="nav-links" id="nav-list">
       <li><a href="#home">Home</a></li>
-      <li><a href="#gallery" class="active">Gallery</a></li>
-      <li><a href="#submit-request">Submit Request</a></li>
+      <li><a href="Cake-Gallery.php" class="active">Gallery</a></li>
+      <li><a href="Weekly-Availability.php">Submit Request</a></li>
       <li><a href="#my-order">My Order</a></li>
       <li><a href="#messages">Messages</a></li>
     </ul>
