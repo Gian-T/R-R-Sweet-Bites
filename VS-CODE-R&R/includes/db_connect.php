@@ -3,13 +3,10 @@
 declare(strict_types=1);
 
 $dbHost = getenv('RR_DB_HOST') ?: 'localhost';
-$dbPort = getenv('RR_DB_PORT') ?: '3306';
+$dbPort = getenv('RR_DB_PORT') ?: '3307';
 $dbName = getenv('RR_DB_NAME') ?: 'R&R Sweet Bites';
-$dbUser = getenv('RR_DB_USER') ?: 'root';
-$dbPassword = getenv('RR_DB_PASSWORD');
-if ($dbPassword === false) {
-    $dbPassword = '';
-}
+$dbUser = getenv('RR_DB_USER') ?: 'GianAdmin';
+$dbPassword = getenv('RR_DB_PASSWORD') ?: 'password';
 
 $dsn = sprintf(
     'mysql:host=%s;port=%s;dbname=%s;charset=utf8mb4',
