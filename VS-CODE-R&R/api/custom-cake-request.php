@@ -34,8 +34,9 @@ if (!is_string($sessionToken) || !is_string($submittedToken) || !hash_equals($se
 
 try {
     require_once __DIR__ . '/../includes/db_connect.php';
+    $pdo = db();
 
-    $customerStatement = $pdo->prepare(
+    $customerStatement = $pdo->prepare( //error
         'SELECT full_name, email, contact_number FROM customer WHERE customer_id = :customer_id'
     );
     $customerStatement->execute(['customer_id' => $customerId]);
@@ -144,9 +145,9 @@ try {
     }
 
     $savedImagePaths = [];
-    $pdo->beginTransaction();
+    $pdo->beginTransaction(); //error
     try {
-        $orderStatement = $pdo->prepare(
+        $orderStatement = $pdo->prepare( //error
             'INSERT INTO `order` (
                 customer_id, cake_type, design_description, flavor, num_layers, num_tiers,
                 preferred_date, is_rush, design_intricacy_rating, decoration_requirements,
@@ -172,9 +173,9 @@ try {
             'complexity_score' => $complexityScore,
             'difficulty_level' => $difficultyLevel,
         ]);
-        $orderId = (int) $pdo->lastInsertId();
+        $orderId = (int) $pdo->lastInsertId(); //error
 
-        $imageStatement = $pdo->prepare(
+        $imageStatement = $pdo->prepare( //error
             'INSERT INTO order_reference_image (order_id, image_url) VALUES (:order_id, :image_url)'
         );
         foreach ($uploadedFiles as $file) {
@@ -190,10 +191,10 @@ try {
             ]);
         }
 
-        $pdo->commit();
+        $pdo->commit(); //error
     } catch (Throwable $exception) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
+        if ($pdo->inTransaction()) { //error
+            $pdo->rollBack(); //error
         }
         foreach ($savedImagePaths as $savedImagePath) {
             if (is_file($savedImagePath)) {

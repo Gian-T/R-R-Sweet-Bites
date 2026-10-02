@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^php -l \"VS-CODE-R&R/api/quotation-composer\\.php\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

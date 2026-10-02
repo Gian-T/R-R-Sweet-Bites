@@ -14,8 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 try {
     require_once __DIR__ . '/../includes/db_connect.php';
+    $pdo = db();
 
-    $statement = $pdo->query(
+    $statement = $pdo->query(   
         'SELECT gallery_id, image_url, title, description, category, occasion
          FROM gallery_item
          ORDER BY created_at DESC, gallery_id DESC'

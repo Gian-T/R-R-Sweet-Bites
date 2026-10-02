@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     try {
         require_once __DIR__ . '/../includes/db_connect.php';
+        $pdo = db();
         $monthStart = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
         $monthEnd = $monthStart->modify('last day of this month');
         $statement = $pdo->prepare(
@@ -87,6 +88,7 @@ if (
 
 try {
     require_once __DIR__ . '/../includes/db_connect.php';
+    $pdo = db();
     $statement = $pdo->prepare(
         'INSERT INTO weekly_availability (week_start_date, week_end_date, status, set_by_admin_id)
          VALUES (:week_start, :week_end, :status, :admin_id)
