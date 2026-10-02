@@ -1,0 +1,501 @@
+<?php
+declare(strict_types=1);
+require __DIR__ . '/config.php';
+
+// Already signed in? Skip this page.
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && ($me = current_user())) {
+    header('Location: ' . ($me['role'] === 'admin' ? 'admin-payment-verification.php' : 'index.php'));
+    exit;
+}
+
+// ---------- Form sent: create the account ----------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    $in = json_input();
+
+    // Hidden bot-trap field: pretend it worked so bots learn nothing.
+    if (!empty($in['website'])) json_out(['ok' => true, 'message' => 'Account created! You can now log in.']);
+
+    $name     = trim((string)preg_replace('/\s+/u', ' ', (string)($in['fullName'] ?? '')));
+    $email    = strtolower(trim((string)($in['email'] ?? '')));
+    $contact  = preg_replace('/\s/', '', (string)($in['contact'] ?? ''));
+    $password = (string)($in['password'] ?? '');
+    $confirm  = (string)($in['confirm'] ?? '');
+
+    $errors = array_filter([
+        'fullName' => v_name($name),
+        'email'    => v_email($email),
+        'contact'  => v_contact($contact),
+        'password' => v_password($password),
+        'confirm'  => $password !== $confirm ? 'Passwords do not match.' : null,
+    ]);
+    if ($errors) json_out(['ok' => false, 'message' => 'Please fix the highlighted fields.', 'errors' => $errors], 422);
+
+    try {
+        db()->prepare('INSERT INTO users (role, full_name, email, contact, password_hash) VALUES ("customer", ?, ?, ?, ?)')
+            ->execute([$name, $email, $contact, password_hash($password, PASSWORD_DEFAULT)]);   // hashed on the server
+    } catch (PDOException $e) {
+        if ($e->getCode() === '23000') {   // email already exists (UNIQUE) - also safe if two people sign up at once
+            json_out(['ok' => false, 'message' => 'Email is already registered. Log in instead.',
+                      'errors' => ['email' => 'Email is already registered. Log in instead.']], 409);
+        }
+        throw $e;
+    }
+    json_out(['ok' => true, 'message' => 'Account created! You can now log in.'], 201);
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register | R&R Sweet Bites</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --canvas: #1e1e1e;
+      --pink-panel: #f3b4c0;
+      --cream: #fff4ef;
+      --pink-accent: #d9788a;
+      --button: #db7f8e;
+      --border: #e6b0bb;
+      --text: #4a2a2e;
+      --placeholder: #b5a0a4;
+      --error: #b3263e;
+      --font-header: "Playfair Display", Georgia, "Times New Roman", serif; /* headers */
+      --font-button: "Platypi", Georgia, "Times New Roman", serif;          /* buttons + business name */
+      --font-text: "Jost", "Helvetica Neue", Arial, sans-serif;             /* text + nav bar */
+    }
+    * { box-sizing: border-box; margin: 0; }
+    body {
+      min-height: 100vh; display: flex; flex-direction: column;
+      background: var(--canvas); color: var(--text); font-family: var(--font-text);
+    }
+
+    /* ---------- Nav bar (Jost) ---------- */
+    .nav {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      min-height: 68px; padding: 8px max(20px, 4vw);
+      background: var(--cream); font-family: var(--font-text);
+    }
+    .nav-brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; }
+    .nav-icon { display: block; flex: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: #f6cbd3; }
+    .nav-name { font-family: var(--font-button); font-weight: 700; font-size: 1.1rem; white-space: nowrap; }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+    .nav-links { display: flex; gap: 4px; padding: 0; list-style: none; }
+    .nav-links a {
+      display: block; padding: 8px 14px; border-radius: 999px;
+      color: var(--text); font-size: .95rem; font-weight: 500; text-decoration: none; white-space: nowrap;
+      transition: background .15s;
+    }
+    .nav-links a:hover { background: rgba(217, 120, 138, .18); }
+    .nav-links a[aria-current="page"] { background: var(--button); color: #fff; }
+    .notif {
+      display: grid; place-items: center; width: 40px; height: 40px; padding: 0;
+      border: 0; border-radius: 50%; background: rgba(217, 120, 138, .18); cursor: pointer;
+    }
+    .notif img { display: block; width: 22px; height: 22px; object-fit: contain; }
+    .nav a:focus-visible, .notif:focus-visible { outline: 3px solid rgba(217, 120, 138, .6); outline-offset: 2px; }
+
+    /* Icon images are intentionally empty (src=""): fill in the path later. Hide the browser's broken-image glyph until then. */
+    .nav-icon img, .logo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+    img[src=""] { opacity: 0; }
+
+    .stage { flex: 1; display: grid; place-items: center; padding: 24px; }
+
+    /* The card is drawn at the Figma size (695 x 381) and scales with its width.
+       1 "u" = 1 Figma pixel. */
+    .frame { width: min(100%, 1000px); container-type: inline-size; }
+    .card {
+      --u: calc(100cqw / 695);
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: calc(var(--u) * 381);
+      border-radius: calc(var(--u) * 14);
+      overflow: hidden; background: var(--cream);
+    }
+
+    /* ---------- Left panel ---------- */
+    .brand {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding-top: calc(var(--u) * 80);
+      background: var(--pink-panel);
+      border-bottom-right-radius: calc(var(--u) * 22);
+    }
+    .logo { width: calc(var(--u) * 103); height: calc(var(--u) * 103); border-radius: 50%; overflow: hidden; background: #fbe3e7; }
+    .brand h2 {
+      margin-top: calc(var(--u) * 10); line-height: calc(var(--u) * 18);
+      font-family: var(--font-header); font-size: calc(var(--u) * 16); font-weight: 700;
+    }
+    .brand p {
+      margin-top: calc(var(--u) * 10); line-height: calc(var(--u) * 16);
+      font-size: calc(var(--u) * 13.5); font-weight: 500; white-space: nowrap;
+    }
+
+    /* ---------- Right panel ---------- */
+    .form-side { padding: calc(var(--u) * 19) calc(var(--u) * 49) calc(var(--u) * 28); }
+    .eyebrow {
+      display: block; line-height: calc(var(--u) * 12);
+      font-size: calc(var(--u) * 11.5); font-weight: 500; color: var(--pink-accent);
+    }
+    h1 { line-height: calc(var(--u) * 18); font-family: var(--font-header); font-size: calc(var(--u) * 16); font-weight: 700; }
+
+    .message { display: none; margin-top: calc(var(--u) * 8); padding: calc(var(--u) * 6) calc(var(--u) * 10); border-radius: calc(var(--u) * 8); font-size: calc(var(--u) * 11.5); font-weight: 500; }
+    .message.success { display: block; background: #e6f4ea; color: #1e6b3a; }
+    .message.fail { display: block; background: #fde8ec; color: var(--error); }
+
+    form { margin-top: calc(var(--u) * 17); }
+    .field { margin-bottom: calc(var(--u) * 15); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--u) * 8); }
+    .row .field { margin-bottom: 0; }
+    label { display: block; margin-bottom: calc(var(--u) * 2); line-height: calc(var(--u) * 12); font-size: calc(var(--u) * 11.5); font-weight: 600; }
+    input {
+      width: 100%; height: calc(var(--u) * 30);
+      padding: 0 calc(var(--u) * 14);
+      font: 500 calc(var(--u) * 13.5) var(--font-text); color: var(--text);
+      background: #fff8f5;
+      border: max(1px, calc(var(--u) * 1)) solid var(--border);
+      border-radius: calc(var(--u) * 9);
+      outline: none; transition: border-color .15s, box-shadow .15s;
+    }
+    input::placeholder { color: var(--placeholder); opacity: 1; }
+    #password::placeholder, #confirm::placeholder { color: #6d6567; }
+    .row input { padding: 0 calc(var(--u) * 10); }
+    input:focus-visible { border-color: var(--pink-accent); box-shadow: 0 0 0 calc(var(--u) * 2.5) rgba(217, 120, 138, .28); }
+    input.is-valid { border-color: #86c69b; }
+    input[aria-invalid="true"] { border-color: var(--error); }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: calc(var(--u) * 36); }
+    .pw-toggle {
+      position: absolute; right: calc(var(--u) * 3); top: 50%; transform: translateY(-50%);
+      display: grid; place-items: center; width: calc(var(--u) * 26); height: calc(var(--u) * 26);
+      padding: 0; border: 0; border-radius: 50%; background: transparent; color: #a98a90; cursor: pointer;
+      transition: color .15s, background .15s;
+    }
+    .pw-toggle:hover { color: var(--pink-accent); background: rgba(217, 120, 138, .14); }
+    .pw-toggle:focus-visible { outline: 3px solid rgba(217, 120, 138, .5); outline-offset: 1px; }
+    .pw-toggle svg { width: calc(var(--u) * 15); height: calc(var(--u) * 15); display: block; }
+    .pw-toggle .icon-eye { display: none; }
+    .pw-toggle[aria-pressed="true"] .icon-eye-off { display: none; }
+    .pw-toggle[aria-pressed="true"] .icon-eye { display: block; }
+    .error { display: block; margin-top: calc(var(--u) * 3); color: var(--error); font-size: calc(var(--u) * 10.5); font-weight: 500; line-height: 1.25; }
+    .error:empty { display: none; }
+
+    .submit {
+      display: block; width: 100%; height: calc(var(--u) * 31); margin-top: calc(var(--u) * 13);
+      border: 0; border-radius: 999px; background: var(--button); color: #fff;
+      font: 600 calc(var(--u) * 12) var(--font-button); cursor: pointer; transition: background .15s;
+    }
+    .submit:hover { background: #cf6c7d; }
+    .submit:focus-visible { outline: 3px solid rgba(217, 120, 138, .5); outline-offset: 2px; }
+    .submit:disabled { opacity: .7; cursor: wait; }
+
+    .alt { margin-top: calc(var(--u) * 9); text-align: center; line-height: calc(var(--u) * 14); font-size: calc(var(--u) * 12.5); font-weight: 600; }
+    .alt a { color: var(--pink-accent); text-decoration: none; }
+    .alt a:hover { text-decoration: underline; }
+
+    /* ---------- Phones: stack the panels ---------- */
+    @media (max-width: 720px) {
+      .stage { padding: 16px; }
+      .card { --u: 1.35px; grid-template-columns: 1fr; min-height: 0; }
+      .brand { padding: 36px 20px 32px; border-radius: 0 0 26px 26px; }
+      .logo { width: 110px; height: 110px; }
+      .form-side { padding: 28px 22px 26px; }
+      .brand p { white-space: normal; }
+      .brand p br { display: none; }
+      .nav-links a { padding: 8px 10px; }
+    }
+    @media (max-width: 440px) {
+      .nav { padding: 8px 12px; gap: 8px; }
+      .nav-brand { gap: 8px; min-width: 0; }
+      .nav-icon { width: 32px; height: 32px; }
+      .nav-name { font-size: .88rem; }
+      .nav-right { gap: 4px; }
+      .nav-links { gap: 0; }
+      .nav-links a { padding: 7px 8px; font-size: .82rem; }
+      .notif { width: 34px; height: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <a class="nav-brand" href="register.php">
+      <span class="nav-icon"><img src="" alt=""></span>
+      <span class="nav-name">R&amp;R Sweet Bites</span>
+    </a>
+    <nav class="nav-right" aria-label="Main">
+      <ul class="nav-links">
+        <li><a href="register.php" aria-current="page">Register</a></li>
+        <li><a href="login.php">Log in</a></li>
+      </ul>
+      <button class="notif" type="button" aria-label="Notifications"><img src="" alt=""></button>
+    </nav>
+  </header>
+
+  <div class="stage">
+    <div class="frame">
+      <main class="card">
+        <section class="brand">
+          <div class="logo"><img src="" alt=""></div>
+          <h2>Join R&amp;R Sweet Bites</h2>
+          <p>Register to submit custom cake <br>requests, get pricing, and track <br>your order.</p>
+        </section>
+
+        <section class="form-side">
+          <span class="eyebrow">Create account</span>
+          <h1>Customer Registration</h1>
+
+          <div id="message" class="message" role="status" aria-live="polite"></div>
+
+          <form id="registerForm" method="post" action="register.php" novalidate>
+            <div class="field">
+              <label for="fullName">Full name</label>
+              <input id="fullName" name="fullName" type="text" autocomplete="name" autocapitalize="words" maxlength="60" required>
+              <span class="error" id="fullName-error"></span>
+            </div>
+            <div class="field">
+              <label for="email">Email address</label>
+              <input id="email" name="email" type="email" placeholder="you@email.com" autocomplete="email" autocapitalize="none" spellcheck="false" maxlength="254" required>
+              <span class="error" id="email-error"></span>
+            </div>
+            <div class="field">
+              <label for="contact">Contact number</label>
+              <input id="contact" name="contact" type="tel" inputmode="numeric" placeholder="09XX XXX XXXX" autocomplete="tel" maxlength="13" required>
+              <span class="error" id="contact-error"></span>
+            </div>
+            <div class="row">
+              <div class="field">
+                <label for="password">Password</label>
+                <div class="password-wrap">
+                  <input id="password" name="password" type="password" autocomplete="new-password" maxlength="64" required>
+                  <button type="button" class="pw-toggle" id="pwToggle" aria-pressed="false" aria-label="Show password">
+                    <svg class="icon-eye" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5C5.5 5 2 12 2 12s3.5 7 10 7 10-7 10-7-3.5-7-10-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9z"/></svg>
+                    <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.07A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.22 4.19"/><path d="M6.3 6.3C3.6 8.1 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 4.17-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                  </button>
+                </div>
+                <span class="error" id="password-error"></span>
+              </div>
+              <div class="field">
+                <label for="confirm">Confirm</label>
+                <div class="password-wrap">
+                  <input id="confirm" name="confirm" type="password" autocomplete="new-password" maxlength="64" required>
+                  <button type="button" class="pw-toggle" id="confirmToggle" aria-pressed="false" aria-label="Show password">
+                    <svg class="icon-eye" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5C5.5 5 2 12 2 12s3.5 7 10 7 10-7 10-7-3.5-7-10-7zm0 11.5A4.5 4.5 0 1 1 12 7.5a4.5 4.5 0 0 1 0 9z"/></svg>
+                    <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.07A10.4 10.4 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.22 4.19"/><path d="M6.3 6.3C3.6 8.1 2 12 2 12s3.5 7 10 7a9.9 9.9 0 0 0 4.17-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                  </button>
+                </div>
+                <span class="error" id="confirm-error"></span>
+              </div>
+            </div>
+            <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <button class="submit" type="submit">Create Account</button>
+          </form>
+
+          <p class="alt">Already have an account? <a href="login.php">Log in</a></p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+/**
+ * R&R Sweet Bites - Customer Registration (SRS FR-1)
+ * The browser validates for instant feedback; the PHP at the top of this file re-validates everything,
+ * checks for duplicate emails, and hashes the password on the server (password_hash).
+ */
+(function () {
+  "use strict";
+
+  const form = document.getElementById("registerForm");
+  const messageBox = document.getElementById("message");
+  const submitBtn = form.querySelector(".submit");
+  const fields = ["fullName", "email", "contact", "password", "confirm"];
+  const $ = (id) => document.getElementById(id);
+  const dirty = {};
+
+  /* ---------- Validation helpers ---------- */
+  const EMAIL_RE = /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
+  const DOMAIN_TYPOS = {
+    "gmial.com": "gmail.com", "gmai.com": "gmail.com", "gamil.com": "gmail.com", "gmail.con": "gmail.com",
+    "gmail.co": "gmail.com", "yaho.com": "yahoo.com", "yahooo.com": "yahoo.com", "yahoo.con": "yahoo.com",
+    "hotmial.com": "hotmail.com", "hotmail.con": "hotmail.com", "outlok.com": "outlook.com", "outlook.con": "outlook.com"
+  };
+
+  const rules = {
+    fullName(v) {
+      if (!v) return "Enter your full name.";
+      if (v.length < 3) return "Name is too short.";
+      if (v.length > 60) return "Keep your name under 60 characters.";
+      if (!/^\p{L}[\p{L}\s.'’-]*$/u.test(v)) return "Use letters, spaces, . ' - only.";
+      if (v.split(" ").filter(Boolean).length < 2) return "Enter your first and last name.";
+      if (/(.)\1{3,}/iu.test(v)) return "That name looks incorrect.";
+    },
+    email(v) {
+      if (!v) return "Enter your email address.";
+      if (/\s/.test(v)) return "Email can't contain spaces.";
+      if (v.length > 254) return "Email is too long.";
+      const at = v.indexOf("@");
+      if (at < 1 || at !== v.lastIndexOf("@")) return "Email needs one @, like you@email.com.";
+      const local = v.slice(0, at), domain = v.slice(at + 1);
+      if (local.length > 64) return "Part before @ is too long.";
+      if (local.startsWith(".") || local.endsWith(".") || v.includes("..")) return "Remove extra dots in the email.";
+      if (!EMAIL_RE.test(v) || !/\.[A-Za-z]{2,}$/.test(domain)) return "Enter a valid email, like you@email.com.";
+      if (DOMAIN_TYPOS[domain]) return "Did you mean " + local + "@" + DOMAIN_TYPOS[domain] + "?";
+    },
+    contact(v) {
+      const d = v.replace(/\s/g, "");
+      if (!d) return "Enter your contact number.";
+      if (!/^\d+$/.test(d)) return "Use numbers only.";
+      if (!d.startsWith("09")) return "Number must start with 09.";
+      if (d.length < 11) return "Number is too short (11 digits).";
+      if (d.length > 11) return "Number is too long (11 digits).";
+      if (/^09(\d)\1{8}$/.test(d)) return "Enter a real mobile number.";
+    },
+    password(v) {
+      if (!v) return "Create a password.";
+      if (v.length < 8) return "Use at least 8 characters.";
+      if (v.length > 64) return "Use 64 characters or fewer.";
+      if (!/[A-Z]/.test(v)) return "Add one capital letter.";
+      if (!/\d/.test(v)) return "Add one number.";
+    },
+    confirm(v, all) {
+      if (!v) return "Confirm your password.";
+      if (v !== all.password) return "Passwords do not match.";
+    }
+  };
+
+  function getValues() {
+    return {
+      fullName: $("fullName").value.trim().replace(/\s+/g, " "),
+      email: $("email").value.trim().toLowerCase(),
+      contact: $("contact").value.trim(),
+      password: $("password").value,
+      confirm: $("confirm").value
+    };
+  }
+
+  function showError(id, msg, ok) {
+    const input = $(id);
+    $(id + "-error").textContent = msg || "";
+    input.setAttribute("aria-invalid", msg ? "true" : "false");
+    input.classList.toggle("is-valid", !msg && !!ok);
+    if (msg) input.setAttribute("aria-describedby", id + "-error");
+    else input.removeAttribute("aria-describedby");
+  }
+
+  function validateField(id) {
+    const values = getValues();
+    const msg = rules[id](values[id], values);
+    showError(id, msg, true);
+    return !msg;
+  }
+
+  function showMessage(text, type) {
+    messageBox.textContent = text;
+    messageBox.className = "message " + type;
+  }
+
+  /* ---------- Show/hide password ---------- */
+  function wirePwToggle(toggleId, inputId) {
+    const btn = $(toggleId), input = $(inputId);
+    btn.addEventListener("click", () => {
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.setAttribute("aria-pressed", show ? "true" : "false");
+      btn.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      input.focus({ preventScroll: true });
+    });
+  }
+  wirePwToggle("pwToggle", "password");
+  wirePwToggle("confirmToggle", "confirm");
+
+  /* ---------- Typing filters ---------- */
+  // Full name: letters, spaces and . ' - only; collapse double spaces
+  $("fullName").addEventListener("input", (e) => {
+    const clean = e.target.value.replace(/[^\p{L}\s.'’-]/gu, "").replace(/^\s+/, "").replace(/\s{2,}/g, " ");
+    if (clean !== e.target.value) e.target.value = clean;
+  });
+  $("fullName").addEventListener("blur", (e) => { e.target.value = e.target.value.trim().replace(/\s+/g, " "); });
+
+  // Email: no spaces
+  $("email").addEventListener("input", (e) => {
+    const clean = e.target.value.replace(/\s/g, "");
+    if (clean !== e.target.value) e.target.value = clean;
+  });
+  $("email").addEventListener("blur", (e) => { e.target.value = e.target.value.trim().toLowerCase(); });
+
+  // Contact: digits only, shown as 09XX XXX XXXX
+  const formatPhone = (d) => [d.slice(0, 4), d.slice(4, 7), d.slice(7, 11)].filter(Boolean).join(" ");
+  $("contact").addEventListener("beforeinput", (e) => {
+    if (e.inputType.startsWith("insert") && e.data && /\D/.test(e.data)) e.preventDefault();
+  });
+  $("contact").addEventListener("input", (e) => {
+    e.target.value = formatPhone(e.target.value.replace(/\D/g, "").slice(0, 11));
+  });
+  $("contact").addEventListener("paste", (e) => {
+    e.preventDefault();
+    let d = (e.clipboardData || window.clipboardData).getData("text").replace(/\D/g, "");
+    if (d.startsWith("63")) d = "0" + d.slice(2);        // +63 917... -> 0917...
+    else if (d.length === 10 && d.startsWith("9")) d = "0" + d; // 917... -> 0917...
+    e.target.value = formatPhone(d.slice(0, 11));
+    e.target.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+
+  /* ---------- Validate on blur, re-check live once a field has an error ---------- */
+  fields.forEach((id) => {
+    const input = $(id);
+    input.addEventListener("input", () => {
+      dirty[id] = true;
+      if (input.getAttribute("aria-invalid") === "true") validateField(id);
+      if (id === "password" && $("confirm").value) validateField("confirm");
+    });
+    input.addEventListener("blur", () => { if (dirty[id] || input.value) validateField(id); });
+  });
+
+  /* ---------- Submit ---------- */
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    messageBox.className = "message";
+
+    if (form.website && form.website.value) { // hidden bot-trap field was filled
+      form.reset();
+      return showMessage("Account created! You can now log in.", "success");
+    }
+
+    const results = fields.map(validateField);
+    if (results.includes(false)) {
+      showMessage("Please fix the highlighted fields.", "fail");
+      document.querySelector('[aria-invalid="true"]').focus();
+      return;
+    }
+
+    const v = getValues();
+    submitBtn.disabled = true;
+    try {
+      const res = await fetch("register.php", {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...v, website: form.website.value })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ok) {
+        // Show the server's per-field errors (e.g. duplicate email) under the matching inputs
+        Object.keys(data.errors || {}).forEach((id) => { if ($(id)) showError(id, data.errors[id]); });
+        const bad = document.querySelector('[aria-invalid="true"]'); if (bad) bad.focus();
+        throw new Error(data.message || "Something went wrong. Please try again.");
+      }
+      form.reset();
+      fields.forEach((id) => { showError(id, "", false); dirty[id] = false; });
+      showMessage(data.message, "success");
+    } catch (err) {
+      showMessage(err instanceof TypeError ? "Can't reach the server. Please try again." : err.message, "fail");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+})();
+  </script>
+</body>
+</html>
