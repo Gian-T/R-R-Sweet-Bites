@@ -1,74 +1,9 @@
-<?php
-declare(strict_types=1);
-require __DIR__ . '/config.php';
-
-$pdo = db();
-
-/* ---------- Load order (?order=ORD-2024-0423, falls back to a confirmed order) ---------- */
-$orderNo = trim((string) ($_GET['order'] ?? ''));
-$sql = 'SELECT o.*, c.initials AS client_initials, q.ref_no AS quote_ref
-        FROM orders o
-        JOIN customers c ON c.id = o.customer_id
-        LEFT JOIN quotations q ON q.id = o.quotation_id ';
-if ($orderNo !== '') {
-    $st = $pdo->prepare($sql . 'WHERE o.order_no = ?');
-    $st->execute([$orderNo]);
-} else {
-    $st = $pdo->query($sql . 'ORDER BY (o.stage >= 2) DESC, o.id ASC LIMIT 1');
-}
-$order = $st->fetch();
-if (!$order) {
-    not_found('Order');
-}
-
-/* ---------- Payment figures ---------- */
-$st = $pdo->prepare(
-    "SELECT COALESCE(SUM(CASE WHEN status = 'verified' THEN amount END), 0) AS verified,
-            COALESCE(SUM(CASE WHEN status = 'pending'  THEN amount END), 0) AS pending
-     FROM payments WHERE order_id = ?"
-);
-$st->execute([$order['id']]);
-$pay = $st->fetch();
-
-$total     = (float) $order['total_amount'];
-$dpPct     = (int) $order['downpayment_percent'];
-$dpReq     = round($total * $dpPct / 100, 2);
-$verified  = (float) $pay['verified'];
-$pending   = (float) $pay['pending'];
-$confirmed = $verified + 0.001 >= $dpReq;
-
-if ($confirmed) {
-    $paymentStatus = $dpPct . '% Deposit Received (' . peso($verified) . ')';
-} elseif ($pending > 0) {
-    $paymentStatus = 'Pending Verification (' . peso($pending) . ')';
-} else {
-    $paymentStatus = 'Awaiting ' . $dpPct . '% Deposit (' . peso(0) . ')';
-}
-
-/* ---------- Order journey tracker ---------- */
-// orders.stage = the step currently in progress (1-5); 6 = every step finished.
-// Until the downpayment is verified the tracker stays on step 1.
-$stage = $confirmed ? max((int) $order['stage'], 2) : 1;
-$steps = [
-    1 => 'Payment Verified',
-    2 => 'In Production',
-    3 => 'Quality Check',
-    4 => 'Ready for Delivery/Pick up',
-    5 => 'Delivered',
-];
-function step_class(int $n, int $stage): string
-{
-    return $n < $stage ? 'done' : ($n === $stage ? 'current' : '');
-}
-
-$crumbRef = $order['quote_ref'] ?? $order['order_no'];
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title><?= $confirmed ? 'Order Confirmation' : 'Order Pending' ?> | R&amp;R Sweet Bites</title>
+<title>Order Confirmation | R&amp;R Sweet Bites</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@400;500;600&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
@@ -95,10 +30,7 @@ html,body{background:var(--bg)}
 body{font-family:var(--font-text);color:var(--ink);min-height:100vh;display:flex;flex-direction:column}
 a{color:inherit;text-decoration:none}
 
-/* ---------- Header ----------
-   Phone layout: sizes & positions measured from the Figma frame
-   (brand left, nav centred, bell + avatar right).
-   >=900px: design-system sizes (1.35rem brand, 1rem nav, 2rem gaps, 5% margins). */
+/* ---------- Header ---------- */
 .topbar{
   line-height:1.3;
   position:sticky;top:env(safe-area-inset-top,0px);z-index:10;
@@ -124,7 +56,6 @@ a{color:inherit;text-decoration:none}
 }
 .nav a{position:relative;display:block;color:var(--color-text-dark);white-space:nowrap;transition:color .15s;}
 .nav a:hover{color:var(--color-primary);}
-/* active link: text sits ~4px higher with a 1px pink underline below it, as in Figma */
 .nav a.active{transform:translateY(-4px);}
 .nav a.active::after{
   content:"";position:absolute;left:0;right:0;bottom:-2.5px;height:1px;background:var(--color-primary);
@@ -139,7 +70,6 @@ a{color:inherit;text-decoration:none}
   display:grid;place-items:center;
   font-family:var(--font-nav);font-weight:600;font-size:8px;
 }
-/* keep nav truly centred once there is room for three equal columns */
 @media (min-width:440px){
   .topbar{grid-template-columns:1fr auto 1fr;}
 }
@@ -156,7 +86,6 @@ a{color:inherit;text-decoration:none}
   .bell{width:1.25rem;height:1.25rem;}
   .avatar{width:2.25rem;height:2.25rem;font-size:var(--text-sm);}
 }
-
 
 /* Main */
 main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:18px 32px 80px}
@@ -184,6 +113,7 @@ h1{font-family:var(--font-head);font-weight:700;font-size:28px;color:var(--ink)}
 .sum-head{display:flex;justify-content:space-between;align-items:center}
 .sum-head h2{font-family:var(--font-head);font-weight:600;font-size:15px;color:var(--ink)}
 .tag{background:#E9EFE5;color:var(--green);font-size:8px;font-weight:600;letter-spacing:.05em;padding:3px 8px;border-radius:5px}
+.tag.pending-tag{background:rgba(214,168,95,.2);color:#B98733}
 .rows{margin-top:20px;display:grid;gap:11px}
 .row{display:flex;justify-content:space-between;font-size:9px}
 .row span{color:var(--muted)}
@@ -191,6 +121,8 @@ h1{font-family:var(--font-head);font-weight:700;font-size:28px;color:var(--ink)}
 .divider{border:0;border-top:1px solid var(--line);margin:18px 0 12px}
 .style-label{font-size:7px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:#7A5650}
 .style-text{margin-top:6px;font-size:9px;font-weight:600;line-height:1.55;color:var(--ink)}
+
+.state-msg{padding:60px 16px;text-align:center;color:var(--muted);font-size:12px}
 
 /* Footer */
 footer{background:var(--line);text-align:center;padding:18px 16px 14px}
@@ -209,7 +141,6 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px}
   .step{flex:1 1 100%}
   .summary{max-width:100%}
 }
-.tag.pending-tag{background:rgba(214,168,95,.2);color:#B98733}
 </style>
 </head>
 <body>
@@ -217,68 +148,62 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px}
 <header class="topbar">
   <a class="brand" href="#" aria-label="R&R Sweet Bites home">
     <span class="logo" aria-hidden="true">
-      <img src="" alt="">
+      <img src="Images-Icons\R&R Logo.jpg" alt="">
     </span>
     <span class="brand-name">R&amp;R Sweet Bites</span>
   </a>
   <nav class="nav" aria-label="Main">
-    <a href="#">Home</a>
-    <a href="#">Gallery</a>
-    <a href="#">Submit Request</a>
-    <a href="#" class="active" aria-current="page">My Order</a>
-    <a href="#">Messages</a>
+    <a href="home.html">Home</a>
+    <a href="Cake-Gallery.html">Gallery</a>
+    <a href="Weekly-Availability.html">Submit Request</a>
+    <a href="Customer_Orders.html" class="active" aria-current="page">My Order</a>
+    <a href="messages.html">Messages</a>
   </nav>
   <div class="actions">
     <span class="bell" role="img" aria-label="Notifications">
-      <img src="" alt="">
+      <img src="Images-Icons\bell-icon.png" alt="">
       <i></i>
     </span>
-    <span class="avatar"><?= e($order['client_initials']) ?></span>
+    <span class="avatar" id="avatar"></span>
   </div>
 </header>
 
 <main>
-  <p class="crumbs"><a href="#">My Orders</a> / Quotation Detail / #<?= e($crumbRef) ?></p>
+  <p class="crumbs"><a href="#">My Orders</a> / Quotation Detail / #<span id="crumbRef"></span></p>
 
-  <section class="hero">
-    <div class="check" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
-    </div>
-    <?php if ($confirmed): ?>
-    <h1>Your Order is Confirmed!</h1>
-    <p>Thank you, <?= e($order['client_initials']) ?>! We will now proceed with making your cake.</p>
-    <?php else: ?>
-    <h1>Waiting for Your Downpayment</h1>
-    <p>Hi <?= e($order['client_initials']) ?>! We will start on your cake once your <?= $dpPct ?>% downpayment is verified.</p>
-    <?php endif; ?>
-  </section>
+  <p class="state-msg" id="loading">Loading order…</p>
 
-  <section class="card tracker" aria-label="Order journey tracker">
-    <div class="eyebrow">Order Journey Tracker</div>
-    <div class="steps">
-      <?php foreach ($steps as $n => $label): ?>
-      <div class="step <?= step_class($n, $stage) ?>"><span class="n"><?= $n ?></span><?= e($label) ?></div><?php if ($n < count($steps)): ?><span class="sep">&gt;</span><?php endif; ?>
+  <div id="content" hidden>
+    <section class="hero">
+      <div class="check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </div>
+      <h1 id="heroTitle"></h1>
+      <p id="heroText"></p>
+    </section>
 
-      <?php endforeach; ?>
-    </div>
-  </section>
+    <section class="card tracker" aria-label="Order journey tracker">
+      <div class="eyebrow">Order Journey Tracker</div>
+      <div class="steps" id="steps"></div>
+    </section>
 
-  <section class="card summary" aria-label="Order summary">
-    <div class="sum-head">
-      <h2>Order Summary</h2>
-      <span class="tag<?= $confirmed ? '' : ' pending-tag' ?>"><?= $confirmed ? 'CONFIRMED' : 'PENDING' ?></span>
-    </div>
-    <div class="rows">
-      <div class="row"><span>Order Number</span><b>#<?= e($order['order_no']) ?></b></div>
-      <div class="row"><span>Order Date</span><b><?= e(fmt_date($order['order_date'])) ?></b></div>
-      <div class="row"><span>Payment Status</span><b><?= e($paymentStatus) ?></b></div>
-      <div class="row"><span>Total Quotation Amount</span><b><?= e(peso($total)) ?></b></div>
-      <div class="row"><span>Est. Delivery Date</span><b><?= e(fmt_date($order['est_delivery_date'])) ?></b></div>
-    </div>
-    <hr class="divider">
-    <div class="style-label">Selected Cake Style</div>
-    <p class="style-text"><?= e($order['cake_style']) ?></p>
-  </section>
+    <section class="card summary" aria-label="Order summary">
+      <div class="sum-head">
+        <h2>Order Summary</h2>
+        <span class="tag" id="tag"></span>
+      </div>
+      <div class="rows">
+        <div class="row"><span>Order Number</span><b>#<span id="orderNo"></span></b></div>
+        <div class="row"><span>Order Date</span><b id="orderDate"></b></div>
+        <div class="row"><span>Payment Status</span><b id="paymentStatus"></b></div>
+        <div class="row"><span>Total Quotation Amount</span><b id="total"></b></div>
+        <div class="row"><span>Est. Delivery Date</span><b id="estDelivery"></b></div>
+      </div>
+      <hr class="divider">
+      <div class="style-label">Selected Cake Style</div>
+      <p class="style-text" id="cakeStyle"></p>
+    </section>
+  </div>
 </main>
 
 <footer>
@@ -289,6 +214,74 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px}
   </div>
   <p class="copy">© 2019 R&amp;R Sweet Bites. All Rights Reserved.</p>
 </footer>
+
+<script>
+(function () {
+  var API   = 'order-confirmation.php';
+  var order = new URLSearchParams(location.search).get('order') || '';
+  var $ = function (id) { return document.getElementById(id); };
+
+  function render(d) {
+    document.title = (d.confirmed ? 'Order Confirmation' : 'Order Pending') + ' | R&R Sweet Bites';
+    $('avatar').textContent = d.client_initials;
+    $('crumbRef').textContent = d.crumb_ref;
+
+    if (d.confirmed) {
+      $('heroTitle').textContent = 'Your Order is Confirmed!';
+      $('heroText').textContent = 'Thank you, ' + d.client_initials + '! We will now proceed with making your cake.';
+    } else {
+      $('heroTitle').textContent = 'Waiting for Your Downpayment';
+      $('heroText').textContent = 'Hi ' + d.client_initials + '! We will start on your cake once your '
+        + d.downpayment_percent + '% downpayment is verified.';
+    }
+
+    // Order journey tracker
+    var wrap = $('steps');
+    wrap.textContent = '';
+    d.steps.forEach(function (s, i) {
+      var step = document.createElement('div');
+      step.className = 'step' + (s.state ? ' ' + s.state : '');
+      var n = document.createElement('span');
+      n.className = 'n';
+      n.textContent = s.n;
+      step.appendChild(n);
+      step.appendChild(document.createTextNode(s.label));
+      wrap.appendChild(step);
+      if (i < d.steps.length - 1) {
+        var sep = document.createElement('span');
+        sep.className = 'sep';
+        sep.textContent = '>';
+        wrap.appendChild(sep);
+      }
+    });
+
+    // Order summary
+    var tag = $('tag');
+    tag.className = 'tag' + (d.confirmed ? '' : ' pending-tag');
+    tag.textContent = d.confirmed ? 'CONFIRMED' : 'PENDING';
+    $('orderNo').textContent = d.order_no;
+    $('orderDate').textContent = d.order_date;
+    $('paymentStatus').textContent = d.payment_status;
+    $('total').textContent = d.total;
+    $('estDelivery').textContent = d.est_delivery_date;
+    $('cakeStyle').textContent = d.cake_style;
+
+    $('loading').hidden = true;
+    $('content').hidden = false;
+  }
+
+  var url = API + (order ? '?order=' + encodeURIComponent(order) : '');
+  fetch(url, { headers: { 'Accept': 'application/json' } })
+    .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+    .then(function (res) {
+      if (!res.ok) throw new Error(res.body.error || 'Could not load the order.');
+      render(res.body);
+    })
+    .catch(function (e) {
+      $('loading').textContent = e.message || 'Could not load the order.';
+    });
+})();
+</script>
 
 </body>
 </html>
