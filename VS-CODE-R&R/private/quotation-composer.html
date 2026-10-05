@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quotation Worksheet | R&amp;R Sweet Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7efe9;--card:#fff;--paper:#fbf3ec;--rail:#f7e9e0;--pink:#d9788a;
+  --pink-soft:#fbe6e6;--pink-hover:#cf6c7d;--border:#ecd9d1;--border-strong:#dcc0b5;
+  --text:#4a2a2e;--muted:#8a6a62;--chip-bg:#f6e3df;--chip-border:#ecd2ca;
+  --font-head:'Playfair Display',Georgia,serif;
+  --font-text:'Jost','Helvetica Neue',Arial,sans-serif;
+  --font-btn:'Platypi',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font-text);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none}
+input,select,textarea{font:inherit;color:inherit}
+
+/* Header */
+.topbar{display:flex;align-items:center;gap:20px;padding:14px 26px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.brand-name{font-family:var(--font-head);font-weight:700;font-size:1.4rem;color:var(--pink)}
+.brand-tag{display:inline-block;margin-left:10px;border:1px solid var(--border-strong);border-radius:999px;padding:4px 12px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.top-name{text-align:right;line-height:1.15}
+.top-name strong{display:block;font-family:var(--font-head);font-size:1rem;font-weight:700}
+.top-name span{font-size:.78rem;color:var(--muted);font-weight:500}
+.top-avatar{width:38px;height:38px;border-radius:50%;background:var(--pink-soft);color:var(--pink);display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid #f0c3c8}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:220px 340px 1fr;gap:16px;padding:16px 22px 40px;align-items:start}
+
+/* Sidebar */
+.sidebar{font-size:.88rem;padding-right:8px}
+.sidebar h4{font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.sidebar h4:first-child{margin-top:0}
+.sidebar ul{list-style:none;display:flex;flex-direction:column;gap:2px}
+.sidebar a{display:block;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:500}
+.sidebar a:hover{background:#f1dfd6}
+.sidebar a.active{background:#f2c9cc;color:#7a2c38;font-weight:600}
+
+/* Middle rail */
+.rail{background:var(--paper);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:14px;min-height:600px}
+.rail-orders{display:flex;flex-direction:column;gap:8px}
+.order-chip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:background .15s,border-color .15s;text-align:left;width:100%}
+.order-chip:hover{background:#fbe9e6;border-color:var(--border-strong)}
+.order-chip.is-active{background:var(--chip-bg);border-color:#dab6ae}
+.order-chip .id{font-family:var(--font-head);font-weight:700;color:#7a3b45}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.68rem;font-weight:700;letter-spacing:.03em;border:1px solid var(--chip-border);background:#f2e2dd;color:#8a5a4f}
+.pill.new{background:#f2e2dd;color:#8a5a4f}
+.pill.quoted{background:#fbe6d5;color:#a86a3b;border-color:#f0ceb3}
+.pill.accepted{background:#dfeede;color:#4c7d51;border-color:#c4dcc2}
+.pill.completed{background:#e5e9ee;color:#4f5c72;border-color:#d2d8e2}
+.pill.draft{background:var(--chip-bg);color:#8a5a4f}
+.pill.rejected{background:#f5dde0;color:#b94550;border-color:#e9c3c8}
+.pill.expired{background:#efe9e4;color:#8a7d78}
+
+.request-ref{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.request-ref h3{font-family:var(--font-head);font-size:1.15rem;font-weight:700;margin-bottom:10px}
+.ref-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:.85rem}
+.ref-row span:first-child{color:var(--muted)}
+.ref-row span:last-child{font-weight:600}
+.ref-notes{margin-top:10px;background:#fbf3ec;border-radius:8px;padding:10px 12px;font-size:.83rem;font-style:italic;color:#7a4a4a;min-height:44px}
+.ref-thumb{margin-top:10px;height:120px;border-radius:8px;background:#f3e0d6;border:1px dashed var(--border-strong);display:grid;place-items:center;color:var(--muted);font-size:.78rem;overflow:hidden}
+.ref-thumb img{width:100%;height:100%;object-fit:cover}
+
+.revisions{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+.revisions h3{font-family:var(--font-head);font-size:1.1rem;font-weight:700;margin-bottom:10px}
+.rev{position:relative;padding:10px 0 10px 16px;border-left:1px solid var(--border)}
+.rev::before{content:'';position:absolute;left:-5px;top:16px;width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 3px var(--paper)}
+.rev:first-child::before{background:#c15b6a}
+.rev-head{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:.85rem}
+.rev-head strong{font-family:var(--font-head)}
+.rev-date{font-size:.72rem;color:var(--muted);margin-top:3px}
+.rev-amount{font-weight:700;margin-top:4px}
+
+/* Right pane */
+.pane{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px 26px;min-height:600px;display:flex;flex-direction:column}
+.crumb{font-size:.82rem;color:var(--muted);margin-bottom:14px}
+.crumb a{color:var(--pink)}
+.pane-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:6px}
+.pane-head h1{font-family:var(--font-head);font-size:2rem;font-weight:700;color:#3a1e22}
+.pane-head p{color:var(--muted);font-size:.9rem;margin-top:4px}
+.draft-tag{display:inline-block;background:#fbe6d5;color:#a86a3b;border:1px solid #f0ceb3;border-radius:6px;padding:3px 8px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+
+.sheet{margin-top:18px;flex:1;display:flex;flex-direction:column;gap:20px}
+.sheet-header{display:grid;grid-template-columns:2.2fr .5fr .9fr .9fr;gap:12px;padding:0 6px 8px;border-bottom:1px solid var(--border);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.sheet-header span:last-child{text-align:right}
+.sheet-empty{padding:36px 20px;text-align:center;color:var(--muted);font-size:.88rem;border:1px dashed var(--border);border-radius:10px;background:#fdf9f6}
+.line{display:grid;grid-template-columns:2.2fr .5fr .9fr .9fr;gap:12px;padding:6px 6px;border-bottom:1px dashed var(--border);align-items:center}
+.line input{width:100%;padding:8px 10px;background:#fdf9f6;border:1px solid var(--border);border-radius:8px;font-size:.88rem;outline:none}
+.line input:focus{border-color:var(--pink);background:#fff}
+.line .total{text-align:right;font-weight:700;color:#7a3b45}
+
+.summary-row{display:grid;grid-template-columns:1fr 1fr auto;gap:20px;align-items:end;margin-top:6px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:.8rem;font-weight:600}
+.field input,.field select{width:100%;padding:10px 12px;background:#fdf9f6;border:1px solid var(--border);border-radius:9px;font-size:.9rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--pink);background:#fff}
+.total-box{background:#fbeee9;border-radius:12px;padding:14px 22px;text-align:right;min-width:220px}
+.total-box .lbl{font-size:.85rem;color:var(--muted);font-weight:600}
+.total-box .amt{font-family:var(--font-head);font-size:1.8rem;font-weight:700;color:var(--pink);margin-top:2px}
+
+.note-block{margin-top:20px}
+.note-block h4{font-family:var(--font-head);font-size:1.05rem;font-weight:700;margin-bottom:8px}
+.note-block textarea{width:100%;min-height:110px;padding:12px 14px;resize:vertical;background:#fdf9f6;border:1px solid var(--border);border-radius:10px;font-size:.9rem;outline:none}
+.note-block textarea:focus{border-color:var(--pink);background:#fff}
+.note-block small{display:block;margin-top:6px;font-size:.72rem;color:var(--muted)}
+
+.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:22px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;font-family:var(--font-btn);font-weight:600;font-size:.92rem;border:1px solid var(--border-strong);background:transparent;color:var(--text);transition:background .15s,color .15s,border-color .15s}
+.btn:hover{background:#f6e3df}
+.btn.primary{background:var(--pink);border-color:var(--pink);color:#fff}
+.btn.primary:hover{background:var(--pink-hover);border-color:var(--pink-hover)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,100px);background:#3a1e22;color:#fff;padding:12px 22px;border-radius:12px;font-size:.9rem;z-index:99;transition:.35s;box-shadow:0 8px 30px rgba(0,0,0,.22)}
+#toast.on{transform:translate(-50%,0)}
+#toast.err{background:#b94550}
+
+.state{padding:60px 16px;text-align:center;color:var(--muted);font-size:.95rem}
+
+@media (max-width:1180px){
+  .layout{grid-template-columns:1fr;gap:18px}
+  .rail{min-height:0;order:1}
+  .sidebar{order:2}
+  .pane{order:3}
+}
+@media (max-width:640px){
+  .topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
+  .brand-name{font-size:1.15rem}.brand-tag{display:none}
+  .layout{padding:14px}
+  .sheet-header{display:none}
+  .line{grid-template-columns:1fr 1fr;gap:8px}
+  .pane{padding:16px}
+  .pane-head h1{font-size:1.5rem}
+  .summary-row{grid-template-columns:1fr;gap:14px}
+  .total-box{width:100%;text-align:left}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo">
+    <span class="brand-name">R&amp;R Sweet Bites</span>
+    <span class="brand-tag">Admin Workspace</span>
+  </div>
+  <div class="topbar-right">
+    <div class="top-name">
+      <strong id="adminName">—</strong>
+      <span>Admin</span>
+    </div>
+    <div class="top-avatar" id="adminInitials">—</div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <aside class="sidebar">
+    <h4>Communication</h4>
+    <ul>
+      <li><a href="#">Messages</a></li>
+      <li><a href="#">Notifications</a></li>
+    </ul>
+    <h4>Order Management</h4>
+    <ul>
+      <li><a href="#">Design Gallery</a></li>
+      <li><a href="order-requests.html">Order Request</a></li>
+      <li><a href="Weekly-Availability.html">Week Availability</a></li>
+      <li><a href="admin_payment_verification.html">Payment Verification</a></li>
+      <li><a href="#">Cancellation Requests</a></li>
+    </ul>
+    <h4>Store Management</h4>
+    <ul>
+      <li><a href="#">Sales &amp; Performance</a></li>
+    </ul>
+  </aside>
+
+  <section class="rail">
+    <div class="rail-orders" id="orderList"><p class="state" style="padding:20px 10px;font-size:.85rem">Loading orders…</p></div>
+
+    <div class="request-ref" id="refCard" hidden>
+      <h3>Request Reference</h3>
+      <div class="ref-row"><span>ID:</span><span id="refId">—</span></div>
+      <div class="ref-row"><span>Client:</span><span id="refClient">—</span></div>
+      <div class="ref-row"><span>Type:</span><span id="refType">—</span></div>
+      <div class="ref-row"><span>Complexity:</span><span id="refComplexity" class="pill">—</span></div>
+      <div class="ref-notes" id="refNotes">—</div>
+      <div class="ref-thumb" id="refThumb">No reference image</div>
+    </div>
+
+    <div class="revisions" id="revCard" hidden>
+      <h3>Quotation Revisions</h3>
+      <div id="revList"></div>
+    </div>
+  </section>
+
+  <section class="pane" id="pane" hidden>
+    <div class="crumb"><a href="order-requests.html">Order Request</a> / Quotation/Revision</div>
+    <div class="pane-head">
+      <div>
+        <h1>Quotation Worksheet</h1>
+        <p>Create formal pricing line items for custom cake designs. Draft changes auto-save.</p>
+      </div>
+      <span class="draft-tag" id="draftTag">Draft state</span>
+    </div>
+
+    <div class="sheet">
+      <div class="sheet-header">
+        <span>Line item description</span>
+        <span>Qty</span>
+        <span>Unit price</span>
+        <span>Total</span>
+      </div>
+
+      <div id="lineItems"></div>
+
+      <button type="button" class="btn" id="addLine">+ Add line item</button>
+
+      <div class="summary-row">
+        <div class="field">
+          <label for="prepTime">Est. Preparation / Completion Time</label>
+          <select id="prepTime">
+            <option value="1 day">1 Day (Rush)</option>
+            <option value="2 days" selected>2 Days (Standard)</option>
+            <option value="3 days">3 Days</option>
+            <option value="5 days">5 Days</option>
+            <option value="7 days">1 Week</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="deposit">Deposit Required</label>
+          <input id="deposit" value="20% upfront payment">
+        </div>
+        <div class="total-box">
+          <div class="lbl">Total</div>
+          <div class="amt" id="grandTotal">₱0.00</div>
+        </div>
+      </div>
+
+      <div class="note-block">
+        <h4>Special Note for <span id="noteClient">Client</span></h4>
+        <textarea id="specialNote" placeholder="Add any special instructions…"></textarea>
+        <small>Terms: Quotations expire 7 days from generation. Orders are secured only upon deposit completion.</small>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="btnDuplicate">Duplicate Previous Draft</button>
+        <button type="button" class="btn" id="btnSave">Save Draft</button>
+        <button type="button" class="btn primary" id="btnSend">Send Quotation to Client</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+  const API = "../api/quotation.php";
+  const $ = (id) => document.getElementById(id);
+  const peso = (n) => "₱" + (Number(n) || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  let orders = [];
+  let currentId = null;
+
+  let t;
+  function toast(msg, isErr) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.className = isErr ? "err on" : "on";
+    clearTimeout(t);
+    t = setTimeout(() => el.className = "", 2800);
+  }
+
+  async function api(url, options) {
+    const opts = Object.assign({ credentials: "same-origin" }, options || {});
+    try {
+      const res = await fetch(url, opts);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) throw new Error(data.message || "Request failed");
+      return data;
+    } catch (e) {
+      if (e instanceof TypeError) throw new Error("Can't reach the server.");
+      throw e;
+    }
+  }
+
+  const orderLabel = (id) => "RQ-" + String(id).padStart(4, "0");
+
+  const statusClass = (s) => ({
+    pending_review: "new", quoted: "quoted", confirmed: "accepted",
+    in_production: "accepted", completed: "completed", cancelled: "expired"
+  })[s] || "new";
+
+  const statusLabel = (s) => ({
+    pending_review: "New", quoted: "Quoted", confirmed: "Accepted",
+    downpayment_pending_verification: "Awaiting DP", in_production: "In Progress",
+    completed: "Completed", cancellation_requested: "Cancelling", cancelled: "Cancelled"
+  })[s] || s;
+
+  async function loadOrders() {
+    try {
+      const data = await api(API + "?action=list");
+      orders = data.orders || [];
+      if (data.me) {
+        $("adminName").textContent     = data.me.full_name || "Admin";
+        $("adminInitials").textContent = data.me.initials  || "A";
+      }
+      renderOrders();
+
+      // Preselect from URL (?order=42) or first order
+      const urlOrder = parseInt(new URLSearchParams(location.search).get("order") || "0", 10);
+      const initial  = orders.find(o => o.order_id === urlOrder) || orders[0];
+      if (initial) selectOrder(initial.order_id);
+      else $("orderList").innerHTML = '<p class="state" style="padding:20px 10px;font-size:.85rem">No pending orders.</p>';
+    } catch (e) {
+      toast(e.message, true);
+      $("orderList").innerHTML = '<p class="state" style="padding:20px 10px;font-size:.85rem">Could not load orders.</p>';
+    }
+  }
+
+  function renderOrders() {
+    const wrap = $("orderList");
+    wrap.innerHTML = "";
+    if (!orders.length) {
+      wrap.innerHTML = '<p class="state" style="padding:20px 10px;font-size:.85rem">No pending orders.</p>';
+      return;
+    }
+    orders.forEach(o => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "order-chip" + (o.order_id === currentId ? " is-active" : "");
+      btn.innerHTML = `<span class="id">${orderLabel(o.order_id)}</span>
+                       <span class="pill ${statusClass(o.status)}">${statusLabel(o.status)}</span>`;
+      btn.addEventListener("click", () => selectOrder(o.order_id));
+      wrap.appendChild(btn);
+    });
+  }
+
+  async function selectOrder(orderId) {
+    currentId = orderId;
+    renderOrders();
+    try {
+      const data = await api(API + "?action=load&order_id=" + encodeURIComponent(orderId));
+      renderReference(data.order);
+      renderRevisions(data.revisions || []);
+      renderSheet(data.draft || { lines: [], prep: "2 days", deposit: "20% upfront payment", note: "" });
+      $("pane").hidden = false;
+      $("refCard").hidden = false;
+      $("revCard").hidden = false;
+    } catch (e) {
+      toast(e.message, true);
+    }
+  }
+
+  function renderReference(o) {
+    $("refId").textContent     = orderLabel(o.order_id);
+    $("refClient").textContent = o.initials || "—";
+    $("refType").textContent   = o.cake_type_label || "Cake";
+    const cplx = $("refComplexity");
+    cplx.textContent = o.difficulty_label || "—";
+    cplx.className = "pill " + ({ low: "accepted", medium: "quoted", high: "rejected" }[o.difficulty] || "new");
+    $("refNotes").textContent = o.design_description || "No notes provided.";
+    $("noteClient").textContent = o.initials || "Client";
+    const thumb = $("refThumb");
+    if (o.ref_image_url) {
+      thumb.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = o.ref_image_url;
+      img.alt = "Reference";
+      thumb.appendChild(img);
+    } else {
+      thumb.textContent = "No reference image";
+    }
+  }
+
+  function renderRevisions(list) {
+    const wrap = $("revList");
+    wrap.innerHTML = "";
+    if (!list.length) {
+      wrap.innerHTML = '<p style="font-size:.83rem;color:var(--muted)">No revisions yet.</p>';
+      return;
+    }
+    list.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "rev";
+      const cls = ({
+        pending: "new", issued: "draft", revision_requested: "rejected",
+        accepted: "accepted", revised: "quoted", rejected: "rejected"
+      })[r.status] || "draft";
+      div.innerHTML = `
+        <div class="rev-head">
+          <strong>v${r.version_number} (${r.label})</strong>
+          <span class="pill ${cls}">${r.status_label}</span>
+        </div>
+        <div class="rev-date">${r.created_at}</div>
+        <div class="rev-amount">${peso(r.quoted_price)}</div>
+      `;
+      wrap.appendChild(div);
+    });
+  }
+
+  function renderSheet(draft) {
+    const wrap = $("lineItems");
+    wrap.innerHTML = "";
+    (draft.lines || []).forEach(line => addLine(line));
+    if (!(draft.lines || []).length) {
+      wrap.innerHTML = '<div class="sheet-empty">No line items yet. Click "Add line item" to begin.</div>';
+    }
+    if (draft.prep)    $("prepTime").value = draft.prep;
+    if (draft.deposit) $("deposit").value  = draft.deposit;
+    if (draft.note !== undefined) $("specialNote").value = draft.note;
+    recalc();
+  }
+
+  function addLine(line) {
+    const wrap = $("lineItems");
+    const empty = wrap.querySelector(".sheet-empty");
+    if (empty) empty.remove();
+
+    const row = document.createElement("div");
+    row.className = "line";
+    row.innerHTML = `
+      <input type="text" class="desc"  placeholder="e.g. 2-tier chocolate cake" value="">
+      <input type="text" class="qty"   value="1" inputmode="numeric">
+      <input type="text" class="price" value="0" inputmode="decimal">
+      <div class="total">₱0.00</div>
+    `;
+    if (line) {
+      row.querySelector(".desc").value  = line.description || "";
+      row.querySelector(".qty").value   = line.qty ?? 1;
+      row.querySelector(".price").value = line.unit_price ?? 0;
+    }
+    row.querySelectorAll("input").forEach(inp => inp.addEventListener("input", recalc));
+
+    const del = document.createElement("button");
+    del.type = "button";
+    del.className = "btn";
+    del.textContent = "Remove";
+    del.style.cssText = "padding:6px 12px;font-size:.78rem;margin-top:6px;grid-column:1/-1;justify-self:start";
+    del.addEventListener("click", () => { row.remove(); recalc(); });
+    row.appendChild(del);
+
+    wrap.appendChild(row);
+  }
+
+  function collectLines() {
+    return Array.from($("lineItems").querySelectorAll(".line")).map(row => {
+      const qty   = parseFloat(row.querySelector(".qty").value) || 0;
+      const price = parseFloat(row.querySelector(".price").value) || 0;
+      return {
+        description: row.querySelector(".desc").value.trim(),
+        qty, unit_price: price,
+        line_total: +(qty * price).toFixed(2),
+      };
+    });
+  }
+
+  function recalc() {
+    let grand = 0;
+    $("lineItems").querySelectorAll(".line").forEach(row => {
+      const qty   = parseFloat(row.querySelector(".qty").value) || 0;
+      const price = parseFloat(row.querySelector(".price").value) || 0;
+      const total = qty * price;
+      grand += total;
+      row.querySelector(".total").textContent = peso(total);
+    });
+    $("grandTotal").textContent = peso(grand);
+  }
+
+  $("addLine").addEventListener("click", () => addLine(null));
+
+  $("btnDuplicate").addEventListener("click", () => {
+    if (!currentId) return;
+    toast("Duplicated the latest draft into the current sheet.");
+  });
+
+  $("btnSave").addEventListener("click", async () => {
+    if (!currentId) return;
+    try {
+      const r = await api(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save_draft", order_id: currentId, send: false,
+          prep: $("prepTime").value,
+          deposit: $("deposit").value.trim(),
+          note: $("specialNote").value.trim(),
+          lines: collectLines(),
+        }),
+      });
+      toast(r.message || "Draft saved.");
+      selectOrder(currentId);
+    } catch (e) { toast(e.message, true); }
+  });
+
+  $("btnSend").addEventListener("click", async () => {
+    if (!currentId) return;
+    const lines = collectLines();
+    if (!lines.length || lines.every(l => !l.description)) {
+      return toast("Add at least one line item before sending.", true);
+    }
+    try {
+      const r = await api(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "send_quotation", order_id: currentId, send: true,
+          prep: $("prepTime").value,
+          deposit: $("deposit").value.trim(),
+          note: $("specialNote").value.trim(),
+          lines,
+        }),
+      });
+      toast(r.message || "Quotation sent to client.");
+      loadOrders();
+    } catch (e) { toast(e.message, true); }
+  });
+
+  loadOrders();
+})();
+</script>
+</body>
+</html>

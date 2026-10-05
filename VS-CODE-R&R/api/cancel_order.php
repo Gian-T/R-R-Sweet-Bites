@@ -1,11 +1,14 @@
 <?php
-require 'db_connect.php';
+require_once __DIR__ . '/../includes/db_connect.php';
 
 json_header();
 $db  = db_mysqli();
 $cid = CUSTOMER_ID;   // bind_param needs a variable, not a constant
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_fail('POST only.', 405);
+
+// CSRF check — accept token from header or form body
+if (!csrf_ok()) json_fail('Invalid or missing CSRF token.', 403);
 
 $oid     = parse_id($_POST['order_id'] ?? '');
 $reason  = $_POST['reason'] ?? '';
@@ -29,14 +32,22 @@ if (!$o) json_fail('Order not found.', 404);
 if (!in_array($o['status'], ['confirmed', 'downpayment_pending_verification', 'in_production'], true))
   json_fail('This order can no longer be cancelled.');
 
-$db->begin_transaction();
-$ins = $db->prepare("INSERT INTO cancellation (order_id, reason, details, refund_method, account_number, account_holder)
-                     VALUES (?, ?, ?, ?, ?, ?)");
-$ins->bind_param('isssss', $oid, $reason, $details, $pm, $acc, $holder);
-$ins->execute();
-$up = $db->prepare("UPDATE `order` SET status = 'cancellation_requested' WHERE order_id = ?");
-$up->bind_param('i', $oid);
-$up->execute();
-$db->commit();
+try {
+  $db->begin_transaction();
+  $ins = $db->prepare("INSERT INTO cancellation (order_id, reason, details, refund_method, account_number, account_holder)
+                      VALUES (?, ?, ?, ?, ?, ?)");
+  $ins->bind_param('isssss', $oid, $reason, $details, $pm, $acc, $holder);
+  $ins->execute();
+  $up = $db->prepare("UPDATE `order` SET status = 'cancellation_requested' WHERE order_id = ?");
+  $up->bind_param('i', $oid);
+  $up->execute();
+  $db->commit();
+
+} catch (Throwable $e){
+  $db->rollback();
+    error_log('Cancel order failed: ' . $e->getMessage());
+    json_fail('Could not submit cancellation request.', 500);
+}
+
 
 echo json_encode(['ok' => true]);

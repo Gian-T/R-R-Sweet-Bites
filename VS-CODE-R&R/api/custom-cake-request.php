@@ -1,9 +1,12 @@
 <?php
 
 declare(strict_types=1);
+ini_set('display_errors', '0');   // never leak HTML into JSON
+error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+
 
 function respond(int $status, array $payload): never
 {
@@ -20,6 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+require_once __DIR__ . '/../includes/db_connect.php'; 
+
+$customerId = filter_var($_SESSION['customer_id'] ?? CUSTOMER_ID, FILTER_VALIDATE_INT);
 
 $customerId = filter_var($_SESSION['customer_id'] ?? null, FILTER_VALIDATE_INT);
 if (!$customerId) {
@@ -27,8 +33,8 @@ if (!$customerId) {
 }
 
 $sessionToken = $_SESSION['csrf_token'] ?? '';
-$submittedToken = $_POST['csrf_token'] ?? '';
-if (!is_string($sessionToken) || !is_string($submittedToken) || !hash_equals($sessionToken, $submittedToken)) {
+$submittedToken = $_POST['csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
+if (!csrf_ok()) {
     respond(403, ['success' => false, 'error' => 'Your session expired. Refresh the page and try again.']);
 }
 

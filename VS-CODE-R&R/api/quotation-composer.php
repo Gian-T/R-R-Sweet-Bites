@@ -1,148 +1,284 @@
 <?php
 declare(strict_types=1);
+
 /**
- * Backend for quotation-composer.html
- *   GET  quotation-composer.php?ref=Q-2024-0847  -> quotation data as JSON
- *   POST quotation-composer.php?ref=...          -> action=accept | revision (+ message, csrf)
+ * api/quotation.php — Quotation worksheet endpoint for the admin workspace.
+ *
+ * Requires: admin session ($_SESSION['admin_id'], $_SESSION['role'] === 'admin')
+ *
+ * GET  ?action=list
+ *      ?action=load&order_id=42
+ * POST { action: "save_draft" | "send_quotation", order_id, prep, deposit, note, lines[] }
+ *
+ * Response: JSON { ok: true|false, ... } with 200/4xx/5xx
  */
-require __DIR__ . '/../includes/db_connect.php';
 
-header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
-function out(array $data, int $code = 200): void
+/* ---------- Auth guard: admin only ---------- */
+if (($_SESSION['role'] ?? '') !== 'admin' || empty($_SESSION['admin_id'])) {
+    json_out(['ok' => false, 'message' => 'Admin login required.'], 401);
+}
+$adminId = (int) $_SESSION['admin_id'];
+
+/* ---------- Helpers ---------- */
+
+function initials(string $name): string
 {
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    exit;
+    $parts = array_filter(preg_split('/\s+/', trim($name)));
+    $parts = array_slice($parts, 0, 2);
+    $out = '';
+    foreach ($parts as $p) $out .= mb_strtoupper(mb_substr($p, 0, 1));
+    return $out ?: 'A';
 }
 
-function load_quote(PDO $pdo, string $ref): ?array
+function cake_type_label(string $t): string
 {
-    $sql = 'SELECT q.*, c.initials AS client_initials, c.full_name AS client_name
-            FROM quotations q JOIN customers c ON c.id = q.customer_id ';
-    if ($ref !== '') {
-        $st = $pdo->prepare($sql . 'WHERE q.ref_no = ?');
-        $st->execute([$ref]);
-    } else {
-        $st = $pdo->query($sql . 'ORDER BY q.id DESC LIMIT 1');
-    }
+    return CAKE_TYPE[$t] ?? $t;
+}
+
+function difficulty_label(string $d): string
+{
+    return LEVEL[$d] ?? ucfirst($d);
+}
+
+function status_label(string $s): string
+{
+    return STATUS_LABEL[$s] ?? $s;
+}
+
+function load_admin(int $id): ?array
+{
+    $st = db()->prepare('SELECT admin_id, full_name FROM admin WHERE admin_id = ?');
+    $st->execute([$id]);
     return $st->fetch() ?: null;
 }
 
-function days_left(string $validUntil): int
+/** Returns orders in a sensible admin-view order. */
+function load_orders(): array
 {
-    return (int) floor((strtotime($validUntil) - strtotime('today')) / 86400);
+    $st = db()->query(
+        "SELECT o.order_id, o.status, o.cake_type, o.difficulty_level, o.design_description
+           FROM `order` o
+          WHERE o.status IN ('pending_review','quoted','confirmed','in_production','completed')
+          ORDER BY FIELD(o.status, 'pending_review','quoted','confirmed','in_production','completed'),
+                   o.order_id DESC"
+    );
+    return $st->fetchAll();
 }
 
-$pdo   = db();
-$ref   = trim((string) ($_GET['ref'] ?? ''));
-$quote = load_quote($pdo, $ref);
-if (!$quote) {
-    out(['error' => 'Quotation not found.'], 404);
-}
+/** Loads the details for the "Request Reference" card. */
+function load_order_detail(int $orderId): ?array
+{
+    $st = db()->prepare(
+        "SELECT o.order_id, o.customer_id, o.cake_type, o.difficulty_level,
+                o.design_description, o.design_intricacy_rating, o.status,
+                c.full_name
+           FROM `order` o
+           JOIN customer c ON c.customer_id = o.customer_id
+          WHERE o.order_id = ?"
+    );
+    $st->execute([$orderId]);
+    $row = $st->fetch();
+    if (!$row) return null;
 
-/* ---------- POST: Accept / Request Revision ---------- */
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = (string) ($_POST['action'] ?? '');
-    $errors = [];
-    $fieldErrors = [];
-    $okMessage = '';
+    // Reference image (first, if any)
+    $refImage = null;
+    try {
+        $img = db()->prepare('SELECT image_url FROM order_reference_image WHERE order_id = ? ORDER BY image_id LIMIT 1');
+        $img->execute([$orderId]);
+        $refImage = $img->fetchColumn() ?: null;
+    } catch (Throwable $e) { /* ignore */ }
 
-    if (!csrf_ok()) {
-        $errors[] = 'Your session expired. Please reload the page and try again.';
-    } elseif (!in_array($action, ['accept', 'revision'], true)) {
-        $errors[] = 'Unknown action.';
-    } else {
-        $pdo->beginTransaction();
-        // Re-read inside the transaction so a double-click cannot act twice.
-        $st = $pdo->prepare('SELECT status, valid_until FROM quotations WHERE id = ?');
-        $st->execute([$quote['id']]);
-        $cur = $st->fetch();
-
-        if ($cur['status'] !== 'issued') {
-            $errors[] = 'This quotation has already been responded to.';
-        } elseif (days_left($cur['valid_until']) < 0) {
-            $errors[] = 'This quotation has expired. Please submit a new request.';
-        } elseif ($action === 'accept') {
-            $pdo->prepare("UPDATE quotations SET status = 'accepted', accepted_at = NOW() WHERE id = ?")
-                ->execute([$quote['id']]);
-            $okMessage = 'Quotation accepted. Thank you!';
-        } else {
-            $msg = trim((string) ($_POST['message'] ?? ''));
-            $len = mb_strlen($msg);
-            if ($len < 5) {
-                $fieldErrors['message'] = 'Please describe the change you would like (at least 5 characters).';
-            } elseif ($len > 1000) {
-                $fieldErrors['message'] = 'Revision notes are limited to 1000 characters.';
-            } else {
-                $pdo->prepare('INSERT INTO quotation_revisions (quotation_id, message) VALUES (?, ?)')
-                    ->execute([$quote['id'], $msg]);
-                $pdo->prepare("UPDATE quotations SET status = 'revision_requested' WHERE id = ?")
-                    ->execute([$quote['id']]);
-                $okMessage = 'Revision requested. We will send you an updated quotation once it has been reviewed.';
-            }
-        }
-        ($errors || $fieldErrors) ? $pdo->rollBack() : $pdo->commit();
-    }
-
-    if ($errors || $fieldErrors) {
-        out(['ok' => false, 'errors' => $errors, 'fieldErrors' => (object) $fieldErrors]);
-    }
-    out(['ok' => true, 'message' => $okMessage]);
-}
-
-/* ---------- GET: data for the page ---------- */
-$st = $pdo->prepare('SELECT * FROM quotation_items WHERE quotation_id = ? ORDER BY sort_order, id');
-$st->execute([$quote['id']]);
-
-$items = [];
-$grand = 0.0;
-foreach ($st->fetchAll() as $it) {
-    $line = ($it['qty'] ?? 1) * (float) $it['unit_price'];
-    $grand += $line;
-    $items[] = [
-        'description' => $it['description'],
-        'qty'         => $it['qty'] === null ? null : (int) $it['qty'],
-        'unit_price'  => peso($it['unit_price']),
-        'line_total'  => peso($line),
+    return [
+        'order_id'           => (int) $row['order_id'],
+        'customer_id'        => (int) $row['customer_id'],
+        'client_name'        => $row['full_name'],
+        'initials'           => initials($row['full_name']),
+        'cake_type'          => $row['cake_type'],
+        'cake_type_label'    => cake_type_label($row['cake_type']),
+        'difficulty'         => $row['difficulty_level'],
+        'difficulty_label'   => difficulty_label($row['difficulty_level']),
+        'design_description' => $row['design_description'],
+        'status'             => $row['status'],
+        'ref_image_url'      => $refImage,
     ];
 }
 
-$left    = days_left($quote['valid_until']);
-$expired = $left < 0;
-$status  = ($quote['status'] === 'issued' && $expired) ? 'expired' : $quote['status'];
+/** Returns the list of quotations for the revision card. */
+function load_revisions(int $orderId): array
+{
+    $st = db()->prepare(
+        "SELECT quotation_id, quoted_price, version_number, status, created_at, remarks
+           FROM quotation
+          WHERE order_id = ?
+          ORDER BY version_number DESC"
+    );
+    $st->execute([$orderId]);
+    $rows = $st->fetchAll();
 
-$statusLabels = [
-    'issued'             => 'Quotation Issued',
-    'accepted'           => 'Accepted',
-    'revision_requested' => 'Revision Requested',
-    'expired'            => 'Expired',
-];
+    // Friendly label per status
+    $labels = [
+        'pending'            => 'Draft',
+        'accepted'           => 'Accepted',
+        'revision_requested' => 'Client Rejected',
+        'revised'            => 'Revised',
+        'rejected'           => 'Rejected',
+    ];
+    $out = [];
+    foreach ($rows as $r) {
+        $out[] = [
+            'quotation_id'   => (int) $r['quotation_id'],
+            'quoted_price'   => (float) $r['quoted_price'],
+            'version_number' => (int) $r['version_number'],
+            'status'         => $r['status'],
+            'status_label'   => $labels[$r['status']] ?? ucfirst($r['status']),
+            'label'          => $r['status'] === 'pending' ? 'Current Draft' : 'Revision',
+            'created_at'     => date('M j, Y, g:i A', strtotime($r['created_at'])),
+        ];
+    }
+    return $out;
+}
 
-$st = $pdo->prepare('SELECT message, created_at FROM quotation_revisions WHERE quotation_id = ? ORDER BY id DESC LIMIT 1');
-$st->execute([$quote['id']]);
-$rev = $st->fetch() ?: null;
+/* ---------- GET ---------- */
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
+    $action = $_GET['action'] ?? 'list';
+    try {
+        if ($action === 'list') {
+            $admin = load_admin($adminId);
+            json_out([
+                'ok'     => true,
+                'me'     => $admin ? [
+                    'admin_id' => (int) $admin['admin_id'],
+                    'full_name'=> $admin['full_name'],
+                    'initials' => initials($admin['full_name']),
+                ] : null,
+                'orders' => load_orders(),
+            ]);
+        }
 
-out([
-    'csrf'   => csrf_token(),
-    'quote'  => [
-        'ref_no'          => $quote['ref_no'],
-        'reference_id'    => $quote['reference_id'],
-        'client_initials' => $quote['client_initials'],
-        'admin_initials'  => $quote['admin_initials'],
-        'admin_notes'     => $quote['admin_notes'],
-        'complexity'      => $quote['complexity'],
-        'cake_type'       => $quote['cake_type'],
-        'cake_size'       => $quote['cake_size'],
-        'issued_at'       => fmt_date($quote['issued_at']),
-        'delivery_date'   => fmt_date($quote['delivery_date']),
-    ],
-    'items'           => $items,
-    'total'           => peso($grand),
-    'status'          => $status,
-    'status_label'    => $statusLabels[$status] ?? $status,
-    'can_act'         => $status === 'issued',
-    'validity_text'   => $expired ? 'Expired' : ($left === 0 ? 'Expires today' : $left . ($left === 1 ? ' Day' : ' Days') . ' Remaining'),
-    'expiry_line'     => ($expired ? 'Quotation expired on ' : 'Quotation expires on ') . fmt_date($quote['valid_until']) . '.',
-    'latest_revision' => $rev ? ['message' => $rev['message'], 'sent' => fmt_date($rev['created_at'])] : null,
-]);
+        if ($action === 'load') {
+            $orderId = (int) ($_GET['order_id'] ?? 0);
+            if ($orderId <= 0) json_out(['ok' => false, 'message' => 'Missing order_id.'], 400);
+
+            $order = load_order_detail($orderId);
+            if (!$order) json_out(['ok' => false, 'message' => 'Order not found.'], 404);
+
+            $revisions = load_revisions($orderId);
+
+            // Latest draft = latest version (which may be 'pending')
+            $draft = [
+                'lines'   => [],
+                'prep'    => '2 days',
+                'deposit' => '20% upfront payment',
+                'note'    => '',
+            ];
+            if (!empty($revisions)) {
+                $latest = $revisions[0];
+                $draft['note'] = ''; // stored separately if you add a column; keep empty for now
+            }
+
+            json_out([
+                'ok'        => true,
+                'order'     => $order,
+                'revisions' => $revisions,
+                'draft'     => $draft,
+            ]);
+        }
+
+        json_out(['ok' => false, 'message' => 'Unknown action.'], 400);
+
+    } catch (Throwable $e) {
+        error_log('quotation.php GET: ' . $e->getMessage());
+        json_out(['ok' => false, 'message' => 'Server error.'], 500);
+    }
+}
+
+/* ---------- POST ---------- */
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    try {
+        $in = json_input();
+        $action  = (string) ($in['action'] ?? '');
+        $orderId = (int)   ($in['order_id'] ?? 0);
+        $send    = !empty($in['send']);
+        $lines   = is_array($in['lines'] ?? null) ? $in['lines'] : [];
+        $note    = trim((string) ($in['note'] ?? ''));
+        $prep    = trim((string) ($in['prep'] ?? ''));
+        $deposit = trim((string) ($in['deposit'] ?? ''));
+
+        if ($orderId <= 0) json_out(['ok' => false, 'message' => 'Missing order_id.'], 400);
+        if (!in_array($action, ['save_draft', 'send_quotation'], true)) {
+            json_out(['ok' => false, 'message' => 'Unknown action.'], 400);
+        }
+
+        // Verify order exists
+        $order = load_order_detail($orderId);
+        if (!$order) json_out(['ok' => false, 'message' => 'Order not found.'], 404);
+
+        // Compute total
+        $grand = 0.0;
+        foreach ($lines as $l) {
+            $qty   = (float) ($l['qty'] ?? 0);
+            $price = (float) ($l['unit_price'] ?? 0);
+            $grand += $qty * $price;
+        }
+
+        // Save a "pending" quotation row (one per version)
+        $pdo = db();
+        $pdo->beginTransaction();
+
+        try {
+            // Find the highest version for this order
+            $st = $pdo->prepare('SELECT COALESCE(MAX(version_number), 0) FROM quotation WHERE order_id = ?');
+            $st->execute([$orderId]);
+            $nextVersion = ((int) $st->fetchColumn()) + 1;
+
+            // Insert the new quotation row
+            $ins = $pdo->prepare(
+                "INSERT INTO quotation (order_id, admin_id, quoted_price, remarks, version_number, status)
+                 VALUES (?, ?, ?, ?, ?, ?)"
+            );
+            $ins->execute([
+                $orderId,
+                $adminId,
+                $grand,
+                $note !== '' ? $note : null,
+                $nextVersion,
+                $send ? 'pending' : 'pending',   // both start pending; sending means "issuing"
+            ]);
+
+            // If sending: mark earlier pending rows as revised, and set order status to 'quoted'
+            if ($send) {
+                $pdo->prepare(
+                    "UPDATE quotation SET status = 'revised'
+                      WHERE order_id = ? AND quotation_id <> LAST_INSERT_ID() AND status = 'pending'"
+                )->execute([$orderId]);
+
+                $pdo->prepare("UPDATE `order` SET status = 'quoted' WHERE order_id = ?")
+                    ->execute([$orderId]);
+            }
+
+            $pdo->commit();
+
+        } catch (Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+
+        json_out([
+            'ok'      => true,
+            'message' => $send ? 'Quotation sent to client.' : 'Draft saved.',
+        ]);
+
+    } catch (Throwable $e) {
+        error_log('quotation.php POST: ' . $e->getMessage());
+        json_out(['ok' => false, 'message' => 'Server error.'], 500);
+    }
+}
+
+/* ---------- Anything else ---------- */
+http_response_code(405);
+header('Allow: GET, POST');
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(['ok' => false, 'message' => 'Method not allowed.']);

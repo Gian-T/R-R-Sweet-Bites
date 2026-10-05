@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Custom Cake Requests | R&amp;R Sweet Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7efe9;--card:#fff;--paper:#fbf3ec;--pink:#d9788a;--pink-hover:#cf6c7d;
+  --pink-soft:#fbe6e6;--border:#ecd9d1;--border-strong:#dcc0b5;
+  --text:#4a2a2e;--muted:#8a6a62;--chip-bg:#f6e3df;--chip-border:#ecd2ca;
+  --font-head:'Playfair Display',Georgia,serif;
+  --font-text:'Jost','Helvetica Neue',Arial,sans-serif;
+  --font-btn:'Platypi',Georgia,serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font-text);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none}
+input,select{font:inherit;color:inherit}
+
+/* Header */
+.topbar{display:flex;align-items:center;gap:20px;padding:14px 26px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.brand-name{font-family:var(--font-head);font-weight:700;font-size:1.4rem;color:var(--pink)}
+.brand-tag{display:inline-block;margin-left:10px;border:1px solid var(--border-strong);border-radius:999px;padding:4px 12px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.top-name{text-align:right;line-height:1.15}
+.top-name strong{display:block;font-family:var(--font-head);font-size:1rem;font-weight:700}
+.top-name span{font-size:.78rem;color:var(--muted);font-weight:500}
+.top-avatar{width:38px;height:38px;border-radius:50%;background:var(--pink-soft);color:var(--pink);display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid #f0c3c8}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:220px 1fr;gap:22px;padding:22px 26px 40px;align-items:start}
+
+/* Sidebar */
+.sidebar{font-size:.88rem;padding-right:8px}
+.sidebar h4{font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.sidebar h4:first-child{margin-top:0}
+.sidebar ul{list-style:none;display:flex;flex-direction:column;gap:2px}
+.sidebar a{display:block;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:500}
+.sidebar a:hover{background:#f1dfd6}
+.sidebar a.active{background:#f2c9cc;color:#7a2c38;font-weight:600}
+
+/* Main */
+.main{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px 28px;min-height:600px}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:6px;flex-wrap:wrap}
+.page-head h1{font-family:var(--font-head);font-size:2rem;font-weight:700;color:#3a1e22}
+.page-head p{color:var(--muted);font-size:.9rem;margin-top:4px}
+
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:#fbf3ec;border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:130px}
+.stat small{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat strong{display:block;font-family:var(--font-head);font-size:1.15rem;font-weight:700;color:#3a1e22;margin-top:4px}
+
+/* Filter bar */
+.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:center;background:#fbf3ec;border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin:18px 0 16px}
+.filters strong{font-size:.82rem;font-weight:600;color:var(--muted)}
+.filters select,.filters input{padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:8px;font-size:.85rem;color:var(--text);outline:none}
+.filters select:focus,.filters input:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(217,120,138,.15)}
+.filters .search-wrap{position:relative;flex:1;min-width:200px}
+.filters .search-wrap input{width:100%;padding-right:34px}
+.filters .search-wrap svg{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+
+/* Order rows */
+.list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.row{display:grid;grid-template-columns:80px 1.6fr 1fr 1fr 1fr 24px;gap:16px;align-items:center;padding:14px 18px;background:var(--card);border:1px solid var(--border);border-radius:12px;transition:border-color .15s, background .15s, transform .15s;text-decoration:none}
+.row:hover{border-color:var(--border-strong);background:#fdf6f3;transform:translateX(3px)}
+.row .id{font-family:var(--font-head);font-weight:700;color:#7a3b45;font-size:.95rem}
+.row .client strong{display:block;font-family:var(--font-head);font-weight:700;font-size:1rem;color:#3a1e22}
+.row .client span{font-size:.78rem;color:var(--muted)}
+.row .client small{font-size:.78rem;color:#8a5a4f;display:block;margin-top:1px}
+.row .meta-label{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.row .due{font-weight:600;font-size:.9rem}
+.row .chev{width:18px;height:18px;color:var(--muted);transition:transform .15s,color .15s}
+.row:hover .chev{color:var(--pink);transform:translateX(2px)}
+
+.pill{display:inline-block;border-radius:999px;padding:3px 12px;font-size:.72rem;font-weight:600;border:1px solid var(--chip-border);background:var(--chip-bg);color:#8a5a4f;white-space:nowrap}
+.pill.simple{background:#dfeede;color:#4c7d51;border-color:#c4dcc2}
+.pill.moderate{background:#fbe6d5;color:#a86a3b;border-color:#f0ceb3}
+.pill.luxury{background:#f2d3de;color:#8e3a58;border-color:#e6b8ca}
+.pill.new{background:#f2e2dd;color:#8a5a4f}
+.pill.quoted{background:#fbe6d5;color:#a86a3b;border-color:#f0ceb3}
+.pill.accepted{background:#dfeede;color:#4c7d51;border-color:#c4dcc2}
+.pill.completed{background:#e5e9ee;color:#4f5c72;border-color:#d2d8e2}
+.pill.cancelled{background:#efe9e4;color:#8a7d78}
+
+.state{padding:60px 16px;text-align:center;color:var(--muted);font-size:.95rem}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,100px);background:#3a1e22;color:#fff;padding:12px 22px;border-radius:12px;font-size:.9rem;z-index:99;transition:.35s;box-shadow:0 8px 30px rgba(0,0,0,.22)}
+#toast.on{transform:translate(-50%,0)}
+#toast.err{background:#b94550}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:16px}
+  .sidebar{order:2}.main{order:1}
+  .row{grid-template-columns:70px 1fr;grid-template-areas:"id client" "meta meta" "due status" "chev chev";gap:10px}
+  .row .id{grid-area:id}.row .client{grid-area:client}.row .complexity{grid-area:meta}.row .due{grid-area:due}.row .status{grid-area:status;text-align:right}.row .chev{grid-area:chev;justify-self:end}
+}
+@media (max-width:640px){
+  .topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
+  .brand-name{font-size:1.15rem}.brand-tag{display:none}
+  .layout{padding:14px}.main{padding:16px}
+  .page-head h1{font-size:1.5rem}.stats{width:100%}.stat{flex:1}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo">
+    <span class="brand-name">R&amp;R Sweet Bites</span>
+    <span class="brand-tag">Admin Workspace</span>
+  </div>
+  <div class="topbar-right">
+    <div class="top-name">
+      <strong id="adminName">—</strong>
+      <span>Admin</span>
+    </div>
+    <div class="top-avatar" id="adminInitials">—</div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <aside class="sidebar">
+    <h4>Communication</h4>
+    <ul>
+      <li><a href="#">Messages</a></li>
+      <li><a href="#">Notifications</a></li>
+    </ul>
+
+    <h4>Order Management</h4>
+    <ul>
+      <li><a href="#">Design Gallery</a></li>
+      <li><a href="order-requests.html" class="active">Order Request</a></li>
+      <li><a href="Weekly-Availability.html">Week Availability</a></li>
+      <li><a href="admin_payment_verification.html">Payment Verification</a></li>
+      <li><a href="#">Cancellation Requests</a></li>
+    </ul>
+
+    <h4>Store Management</h4>
+    <ul>
+      <li><a href="#">Sales &amp; Performance</a></li>
+      <form method="post" action="../api/logout.php" style="margin-top:14px">
+  <button type="submit" style="width:100%;padding:7px 10px;border:1px solid var(--border-strong);border-radius:8px;background:none;color:var(--text);font:inherit;cursor:pointer">
+    Log out
+  </button>
+</form>
+    </ul>
+  </aside>
+
+  <section class="main">
+    <div class="page-head">
+      <div>
+        <h1>Custom Cake Requests</h1>
+        <p>Review requests, assess complexity scores, and generate formal invoices.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>New Requests</small><strong id="statNew">—</strong></div>
+        <div class="stat"><small>High-Complexity</small><strong id="statHigh">—</strong></div>
+        <div class="stat"><small>Next Delivery</small><strong id="statNext">—</strong></div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <strong>Filters:</strong>
+      <select id="fStatus">
+        <option value="">All Pending</option>
+        <option value="pending_review">Pending Review</option>
+        <option value="quoted">Quoted</option>
+        <option value="confirmed">Confirmed</option>
+        <option value="in_production">In Production</option>
+        <option value="completed">Completed</option>
+      </select>
+      <select id="fRange">
+        <option value="">Date Range: Any</option>
+        <option value="7">Next 7 days</option>
+        <option value="30" selected>Next 30 days</option>
+        <option value="90">Next 90 days</option>
+        <option value="past">Past dates</option>
+      </select>
+      <select id="fComplexity">
+        <option value="">Complexity: All Levels</option>
+        <option value="low">Simple (Low)</option>
+        <option value="medium">Moderate (Medium)</option>
+        <option value="high">Luxury (High)</option>
+      </select>
+      <div class="search-wrap">
+        <input id="fSearch" type="search" placeholder="Search customer or ID…">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+    </div>
+
+    <div class="list" id="list"><p class="state">Loading cake requests…</p></div>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+  const API = "../api/order-requests.php";
+  const $   = (id) => document.getElementById(id);
+  let allOrders = [];
+
+  let t;
+  function toast(msg, isErr) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.className = isErr ? "err on" : "on";
+    clearTimeout(t);
+    t = setTimeout(() => el.className = "", 2800);
+  }
+
+  async function api(url) {
+    try {
+      const res = await fetch(url, { credentials: "same-origin" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.ok === false) throw new Error(data.message || "Request failed");
+      return data;
+    } catch (e) {
+      if (e instanceof TypeError) throw new Error("Can't reach the server.");
+      throw e;
+    }
+  }
+
+  const orderLabel = (id) => "RQ-" + String(id).padStart(4, "0");
+
+  function decorate(o) {
+    const complexityClass = ({ low: "simple", medium: "moderate", high: "luxury" })[o.difficulty] || "simple";
+    const statusClass = ({
+      pending_review: "new", quoted: "quoted", confirmed: "accepted",
+      in_production: "accepted", completed: "completed", cancelled: "cancelled"
+    })[o.status] || "new";
+    const statusLabel = ({
+      pending_review: "New", quoted: "Quoted", confirmed: "Accepted",
+      downpayment_pending_verification: "Awaiting DP", in_production: "In Progress",
+      completed: "Completed", cancellation_requested: "Cancelling", cancelled: "Cancelled"
+    })[o.status] || o.status;
+    return Object.assign({}, o, {
+      _id: orderLabel(o.order_id),
+      _complexityClass: complexityClass,
+      _statusClass: statusClass,
+      _statusLabel: statusLabel,
+    });
+  }
+
+  const MONTHS_LONG  = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const DAYS_SHORT   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+  function formatDue(dateStr) {
+    if (!dateStr) return "—";
+    const [y, m, d] = dateStr.split("-");
+    return `${MONTHS_LONG[parseInt(m,10)-1]} ${parseInt(d,10)}, ${y}`;
+  }
+
+  function renderStats() {
+    const today = new Date().toISOString().slice(0, 10);
+    const newCount  = allOrders.filter(o => o.status === "pending_review").length;
+    const highCount = allOrders.filter(o => o.difficulty === "high").length;
+    const upcoming  = allOrders
+      .filter(o => o.preferred_date && o.preferred_date >= today)
+      .sort((a, b) => a.preferred_date.localeCompare(b.preferred_date));
+    const nextDate = upcoming.length ? upcoming[0].preferred_date : null;
+
+    $("statNew").textContent  = newCount + " Pending";
+    $("statHigh").textContent = highCount + " Elaborate";
+
+    if (nextDate) {
+      const [y, m, d] = nextDate.split("-");
+      const dt = new Date(nextDate + "T00:00:00");
+      $("statNext").textContent = `${parseInt(d,10)} ${MONTHS_SHORT[parseInt(m,10)-1]} (${DAYS_SHORT[dt.getDay()]})`;
+    } else {
+      $("statNext").textContent = "—";
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    }[c]));
+  }
+
+  function applyFilters() {
+    const statusFilter = $("fStatus").value;
+    const rangeFilter  = $("fRange").value;
+    const cplxFilter   = $("fComplexity").value;
+    const query        = $("fSearch").value.trim().toLowerCase();
+    const today        = new Date().toISOString().slice(0, 10);
+    const todayDate    = new Date(today + "T00:00:00");
+
+    const filtered = allOrders.filter(o => {
+      if (statusFilter && o.status !== statusFilter) return false;
+      if (cplxFilter && o.difficulty !== cplxFilter) return false;
+
+      if (rangeFilter && rangeFilter !== "past") {
+        const days = parseInt(rangeFilter, 10);
+        if (o.preferred_date) {
+          const d = new Date(o.preferred_date + "T00:00:00");
+          const max = new Date();
+          max.setDate(max.getDate() + days);
+          if (d > max) return false;
+          if (d < todayDate) return false;
+        }
+      } else if (rangeFilter === "past") {
+        if (!o.preferred_date || o.preferred_date >= today) return false;
+      }
+
+      if (query) {
+        const hay = (o._id + " " + (o.client_name||"") + " " + (o.initials||"") + " " + (o.email||"")).toLowerCase();
+        if (!hay.includes(query)) return false;
+      }
+      return true;
+    });
+
+    renderList(filtered);
+  }
+
+  function renderList(rows) {
+    const wrap = $("list");
+    wrap.innerHTML = "";
+    if (!rows.length) {
+      wrap.innerHTML = '<p class="state">No requests match your filters.</p>';
+      return;
+    }
+    rows.forEach(o => {
+      const a = document.createElement("a");
+      a.className = "row";
+      a.href = "quotation-composer.html?order=" + encodeURIComponent(o.order_id);
+      a.innerHTML = `
+        <span class="id">${o._id}</span>
+        <span class="client">
+          <strong>${escapeHtml(o.initials || "—")}</strong>
+          <span>${escapeHtml(o.email || "—")}</span>
+          <small>${escapeHtml(o.occasion || "Custom cake")}</small>
+        </span>
+        <span class="complexity">
+          <span class="meta-label">Complexity</span>
+          <span class="pill ${o._complexityClass}">${escapeHtml(o.difficulty_label || "—")}</span>
+        </span>
+        <span class="due">
+          <span class="meta-label">Due Date</span>
+          <span>${escapeHtml(formatDue(o.preferred_date))}</span>
+        </span>
+        <span class="status">
+          <span class="meta-label">Status</span>
+          <span class="pill ${o._statusClass}">${escapeHtml(o._statusLabel)}</span>
+        </span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      `;
+      wrap.appendChild(a);
+    });
+  }
+
+  async function load() {
+    try {
+      const data = await api(API + "?action=list");
+      allOrders = (data.orders || []).map(decorate);
+      if (data.me) {
+        $("adminName").textContent     = data.me.full_name || "Admin";
+        $("adminInitials").textContent = data.me.initials  || "A";
+      }
+      renderStats();
+      applyFilters();
+    } catch (e) {
+      toast(e.message, true);
+      $("list").innerHTML = '<p class="state">Could not load requests.</p>';
+    }
+  }
+
+  ["fStatus","fRange","fComplexity"].forEach(id => $(id).addEventListener("change", applyFilters));
+  $("fSearch").addEventListener("input", applyFilters);
+
+  load();
+})();
+</script>
+</body>
+</html>
