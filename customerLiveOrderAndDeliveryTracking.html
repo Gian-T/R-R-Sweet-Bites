@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R&R Sweet Bites | Live Order & Delivery Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Platypi:wght@500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{--p:#D27685;--ph:#BE5B6C;--soft:#FBE8EA;--bg:#FAF0E6;--card:#fff;--foot:#ECCFCB;--border:#E0E0E0;--deep:#382325;--muted:#7d6e6a}
+*{box-sizing:border-box}body{margin:0;background:#111;font-family:Jost,sans-serif;color:#333}.page{width:min(100%,1200px);min-height:100vh;margin:14px auto;background:var(--bg);display:flex;flex-direction:column;overflow:hidden}
+header{height:72px;background:#fffdfb;border-bottom:1px solid #eee;display:flex;align-items:center;padding:0 55px;gap:30px;position:relative}.brand{display:flex;align-items:center;gap:10px;margin-right:0;color:var(--p);text-decoration:none}.logo{width:42px;height:42px;border-radius:50%;background:#E8C3C3;display:grid;place-items:center;font-size:21px}.brand b{font:600 1.05rem Platypi;color:var(--p)}nav{display:flex;gap:29px;position:absolute;left:50%;transform:translateX(-50%);align-items:center}nav a{color:var(--deep);text-decoration:none;font-size:.78rem;padding:27px 0;position:relative}nav a.active:after{content:"";position:absolute;bottom:17px;left:0;right:0;height:2px;background:var(--p)}
+.actions{display:flex;align-items:center;gap:18px;margin-left:auto}.bell{position:relative;width:22px;height:25px;border:0;background:none;cursor:pointer;padding:0;display:grid;place-items:center}.bell img{width:22px;height:25px;display:block}.badge{position:absolute;top:-2px;right:-2px;background:var(--p);color:#fff;border-radius:50%;width:15px;height:15px;font-size:9px;display:grid;place-items:center}.profile{width:42px;height:42px;border:0;border-radius:50%;background:#F2D5D5;color:#5b4947;cursor:pointer}
+main{padding:16px 55px 28px;flex:1}.crumb{font-size:.61rem;color:#8c7e79;margin:0 0 8px 49px}.crumb b{color:var(--ph)}.title{display:flex;align-items:center;gap:22px;margin-bottom:12px}h1{font:600 1.85rem "Playfair Display";color:var(--deep);margin:0}
+.summary{background:#fff;border:1px solid #eee;border-radius:12px;padding:10px 14px;display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center;margin-bottom:12px}.cake{height:66px;width:66px;border-radius:10px;background:#fff1f1;display:grid;place-items:center;font-size:35px}.eyebrow{background:var(--soft);color:var(--ph);font-size:.53rem;font-weight:600;padding:3px 6px;border-radius:9px}.summary h2{font:600 1rem "Playfair Display";color:var(--deep);margin:5px 0 3px}.meta{font-size:.68rem;color:#756866;display:flex;gap:15px;flex-wrap:wrap}.state{text-align:right}.pill{background:var(--soft);color:var(--ph);padding:7px 11px;border-radius:18px;font-size:.65rem;font-weight:600}.oid{display:block;font-size:.56rem;color:#91837f;margin-top:6px}
+.grid{display:grid;grid-template-columns:2fr .95fr;gap:12px}.card{background:#fff;border:1px solid #eee;border-radius:12px;box-shadow:0 4px 14px #3823250b}.tracking{padding:10px 12px;align-self:start}.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.ctitle{font:600 .78rem Platypi;color:var(--deep)}.loc{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:50%;background:var(--soft);color:var(--p);margin-right:7px}.chip{background:#fff3f4;color:var(--ph);padding:5px 9px;border-radius:14px;font-size:.54rem}
+.map{height:236px;border-radius:10px;overflow:hidden;position:relative;background:repeating-linear-gradient(90deg,#e8e3d9 0 31px,#f6eee9 31px 75px),repeating-linear-gradient(0deg,#dce9e3 0 25px,#f7f0ea 25px 62px)}.map:before{content:"";position:absolute;inset:0;background:linear-gradient(25deg,transparent 47%,#fff9 48% 51%,transparent 52%),linear-gradient(110deg,transparent 44%,#fff9 45% 48%,transparent 49%);opacity:.8}.route{position:absolute;left:13%;top:48%;width:70%;height:31%;border-top:4px solid #ed7384;border-right:4px solid #ed7384;border-bottom:4px solid #ed7384;border-radius:0 60px 70px 60px;transform:rotate(-7deg)}.pin{position:absolute;width:28px;height:35px;border-radius:50% 50% 50% 0;background:var(--p);transform:rotate(-45deg);display:grid;place-items:center;color:#fff;z-index:3}.pin span{transform:rotate(45deg)}.shop{left:12%;top:28%}.home{right:20%;top:28%}.label{position:absolute;background:#fff;padding:7px 9px;border-radius:7px;box-shadow:0 3px 9px #38232518;font-size:.53rem;color:#786b68;z-index:4}.label b{display:block;color:var(--deep);font-size:.56rem}.sl{left:18%;top:34%}.hl{right:5%;top:34%}.car{position:absolute;left:51%;top:42%;width:25px;height:13px;background:#fff;border:2px solid var(--deep);border-radius:3px;transform:rotate(-17deg);z-index:5}.zoom{position:absolute;right:10px;top:10px;background:#fff;border-radius:7px;overflow:hidden;z-index:6}.zoom button{width:24px;height:25px;border:0;background:#fff;display:block;cursor:pointer}.zoom button+button{border-top:1px solid #eee}
+.eta{margin-top:8px;background:linear-gradient(90deg,#fff0f1,#fff6f4);border-radius:10px;min-height:60px;display:grid;grid-template-columns:1fr 1px 1fr;align-items:center;text-align:center}.eta .divider{height:28px;background:#efcfd0}.ev{display:flex;justify-content:center;align-items:center;gap:10px}.ev i{font-style:normal;font-size:21px;color:var(--p)}.ev small{display:block;font-size:.53rem;color:#776967}.ev strong{display:block;font:600 1rem "Playfair Display";color:var(--ph)}
+.side{display:flex;flex-direction:column;gap:10px}.status,.details{padding:11px 14px}.status h3,.details h3{font:600 .75rem Platypi;color:var(--deep);margin:0 0 10px}.timeline{padding-left:27px;position:relative}.timeline:before{content:"";position:absolute;left:8px;top:7px;bottom:8px;width:1.5px;background:#dfc9c7}.step{position:relative;padding-bottom:10px;color:#948682;font-size:.62rem}.dot{position:absolute;left:-27px;top:1px;width:13px;height:13px;border-radius:50%;border:1.5px solid #cdbdb9;background:#fff}.done{color:#655653}.done .dot{background:var(--p);border-color:var(--p)}.done .dot:after{content:"✓";color:#fff;font-size:8px;position:absolute;left:2px;top:0}.current{background:linear-gradient(90deg,#fff0f1,#fff8f7);padding:7px 7px 7px 18px;margin-left:-11px;margin-right:-7px;border-radius:9px;color:var(--ph)}.current .dot{left:-16px;top:8px;border:2px solid var(--ph)}.time{display:block;font-size:.5rem;color:#9b8d88;margin-top:2px}.row{display:grid;grid-template-columns:1fr 1.3fr;gap:8px;padding:5px 0;border-bottom:1px solid #eee6e3;font-size:.55rem}.row:last-child{border:0}.row span:first-child{color:#91837f}
+footer{background:var(--foot);padding:1rem;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.25rem;color:#666;font-family:Jost,sans-serif;font-size:.75rem;text-align:center}footer a{color:var(--p);text-decoration:none}footer a:hover{color:var(--ph)}.flinks{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.75rem;line-height:1.2}.footer-info{display:flex;align-items:center;justify-content:center;gap:.5rem;font-size:.75rem;line-height:1.2}
+.menu{position:fixed;top:68px;right:max(20px,calc((100vw - 1200px)/2 + 25px));width:285px;background:#fff;border:1px solid #F0D3CB;border-radius:15px;padding:10px;box-shadow:0 12px 30px #38232520;display:none;z-index:20}.menu.show{display:block}.mi{display:flex;gap:15px;align-items:center;padding:13px;border-radius:9px;color:#4f4140;text-decoration:none;font-size:1rem}.mi:hover{background:#fff5f3}.mi i{font-style:normal;width:23px;text-align:center;font-size:20px}
+@media(max-width:850px){header{padding:0 25px}.nav{gap:17px}main{padding-left:25px;padding-right:25px}.grid{grid-template-columns:1fr}.summary{grid-template-columns:60px 1fr}.state{grid-column:2;text-align:left}footer{padding:8px 25px}}
+@media(max-width:600px){header{height:auto;padding:12px 18px;flex-wrap:wrap}.brand{margin-right:0}.nav{position:static;transform:none;order:3;width:100%;justify-content:space-between;overflow:auto}.nav a{padding:7px 0;font-size:.68rem}.actions{margin-left:auto}main{padding:16px 14px}.crumb{margin-left:0}.title{gap:12px}h1{font-size:1.55rem}.summary{grid-template-columns:1fr}.state{grid-column:auto}.eta{grid-template-columns:1fr}.eta .divider{display:none}footer{flex-direction:column;gap:5px}}
+</style>
+</head>
+<body>
+<div class="page">
+<header>
+<div class="brand"><span class="logo">🧁</span><b>R&R Sweet Bites</b></div>
+<nav><a href="javascript:void(0)">Home</a><a href="javascript:void(0)">Gallery</a><a href="javascript:void(0)">Submit Request</a><a href="javascript:void(0)" class="active">My Order</a><a href="javascript:void(0)">Messages</a></nav>
+<div class="actions"><button class="bell" aria-label="Notifications"><img src=" " alt="" aria-hidden="true"></button><button class="profile" id="profile">AP</button></div>
+</header>
+<main>
+<div class="crumb">My Orders <span>/</span> <b>Order #SB-2026-0842</b></div>
+
+<div class="title"><h1>Live Order &amp; Delivery Tracking</h1></div>
+<section class="summary">
+<div class="cake">🎂</div>
+<div><h2>Custom 2-Tier Pastel Floral Dream Cake</h2><div class="meta"><span>▣ &nbsp; October 24, 2026</span><span>♙ &nbsp; Hand over: 9:00 AM - 12:00 PM</span></div></div>
+<div class="state"><span class="pill">▣ &nbsp; Out for Delivery</span><span class="oid">Order #SB-2026-0842</span></div>
+</section>
+<section class="grid">
+<div class="card tracking">
+<div class="head"><div class="ctitle"><span class="loc">⌖</span>Live Tracking</div><span class="chip">▣ &nbsp; Shop Delivery (R&amp;R Sweet Bites)</span></div>
+<div class="map" id="map"><div class="route" id="route"></div><div class="pin shop"><span>⌂</span></div><div class="pin home"><span>⌂</span></div><div class="label sl"><b>R&amp;R Sweet Bites</b>Preparing from shop</div><div class="label hl"><b>Bagong Barrio, Caloocan City</b>Est. arrival: 11:10 AM</div><div class="car"></div><div class="zoom"><button onclick="zoom(1)">+</button><button onclick="zoom(-1)">−</button></div></div>
+<div class="eta"><div class="ev"><i>◷</i><span><small>Estimated Arrival</small><strong>11:10 AM</strong></span></div><div class="divider"></div><div class="ev"><i>▣</i><span><small>Distance Away</small><strong>4.2 km</strong></span></div></div>
+</div>
+<aside class="side">
+<div class="card status"><h3>Order Status</h3><div class="timeline">
+<div class="step done"><span class="dot"></span><span>Order Placed</span><span class="time">October 01, 2026&nbsp;&nbsp; 8:30 AM</span></div>
+<div class="step done"><span class="dot"></span><span>Preparing Your Order</span><span class="time">Oct 24, 2026&nbsp;&nbsp; 9:15 AM</span></div>
+<div class="step current"><span class="dot"></span><span>Out for Delivery</span><span class="time">Oct 24, 2026&nbsp;&nbsp; 10:30 AM<br>Your order is now on the way.</span></div>
+<div class="step"><span class="dot"></span><span>Near Your Location</span></div><div class="step"><span class="dot"></span><span>Delivered</span></div>
+</div></div>
+<div class="card details"><h3>Order Details</h3>
+<div class="row"><span>Order Number</span><span>#SB-2026-0842</span></div><div class="row"><span>Order Date</span><span>October 24, 2026</span></div><div class="row"><span>Delivery Method</span><span>Shop Delivery (R&amp;R Sweet Bites)</span></div><div class="row"><span>Delivery Address</span><span>Bagong Barrio, Caloocan City</span></div><div class="row"><span>Hand over Time</span><span>9:00 AM - 12:00 PM</span></div>
+</div>
+</aside>
+</section>
+</main>
+<footer>
+  <div class="flinks">
+    <a href="javascript:void(0)">ⓘ ABOUT US</a>
+    <span>|</span>
+    <a href="javascript:void(0)">▧ CONTACTS</a>
+  </div>
+  <div class="footer-info">© 2019 R&amp;R Sweet Bites. All Rights Reserved.</div>
+</footer>
+</div>
+<div class="menu" id="menu"><a class="mi" href="javascript:void(0)"><i>◎</i>HalamanHatdog</a><a class="mi" href="javascript:void(0)"><i>⚙</i>Settings</a><a class="mi" href="javascript:void(0)"><i>☆</i>My Reviews</a><a class="mi" href="javascript:void(0)"><i>↪</i>Log Out</a></div>
+<script>
+const p=document.getElementById('profile'),m=document.getElementById('menu');
+p.onclick=e=>{e.stopPropagation();m.classList.toggle('show')};
+document.onclick=e=>{if(!m.contains(e.target)&&e.target!==p)m.classList.remove('show')};
+let z=1;function zoom(d){z=Math.max(.9,Math.min(1.35,z+d*.08));document.getElementById('route').style.transform=`scale(${z}) rotate(-7deg)`}
+</script>
+</body>
+</html>
