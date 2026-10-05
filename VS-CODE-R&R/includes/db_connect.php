@@ -22,6 +22,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+
+
 /* ---------- Connections ---------- */
 
 /** PDO connection (preferred). Usage: db()->prepare(...) */
@@ -161,9 +163,15 @@ function csrf_field(): string
 
 function csrf_ok(): bool
 {
-    return isset($_POST['csrf'], $_SESSION['csrf'])
-        && hash_equals($_SESSION['csrf'], (string) $_POST['csrf']);
+    if (empty($_SESSION['csrf'])) {
+        return false;
+    }
+    $sent = $_POST['csrf']
+         ?? $_SERVER['HTTP_X_CSRF_TOKEN']
+         ?? '';
+    return hash_equals($_SESSION['csrf'], (string) $sent);
 }
+
 
 /* ---------- Flash messages (survive one redirect) ---------- */
 function flash_ok(string $msg): void
@@ -191,6 +199,8 @@ function render_flash(string $extraStyle = ''): void
     }
     unset($_SESSION['flash_ok'], $_SESSION['flash_err']);
 }
+
+
 
 /** Shared CSS for flash boxes, injected into each page's <style>. */
 const FLASH_CSS = '.flash{margin:0 0 12px;padding:10px 14px;border-radius:8px;font-size:12px;line-height:1.4;border:1px solid;color:#4A2F2B}'

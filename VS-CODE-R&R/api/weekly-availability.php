@@ -67,7 +67,7 @@ if (!$adminId) {
 }
 
 $sessionToken = $_SESSION['csrf_token'] ?? '';
-$submittedToken = $_POST['csrf_token'] ?? '';
+$submittedToken = $_POST['csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
 if (!is_string($sessionToken) || !is_string($submittedToken) || !hash_equals($sessionToken, $submittedToken)) {
     respond(403, ['success' => false, 'error' => 'Your session expired. Refresh the page and try again.']);
 }

@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>R&amp;R Sweet Bites | Custom Cakes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+  <script>document.documentElement.classList.add("js")</script>
+  <style>
+:root{--cream:#fff4ef;--pink:#d9788a;--button:#db7f8e;--button-dark:#cf6c7d;--text:#4a2a2e;--ph:#f6cbd3;
+--panel:#f8ebe6;--review:#fde1e3;--foot:#efd0ca;
+--font-header:"Playfair Display",Georgia,"Times New Roman",serif;
+--font-ui:"Platypi",Georgia,"Times New Roman",serif;
+--font-text:"Jost","Helvetica Neue",Arial,sans-serif;
+--wrap:1240px;--gutter:clamp(20px,5vw,64px);--ease:cubic-bezier(.2,.7,.2,1)}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{min-height:100vh;background:var(--cream);color:var(--text);font-family:var(--font-text);font-size:16px;line-height:1.5;overflow-x:hidden;display:flex;flex-direction:column}
+html{background:var(--foot)}
+main{flex:1 0 auto}
+[tabindex="-1"]:focus{outline:none}
+a:focus-visible,button:focus-visible{outline:3px solid rgba(217,120,138,.6);outline-offset:3px}
+img{display:block;max-width:100%}
+button{font:inherit;color:inherit}
+.ph{overflow:hidden;background:var(--ph)}
+.ph img{width:100%;height:100%;object-fit:cover}
+.wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding-inline:var(--gutter)}
+
+/* Scroll progress + back to top */
+.progress{position:fixed;inset:0 0 auto 0;z-index:70;height:3px;background:var(--pink);transform:scaleX(0);transform-origin:left}
+.totop{position:fixed;right:20px;bottom:20px;z-index:55;display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:50%;background:var(--button);color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(74,42,46,.25);opacity:0;transform:translateY(16px) scale(.8);pointer-events:none;transition:opacity .3s,transform .3s var(--ease),background .15s}
+.totop.show{opacity:1;transform:none;pointer-events:auto}
+.totop:hover{background:var(--button-dark);transform:translateY(-3px)}
+.totop svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* Nav */
+.nav{position:sticky;top:0;z-index:50;background:var(--cream);transition:box-shadow .3s}
+.nav.scrolled{box-shadow:0 6px 20px rgba(74,42,46,.1)}
+.nav-inner{max-width:none;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:24px;padding-inline:clamp(16px,3vw,48px);padding-block:14px;transition:padding .3s}
+.nav.scrolled .nav-inner{padding-block:8px}
+.brand{justify-self:start;display:flex;align-items:center;gap:12px;color:var(--pink);text-decoration:none}
+.nav-icon{flex:none;width:44px;height:44px;border-radius:50%;transition:transform .6s var(--ease)}
+.brand:hover .nav-icon{transform:rotate(360deg)}
+.brand-name{font-family:var(--font-ui);font-weight:700;font-size:1.1rem;white-space:nowrap}
+.menu{display:contents}
+.links{display:flex;gap:clamp(24px,4.4vw,64px);margin:0;padding:0;list-style:none}
+.links a{position:relative;display:block;padding:4px 0;color:var(--text);font-size:.98rem;font-weight:500;text-decoration:none;white-space:nowrap}
+.links a::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;border-radius:2px;background:var(--pink);transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease)}
+.links a:hover::after,.links a[aria-current="page"]::after{transform:scaleX(1)}
+.auth{justify-self:end;display:flex;gap:12px}
+.pill{position:relative;overflow:hidden;display:inline-block;min-width:96px;padding:9px 22px;border:0;border-radius:999px;background:var(--button);color:#fff;font:600 .95rem/1.3 var(--font-ui);text-align:center;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .15s,transform .2s var(--ease),box-shadow .2s}
+.pill:hover{background:var(--button-dark);transform:translateY(-2px);box-shadow:0 6px 14px rgba(217,120,138,.45)}
+.pill:active{transform:translateY(0) scale(.97)}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:ripple .6s ease-out forwards;pointer-events:none}
+@keyframes ripple{to{transform:scale(1);opacity:0}}
+.menu-toggle{display:none;width:44px;height:44px;padding:11px;border:0;background:none;cursor:pointer}
+.menu-toggle span{display:block;height:2.5px;margin:5px 0;border-radius:2px;background:var(--text);transition:transform .25s,opacity .2s}
+.nav.open .menu-toggle span:nth-child(1){transform:translateY(7.5px) rotate(45deg)}
+.nav.open .menu-toggle span:nth-child(2){opacity:0}
+.nav.open .menu-toggle span:nth-child(3){transform:translateY(-7.5px) rotate(-45deg)}
+
+/* Logged-in nav */
+.user-area{display:flex;align-items:center;gap:18px}
+.bell{position:relative;width:26px;height:26px;padding:0;border:0;background:none;color:var(--text);cursor:pointer;transform-origin:50% 0}
+.bell:hover svg{animation:ring .7s ease}
+@keyframes ring{20%{transform:rotate(14deg)}40%{transform:rotate(-12deg)}60%{transform:rotate(8deg)}80%{transform:rotate(-4deg)}}
+.badge{position:absolute;top:-6px;right:-9px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--button);color:#fff;font:700 10px/16px var(--font-text);text-align:center}
+.profile{position:relative}
+.avatar{display:grid;place-items:center;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:#f6d6d6;color:var(--text);font:700 .95rem var(--font-text);cursor:pointer;transition:background .15s,transform .2s var(--ease)}
+.avatar:hover,.avatar[aria-expanded="true"]{background:#f0c3c8;transform:scale(1.08)}
+.dropdown{position:absolute;top:calc(100% + 8px);right:0;z-index:60;min-width:200px;max-width:260px;overflow:hidden;border-radius:14px;background:#f8e4dd;box-shadow:0 8px 24px rgba(74,42,46,.18);font-family:var(--font-header);text-align:right;transform-origin:top right;animation:drop .22s var(--ease)}
+@keyframes drop{from{opacity:0;transform:translateY(-8px) scale(.96)}}
+.dropdown[hidden]{display:none}
+.dropdown>*{display:block;width:100%;padding:12px 16px;border:0;border-top:1px solid var(--text);background:none;color:var(--text);font:600 15px/1.3 var(--font-header);text-align:right;text-decoration:none;cursor:pointer}
+.dropdown>.dd-name{border-top:0;cursor:default;font-weight:700;overflow-wrap:anywhere}
+.dropdown>a:hover,.dropdown>button:hover{background:rgba(217,120,138,.2)}
+
+/* Dialogs (logout, about, contact, lightbox) */
+.modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:20px;background:rgba(30,30,30,.6);animation:fadein .2s}
+.modal[hidden]{display:none}
+.modal-box{width:min(100%,360px);padding:26px 24px 22px;border-radius:16px;background:var(--cream);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35);animation:dlg .3s var(--ease)}
+.modal-box h2{font:600 1.2rem/1.35 var(--font-header)}
+.modal-actions{display:flex;gap:12px;margin-top:22px}
+.modal-actions form{flex:1}
+.mbtn{display:block;width:100%;height:44px;border:1px solid var(--button);border-radius:999px;font:600 1rem var(--font-ui);cursor:pointer;transition:background .15s}
+.mbtn.yes{background:var(--button);color:#fff}
+.mbtn.yes:hover{background:var(--button-dark)}
+.mbtn.no{background:transparent;color:var(--text);border-color:var(--text)}
+.mbtn.no:hover{background:rgba(217,120,138,.2)}
+@keyframes fadein{from{opacity:0}}
+@keyframes dlg{from{opacity:0;transform:translateY(18px) scale(.95)}}
+dialog.info{width:min(92vw,440px);padding:30px 28px 26px;border:0;border-radius:20px;background:var(--cream);color:var(--text);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+dialog.info[open]{animation:dlg .35s var(--ease)}
+dialog::backdrop{background:rgba(30,20,22,.55);backdrop-filter:blur(3px)}
+dialog.info h2{margin-bottom:12px;text-align:left}
+dialog.info p{font-size:1rem;line-height:1.65}
+dialog.info ul{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:10px}
+dialog.info li{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:var(--review);font-weight:500}
+dialog.info li a{color:inherit}
+.x{position:absolute;top:12px;right:12px;display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:transparent;cursor:pointer;transition:background .15s,transform .25s var(--ease)}
+.x:hover{background:rgba(217,120,138,.25);transform:rotate(90deg)}
+.x svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+
+/* Lightbox */
+dialog.lb{width:100vw;height:100vh;max-width:none;max-height:none;padding:0;border:0;background:transparent;color:#fff;overflow:hidden}
+dialog.lb[open]{display:grid;place-items:center;animation:fadein .25s}
+dialog.lb::backdrop{background:rgba(20,10,12,.88)}
+.lb figure{display:grid;gap:12px;justify-items:center;max-width:90vw}
+.lb img{max-width:min(86vw,900px);max-height:76vh;border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.5);transition:opacity .2s,transform .3s var(--ease)}
+.lb img.swap{opacity:0;transform:scale(.96)}
+.lb figcaption{font-size:.95rem;text-align:center;opacity:.9}
+.lb .x{color:#fff;top:18px;right:18px;background:rgba(255,255,255,.12)}
+.lb-nav{position:absolute;top:50%;display:grid;place-items:center;width:48px;height:48px;margin-top:-24px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;transition:background .15s,transform .2s}
+.lb-nav:hover{background:var(--button);transform:scale(1.1)}
+.lb-nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.lb-prev{left:18px}.lb-next{right:18px}
+
+/* Hero */
+.hero{position:relative}
+.sprinkles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.sprinkles i{position:absolute;display:block;width:var(--w);height:calc(var(--w)*.34);border-radius:99px;background:var(--c);opacity:0;animation:drift var(--t) ease-in-out var(--dl) infinite}
+@keyframes drift{0%{opacity:0;transform:translate(0,0) rotate(var(--r))}15%{opacity:.7}85%{opacity:.7}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(calc(var(--r) + 200deg))}}
+.hero-inner{position:relative;display:grid;grid-template-columns:1fr minmax(0,.95fr);gap:clamp(24px,5vw,72px);align-items:center;padding-block:clamp(24px,4vw,56px) clamp(48px,7vw,96px)}
+.hero h1{font-family:var(--font-header);font-size:clamp(2rem,4.4vw,3.6rem);line-height:1.3;font-weight:500}
+.hero .line{display:block;overflow:hidden;padding-bottom:.08em}
+.hero .line>span{display:block;transform:translateY(110%);animation:rise .9s var(--ease) forwards;animation-delay:calc(var(--i)*.16s + .2s)}
+.hero .pink{color:var(--pink)}
+.hero p{max-width:27em;margin-top:clamp(16px,2vw,28px);font-size:clamp(.95rem,1.25vw,1.1rem);line-height:1.65}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:clamp(20px,2.5vw,32px)}
+.btn{position:relative;overflow:hidden;display:inline-block;padding:11px 26px;border:2px solid var(--text);border-radius:999px;color:var(--text);font:600 .95rem/1.3 var(--font-ui);text-align:center;text-decoration:none;cursor:pointer;transition:background .2s,transform .2s var(--ease),box-shadow .2s}
+.btn.primary{background:var(--button)}
+.btn:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(74,42,46,.18)}
+.btn.primary:hover{background:var(--button-dark)}
+.btn.ghost:hover{background:rgba(217,120,138,.22)}
+.btn:active{transform:scale(.97)}
+.fade{opacity:0;animation:fadeup .8s ease forwards;animation-delay:calc(var(--d)*1s)}
+.circle-wrap{width:100%;max-width:560px;justify-self:end;aspect-ratio:1;cursor:pointer;animation:pop 1s cubic-bezier(.2,.9,.3,1.2) .15s both,float 7s ease-in-out 1.4s infinite}
+.circle{width:100%;height:100%;border-radius:50%;transition:transform .2s ease-out,box-shadow .3s;will-change:transform;box-shadow:0 18px 50px rgba(217,120,138,.25)}
+.circle-wrap:hover .circle{box-shadow:0 26px 70px rgba(217,120,138,.45)}
+.hint{position:absolute;left:50%;bottom:-6px;translate:-50% 0;padding:4px 14px;border-radius:99px;background:#fff;color:var(--pink);font:600 .8rem var(--font-ui);box-shadow:0 4px 12px rgba(74,42,46,.12);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.circle-wrap{position:relative}
+.circle-wrap:hover .hint{opacity:1}
+@keyframes rise{to{transform:none}}
+@keyframes fadeup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.6) rotate(-12deg)}to{opacity:1;transform:none}}
+@keyframes float{50%{transform:translateY(-12px)}}
+.confetti{position:fixed;z-index:90;width:10px;height:4px;border-radius:99px;pointer-events:none}
+
+/* Scroll reveal */
+.js .rv{opacity:0;transform:translateY(28px);transition:opacity .8s var(--ease),transform .8s var(--ease);transition-delay:calc(var(--k,0)*110ms)}
+.js .rv.in{opacity:1;transform:none}
+
+/* Features strip */
+.features{background:#fff;padding-block:clamp(18px,2.4vw,30px)}
+.features ul{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0;list-style:none}
+.features li{display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--font-ui);font-size:.9rem;font-weight:600;text-align:center;cursor:default}
+.ico{display:grid;place-items:center;width:26px;height:26px;color:var(--text);font:700 1.2rem/1 var(--font-ui);transition:color .2s,transform .3s var(--ease)}
+.ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.features li:hover .ico{color:var(--pink);animation:wiggle .6s ease}
+@keyframes wiggle{25%{transform:translateY(-6px) rotate(-10deg)}50%{transform:translateY(0) rotate(8deg)}75%{transform:translateY(-3px) rotate(-4deg)}}
+.js .features li.in .ico path,.js .features li.in .ico rect,.js .features li.in .ico circle{stroke-dasharray:60;animation:draw 1s ease .2s both}
+@keyframes draw{from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+
+/* Headings */
+h2{font-family:var(--font-ui);font-size:clamp(1.1rem,1.7vw,1.4rem);line-height:1.4;font-weight:700;text-align:center}
+.eyebrow{font-family:var(--font-ui);font-size:clamp(1.05rem,1.6vw,1.3rem);font-weight:600;color:var(--pink);text-align:center}
+
+/* How it works */
+.how{padding-block:clamp(36px,5vw,64px) 0}
+.steps{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;max-width:980px;margin:clamp(24px,3.5vw,44px) auto 0;padding:0;list-style:none}
+.steps::before,.steps::after{content:"";position:absolute;top:calc(clamp(44px,4.6vw,56px)/2 - 1.5px);left:10%;right:10%;height:3px;border-radius:3px;background:rgba(217,120,138,.25)}
+.steps::after{background:var(--pink);transform:scaleX(0);transform-origin:left;transition:transform .7s var(--ease);right:auto;width:80%;transform:scaleX(var(--fill,0))}
+.steps li{display:flex;justify-content:center}
+.step{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:14px;padding:0;border:0;background:none;font-family:var(--font-ui);font-size:.9rem;font-weight:600;text-align:center;cursor:pointer}
+.step .n{display:grid;place-items:center;width:clamp(44px,4.6vw,56px);height:clamp(44px,4.6vw,56px);border-radius:50%;background:var(--button);color:#fff;font:700 clamp(1.1rem,1.8vw,1.4rem)/1 var(--font-header);box-shadow:0 0 0 0 rgba(217,120,138,.45);transition:transform .35s cubic-bezier(.2,.9,.3,1.4),background .2s,box-shadow .3s}
+.step:hover .n{transform:scale(1.12)}
+.step.active .n{transform:scale(1.2);background:var(--button-dark);animation:pulse 1.8s ease-out infinite}
+.step.active{color:var(--pink)}
+@keyframes pulse{70%{box-shadow:0 0 0 14px rgba(217,120,138,0)}100%{box-shadow:0 0 0 0 rgba(217,120,138,0)}}
+.step-detail{max-width:520px;min-height:3.2em;margin:20px auto 0;padding:12px 20px;border-radius:14px;background:var(--review);font-size:1rem;text-align:center;transition:opacity .2s,transform .3s var(--ease)}
+.step-detail.swap{opacity:0;transform:translateY(6px)}
+
+/* Gallery */
+.gallery{padding-block:clamp(44px,6vw,80px) 0}
+.gallery .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(16px,4.5vw,56px);margin-top:clamp(24px,3.5vw,44px)}
+.card{position:relative;display:block;width:100%;aspect-ratio:81/82;padding:0;border:0;border-radius:clamp(14px,1.8vw,22px);cursor:zoom-in;transition:transform .4s var(--ease),box-shadow .4s}
+.card img{transition:transform .6s var(--ease)}
+.card:hover{transform:translateY(-8px) rotate(-1.2deg);box-shadow:0 18px 34px rgba(74,42,46,.22)}
+.card:hover img{transform:scale(1.1)}
+.card::after,.promo .ph::after{content:"View";position:absolute;left:50%;bottom:12px;translate:-50% 10px;padding:4px 14px;border-radius:99px;background:rgba(255,255,255,.92);color:var(--text);font:600 .8rem var(--font-ui);opacity:0;transition:opacity .3s,translate .3s var(--ease)}
+.card:hover::after,.promo .ph:hover::after{opacity:1;translate:-50% 0}
+
+/* Promo band */
+.promo{display:flex;gap:4px;min-height:clamp(180px,22vw,290px);margin-top:clamp(40px,5vw,72px);border-radius:clamp(10px,1.2vw,16px);overflow:hidden}
+.promo-text{flex:111 1 0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;min-width:0;padding:clamp(16px,2.5vw,36px);background:var(--panel)}
+.promo h3{font-family:var(--font-ui);font-size:clamp(1rem,1.5vw,1.2rem);line-height:1.35;font-weight:700}
+.promo p{max-width:18em;margin:12px 0 16px;font-size:clamp(.82rem,1.05vw,.95rem);line-height:1.55;font-weight:500;color:#7b5359}
+.promo .pill{min-width:0;padding:7px 20px;font-size:.85rem}
+.promo .ph{position:relative;display:block;padding:0;border:0;border-radius:0;cursor:zoom-in;min-width:0;transition:flex-grow .6s var(--ease)}
+.promo .ph:nth-of-type(1){flex:81 1 0}
+.promo .ph:nth-of-type(2){flex:161 1 0}
+.promo .ph:nth-of-type(3){flex:79 1 0}
+.promo .ph img{transition:transform .8s var(--ease)}
+@media (hover:hover){
+  .promo .ph:hover{flex-grow:300}
+  .promo .ph:hover img{transform:scale(1.06)}
+}
+
+/* Reviews */
+.reviews{padding-block:clamp(40px,5.5vw,72px) 0}
+.reviews .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(12px,1.8vw,24px);margin-top:clamp(20px,3vw,40px)}
+.review{position:relative;padding:14px clamp(16px,2.2vw,28px);border-radius:14px;background:var(--review);font-family:var(--font-ui);font-weight:600;cursor:default;overflow:hidden;transition:transform .35s var(--ease),box-shadow .35s,background .3s}
+.review h3,.review p{font-size:.95rem;font-weight:600}
+.review::before{content:"\201C";position:absolute;right:14px;top:-6px;font:700 4rem/1 var(--font-header);color:rgba(217,120,138,.22);transition:transform .5s var(--ease)}
+.review:hover{transform:translateY(-5px);background:#fcd5d9;box-shadow:0 12px 24px rgba(217,120,138,.3)}
+.review:hover::before{transform:scale(1.3) rotate(-8deg)}
+
+/* Footer */
+.foot{flex-shrink:0;width:100%;margin-top:clamp(36px,4.5vw,60px);padding:20px 0 22px;background:var(--foot);font-size:.9rem;font-weight:500;text-align:center;color:#6b4a4e}
+.foot-links{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:2px}
+.foot-links button{display:inline-flex;align-items:center;gap:6px;padding:2px 4px;border:0;background:none;font:500 .9rem var(--font-text);letter-spacing:.02em;color:inherit;cursor:pointer;transition:color .2s,transform .2s var(--ease)}
+.foot-links button:hover{color:var(--text);transform:translateY(-2px)}
+.foot-links i{width:1px;height:14px;background:currentColor}
+.foot svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* Tablet and phone */
+@media (max-width:900px){
+  .nav-inner{display:flex;flex-wrap:wrap;gap:0;padding-block:8px}
+  .brand{margin-right:auto}
+  .menu-toggle{display:block}
+  .menu{display:none;flex-basis:100%;flex-direction:column;align-items:stretch;gap:10px;padding:6px 0 12px}
+  .nav.open .menu{display:flex;animation:drop .25s var(--ease)}
+  .links{flex-direction:column;gap:0;margin:0}
+  .links a{padding:12px 4px;font-size:1.05rem}
+  .auth{gap:10px}
+  .pill{flex:1}
+  .user-area{justify-content:flex-end;padding:4px 0}
+  .avatar{width:44px;height:44px}
+  .hero-inner{grid-template-columns:1fr}
+  .circle-wrap{justify-self:center;max-width:380px}
+}
+@media (max-width:720px){
+  .features ul{grid-template-columns:1fr 1fr;row-gap:20px}
+  .steps{grid-template-columns:repeat(5,1fr);gap:6px}
+  .step{font-size:.72rem;gap:8px}
+  .gallery .grid{grid-template-columns:1fr 1fr;gap:14px}
+  .promo{flex-wrap:wrap;min-height:0}
+  .promo-text{flex:1 1 100%;padding:22px 20px}
+  .promo p{max-width:none}
+  .promo .ph:nth-of-type(n){flex:1 1 0;height:34vw}
+  .reviews .cards{grid-template-columns:1fr}
+  .lb-nav{width:40px;height:40px}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .hero .line>span{transform:none}
+  .fade{opacity:1}
+  .js .rv{opacity:1;transform:none}
+}
+  </style>
+</head>
+<body>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="nav" id="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="index.html"><span class="nav-icon ph"><img src="..\Images-Icons\R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"></span><span class="brand-name">R&amp;R Sweet Bites</span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+      <div class="menu" id="menu">
+        <nav aria-label="Main"><ul class="links">
+          <li><a href="#home" aria-current="page">Home</a></li>
+          <li><a href="../public/Cake-gallery.html">Gallery</a></li>
+          <li><a href="#about" data-open="aboutDlg">About</a></li>
+          <li><a href="#contact" data-open="contactDlg">Contact</a></li>
+        </ul></nav>
+        <div class="auth">
+          <a class="pill" href="../public/login.html">Log in</a><a class="pill" href="public/register.html">Sign up</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" id="home" tabindex="-1">
+      <div class="sprinkles" id="sprinkles" aria-hidden="true"></div>
+      <div class="wrap hero-inner">
+        <div>
+          <h1><span class="line"><span style="--i:0">Your dream cake,</span></span><span class="line pink"><span style="--i:1">made just for you.</span></span></h1>
+          <p class="fade" style="--d:.7">At R&amp;R Sweet Bites, we craft fully customized cakes for life's special moments, from design to doorstep.</p>
+          <div class="cta fade" style="--d:.9">
+            <a class="btn primary magnet" href="../public/register.html">Request a custom cake</a>
+            <a class="btn ghost" href="../public/Cake-gallery.html">Browse inspirations</a>
+          </div>
+        </div>
+        <div class="circle-wrap" id="circleWrap" role="img" aria-label="R&amp;R Sweet Bites logo. Click for a surprise.">
+          <div class="ph circle" id="circle"><img src="..\Images-Icons\R&R Logo.jpg" alt=""></div>
+          <span class="hint">Click me!</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" aria-label="Highlights">
+      <div class="wrap"><ul>
+        <li class="rv" style="--k:0"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span>Fully Customized</li>
+        <li class="rv" style="--k:1"><span class="ico" aria-hidden="true">&#8369;</span>Clear Pricing</li>
+        <li class="rv" style="--k:2"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>Weekly Scheduling</li>
+        <li class="rv" style="--k:3"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>Delivery Options</li>
+      </ul></div>
+    </section>
+
+    <section class="how" id="how" tabindex="-1">
+      <div class="wrap">
+        <p class="eyebrow rv">How it works</p>
+        <h2 class="rv" style="--k:1">Getting your custom cake is easy</h2>
+        <ol class="steps rv" id="steps" style="--k:2;list-style:none">
+          <li><button class="step active" type="button" data-i="0" data-text="Browse our previous creations for ideas, or bring your own theme."><span class="n">1</span>Choose design</button></li>
+          <li><button class="step" type="button" data-i="1" data-text="Tell us your theme, flavor, size, and preferred date."><span class="n">2</span>Submit request</button></li>
+          <li><button class="step" type="button" data-i="2" data-text="We review your request and send you a clear price."><span class="n">3</span>Get a quote</button></li>
+          <li><button class="step" type="button" data-i="3" data-text="Approve the quote and pay to lock in your date."><span class="n">4</span>Confirm and pay</button></li>
+          <li><button class="step" type="button" data-i="4" data-text="We bake your cake fresh and get it to you, from design to doorstep."><span class="n">5</span>Bake and deliver</button></li>
+        </ol>
+        <p class="step-detail rv" id="stepDetail" style="--k:3" aria-live="polite">Browse our previous creations for ideas, or bring your own theme.</p>
+      </div>
+    </section>
+
+    <section class="gallery" id="gallery" tabindex="-1">
+      <div class="wrap">
+        <h2 class="rv">Explore our previous creations</h2>
+        <div class="grid">
+          <button class="card ph rv" type="button" style="--k:0" aria-label="View larger: Birthday cake with pink rosettes"><img src="Cakes-Images/Happy-Birthday-70age.jpg" alt="Birthday cake with pink rosettes" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+          <button class="card ph rv" type="button" style="--k:1" aria-label="View larger: Dark green cake with gold spheres"><img src="Cakes-Images/black-gold-cake.jpg" alt="Dark green cake with gold spheres" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+          <button class="card ph rv" type="button" style="--k:2" aria-label="View larger: Pastel rainbow cake with butterflies"><img src="Cakes-Images/pastel-rainbow-cake.jpg" alt="Pastel rainbow cake with butterflies" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+          <button class="card ph rv" type="button" style="--k:3" aria-label="View larger: Box of frosted cupcakes"><img src="Cakes-Images/cupcakes.jpg" alt="Box of frosted cupcakes" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <section class="promo rv" id="request" tabindex="-1">
+        <div class="promo-text">
+          <h3>Let's make it happen!</h3>
+          <p>Tell us your theme, flavor, and preferred date.</p>
+          <a class="pill" href="../public/register.html">Start your request</a>
+        </div>
+        <button class="ph" type="button" aria-label="View larger: Pink castle cake"><img src="Cakes-Images/castle-cake.jpg" alt="Pink castle cake" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+        <button class="ph" type="button" aria-label="View larger: Cake with custom name toppers"><img src="Cakes-Images/name-cake.jpg" alt="Cake with custom name toppers" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+        <button class="ph" type="button" aria-label="View larger: Rainbow themed cupcakes"><img src="Cakes-Images/rainbow-cupcakes.jpg" alt="Rainbow themed cupcakes" loading="lazy" onerror="this.onerror=null;this.src='Cakes-Images/Happy-Birthday-70age.jpg'"></button>
+      </section>
+    </div>
+
+    <section class="reviews">
+      <div class="wrap">
+        <h2 class="rv">What our customers say</h2>
+        <div class="cards">
+          <article class="review rv" style="--k:0"><h3>Mark A.</h3><p>"More beautiful than I imagined."</p></article>
+          <article class="review rv" style="--k:1"><h3>Camille F.</h3><p>"Delivered right on time."</p></article>
+          <article class="review rv" style="--k:2"><h3>R. Santos</h3><p>"Design matched our theme."</p></article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="foot-links">
+      <button type="button" data-open="aboutDlg"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>ABOUT US</button>
+      <i aria-hidden="true"></i>
+      <button type="button" data-open="contactDlg"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>CONTACTS</button>
+    </div>
+    <p>&copy; 2019 R&amp;R Sweet Bites. All Rights Reserved.</p>
+  </footer>
+
+<button class="totop" id="toTop" type="button" aria-label="Back to top"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
+
+<dialog class="info" id="aboutDlg" aria-labelledby="aboutT">
+  <button class="x" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <h2 id="aboutT">About R&amp;R Sweet Bites</h2>
+  <p>We craft fully customized cakes for life's special moments, from design to doorstep. Pick a design, send your request, get a clear quote, and we'll bake and deliver.</p>
+</dialog>
+
+<dialog class="info" id="contactDlg" aria-labelledby="contactT">
+  <button class="x" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <h2 id="contactT">Contact us</h2>
+  <p>Message us to talk about your next cake.</p>
+  <ul>
+    <li>Facebook: R&amp;RSweetBites</li>
+    <li><a href="tel:09568300240">0956-8300-240</a></li>
+  </ul>
+</dialog>
+
+<dialog class="lb" id="lightbox" aria-label="Cake photo viewer">
+  <button class="x" type="button" data-close aria-label="Close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  <button class="lb-nav lb-prev" type="button" aria-label="Previous photo"><svg viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></svg></button>
+  <figure><img id="lbImg" src="" alt=""><figcaption id="lbCap"></figcaption></figure>
+  <button class="lb-nav lb-next" type="button" aria-label="Next photo"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></svg></button>
+</dialog>
+
+
+
+<script>
+(function () {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const canHover = matchMedia("(hover: hover)").matches;
+
+  /* ---------- Nav: mobile menu, scroll state, progress, back-to-top ---------- */
+  const nav = $("#nav"), toggle = $(".menu-toggle", nav), bar = $("#progress"), toTop = $("#toTop");
+  const setMenu = (o) => { nav.classList.toggle("open", o); toggle.setAttribute("aria-expanded", String(o)); };
+  toggle.addEventListener("click", () => setMenu(!nav.classList.contains("open")));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMenu(false); });
+  document.addEventListener("click", (e) => { if (!nav.contains(e.target)) setMenu(false); });
+  matchMedia("(min-width: 901px)").addEventListener("change", () => setMenu(false));
+
+  let ticking = false;
+  function onScroll() {
+    const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.transform = "scaleX(" + (max > 0 ? y / max : 0) + ")";
+    nav.classList.toggle("scrolled", y > 8);
+    toTop.classList.toggle("show", y > 600);
+    ticking = false;
+  }
+  addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+  onScroll();
+  toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }));
+
+  /* Smooth in-page links */
+  $$('a[href^="#"]:not([data-open])').forEach((a) => a.addEventListener("click", (e) => {
+    const id = a.getAttribute("href"), t = id.length > 1 && $(id);
+    if (!t) return;
+    e.preventDefault(); setMenu(false);
+    t.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    history.pushState(null, "", id);
+    if (t.hasAttribute("tabindex")) t.focus({ preventScroll: true });
+  }));
+
+  /* Scroll-spy for Home / Gallery */
+  const spy = { "#home": $('.links a[href="#home"]') };
+  const spyObs = new IntersectionObserver((es) => es.forEach((en) => {
+    if (!en.isIntersecting) return;
+    Object.values(spy).forEach((a) => a && a.removeAttribute("aria-current"));
+    const a = spy["#" + en.target.id]; if (a) a.setAttribute("aria-current", "page");
+  }), { rootMargin: "-45% 0px -50% 0px" });
+  ["home"].forEach((id) => { const el = document.getElementById(id); if (el) spyObs.observe(el); });
+
+  /* ---------- Scroll reveal ---------- */
+  const rv = $$(".rv");
+  if ("IntersectionObserver" in window && !reduce) {
+    const io = new IntersectionObserver((es) => es.forEach((en) => {
+      if (!en.isIntersecting) return;
+      const el = en.target; io.unobserve(el); el.classList.add("in");
+      if (el.id === "steps") startSteps();
+      setTimeout(() => el.classList.remove("rv", "in"), 1500);   // hand transforms back to hover styles
+    }), { threshold: 0.15 });
+    rv.forEach((el) => io.observe(el));
+  } else { rv.forEach((el) => el.classList.remove("rv")); }
+
+  /* ---------- Ripple + magnetic buttons ---------- */
+  $$(".pill, .btn").forEach((b) => b.addEventListener("pointerdown", (e) => {
+    const r = b.getBoundingClientRect(), s = Math.max(r.width, r.height) * 2, sp = document.createElement("span");
+    sp.className = "ripple";
+    sp.style.cssText = "width:" + s + "px;height:" + s + "px;left:" + (e.clientX - r.left - s / 2) + "px;top:" + (e.clientY - r.top - s / 2) + "px";
+    b.appendChild(sp); setTimeout(() => sp.remove(), 650);
+  }));
+  if (canHover && !reduce) $$(".magnet").forEach((b) => {
+    b.addEventListener("pointermove", (e) => {
+      const r = b.getBoundingClientRect();
+      b.style.transform = "translate(" + ((e.clientX - r.left - r.width / 2) * .15) + "px," + ((e.clientY - r.top - r.height / 2) * .25 - 3) + "px)";
+    });
+    b.addEventListener("pointerleave", () => { b.style.transform = ""; });
+  });
+
+  /* ---------- Hero: sprinkles, 3D tilt, confetti ---------- */
+  const sp = $("#sprinkles");
+  if (sp && !reduce) {
+    const cols = ["#d9788a", "#f3b6c0", "#e8b64c", "#b9a4e0", "#fff"];
+    for (let i = 0; i < 22; i++) {
+      const el = document.createElement("i");
+      el.style.cssText = "left:" + (Math.random() * 100) + "%;top:" + (Math.random() * 100) + "%;--w:" + (10 + Math.random() * 10) + "px;--c:" + cols[i % cols.length] +
+        ";--t:" + (7 + Math.random() * 6) + "s;--dl:" + (-Math.random() * 10) + "s;--r:" + (Math.random() * 180) + "deg;--dx:" + ((Math.random() - .5) * 120) + "px;--dy:" + (40 + Math.random() * 90) + "px";
+      sp.appendChild(el);
+    }
+  }
+  const wrapEl = $("#circleWrap"), circ = $("#circle");
+  if (wrapEl && canHover && !reduce) {
+    wrapEl.addEventListener("pointermove", (e) => {
+      const r = wrapEl.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+      circ.style.transform = "perspective(800px) rotateY(" + (x * 18) + "deg) rotateX(" + (-y * 18) + "deg) scale(1.03)";
+    });
+    wrapEl.addEventListener("pointerleave", () => { circ.style.transform = ""; });
+  }
+  function confetti(x, y) {
+    if (reduce) return;
+    const cols = ["#d9788a", "#f3b6c0", "#e8b64c", "#b9a4e0", "#ffffff", "#8fd0c0"];
+    for (let i = 0; i < 34; i++) {
+      const c = document.createElement("span"); c.className = "confetti";
+      c.style.left = x + "px"; c.style.top = y + "px"; c.style.background = cols[i % cols.length];
+      document.body.appendChild(c);
+      const a = Math.random() * Math.PI * 2, d = 90 + Math.random() * 170;
+      c.animate([
+        { transform: "translate(0,0) rotate(0)", opacity: 1 },
+        { transform: "translate(" + Math.cos(a) * d + "px," + (Math.sin(a) * d - 60) + "px) rotate(" + (Math.random() * 720) + "deg)", opacity: 1, offset: .6 },
+        { transform: "translate(" + Math.cos(a) * d * 1.1 + "px," + (Math.sin(a) * d + 140) + "px) rotate(" + (Math.random() * 900) + "deg)", opacity: 0 }
+      ], { duration: 1100 + Math.random() * 500, easing: "cubic-bezier(.2,.7,.3,1)" }).onfinish = () => c.remove();
+    }
+  }
+  if (wrapEl) wrapEl.addEventListener("click", (e) => confetti(e.clientX, e.clientY));
+
+  /* ---------- How it works: interactive steps ---------- */
+  const stepBtns = $$(".step"), detail = $("#stepDetail"), stepsEl = $("#steps");
+  let cur = 0, timer = null, userTouched = false;
+  function setStep(i, fromUser) {
+    cur = i;
+    stepBtns.forEach((b, k) => b.classList.toggle("active", k === i));
+    stepsEl.style.setProperty("--fill", i / (stepBtns.length - 1));
+    const t = stepBtns[i].dataset.text;
+    if (detail.textContent !== t) {
+      detail.classList.add("swap");
+      setTimeout(() => { detail.textContent = t; detail.classList.remove("swap"); }, 160);
+    }
+    if (fromUser) { userTouched = true; clearInterval(timer); }
+  }
+  function startSteps() {
+    if (reduce || userTouched) return;
+    setStep(0);
+    timer = setInterval(() => setStep((cur + 1) % stepBtns.length), 2200);
+  }
+  stepBtns.forEach((b, i) => {
+    b.addEventListener("click", () => setStep(i, true));
+    b.addEventListener("pointerenter", () => { if (canHover) setStep(i, true); });
+    b.addEventListener("focus", () => setStep(i, true));
+    b.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+        const n = (i + (e.key === "ArrowRight" ? 1 : -1) + stepBtns.length) % stepBtns.length;
+        stepBtns[n].focus(); e.preventDefault();
+      }
+    });
+  });
+  setStep(0);
+  if (reduce || !("IntersectionObserver" in window)) stepsEl.style.setProperty("--fill", 0);
+
+  /* ---------- Dialogs: about / contact ---------- */
+  $$("[data-open]").forEach((t) => t.addEventListener("click", (e) => {
+    e.preventDefault(); setMenu(false);
+    const d = document.getElementById(t.dataset.open);
+    if (d && d.showModal) d.showModal();
+  }));
+  $$("dialog").forEach((d) => {
+    d.addEventListener("click", (e) => { if (e.target === d) d.close(); });
+    $$("[data-close]", d).forEach((b) => b.addEventListener("click", () => d.close()));
+  });
+
+  /* ---------- Lightbox ---------- */
+  const lb = $("#lightbox"), lbImg = $("#lbImg"), lbCap = $("#lbCap");
+  const shots = $$(".card, .promo .ph");
+  let li = 0;
+  function show(i) {
+    li = (i + shots.length) % shots.length;
+    const im = $("img", shots[li]);
+    lbImg.classList.add("swap");
+    setTimeout(() => {
+      lbImg.src = im.currentSrc || im.src; lbImg.alt = im.alt;
+      lbCap.textContent = (im.alt ? im.alt + "  \u2022  " : "") + (li + 1) + " / " + shots.length;
+      lbImg.classList.remove("swap");
+    }, 120);
+  }
+  shots.forEach((s, i) => s.addEventListener("click", () => { if (lb.showModal) { lb.showModal(); lbImg.src = ""; show(i); } }));
+  $(".lb-prev").addEventListener("click", (e) => { e.stopPropagation(); show(li - 1); });
+  $(".lb-next").addEventListener("click", (e) => { e.stopPropagation(); show(li + 1); });
+  lb.addEventListener("keydown", (e) => { if (e.key === "ArrowLeft") show(li - 1); if (e.key === "ArrowRight") show(li + 1); });
+  let sx = null;
+  lb.addEventListener("pointerdown", (e) => { sx = e.clientX; });
+  lb.addEventListener("pointerup", (e) => { if (sx !== null && Math.abs(e.clientX - sx) > 60) show(li + (e.clientX < sx ? 1 : -1)); sx = null; });
+
+  /* ---------- Logged-in menu + logout (only when present) ---------- */
+  const avatar = $("#avatarBtn");
+  if (avatar) {
+    const menu = $("#profileMenu"), modal = $("#logoutModal"), logoutBtn = $("#logoutBtn"), noBtn = $("#logoutNo");
+    const setProfile = (o) => { menu.hidden = !o; avatar.setAttribute("aria-expanded", String(o)); };
+    avatar.addEventListener("click", (e) => { e.stopPropagation(); setProfile(menu.hidden); });
+    document.addEventListener("click", (e) => { if (!menu.contains(e.target)) setProfile(false); });
+    $$('a[href="#"]', menu).forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+    const closeModal = () => { modal.hidden = true; avatar.focus(); };
+    logoutBtn.addEventListener("click", () => { setProfile(false); modal.hidden = false; noBtn.focus(); });
+    noBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key !== "Escape") return; if (!modal.hidden) closeModal(); else setProfile(false); });
+  }
+})();
+</script>
+</body>
+</html>

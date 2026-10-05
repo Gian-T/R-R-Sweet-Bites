@@ -531,7 +531,7 @@
   <!-- Navigation Bar -->
   <nav class="navbar">
     <a href="#home" class="nav-brand">
-      <img src="Images-Icons\R&R Logo.jpg" alt="" class="brand-icon">
+      <img src="..\Images-Icons\R&R Logo.jpg" alt="" class="brand-icon">
       <span class="brand-name">R&amp;R Sweet Bites</span>
     </a>
 
@@ -550,7 +550,7 @@
     </ul>
 
     <div class="nav-actions">
-      <img src="Images-Icons\bell-icon.png" alt="" class="notification-icon">
+      <img src="..\Images-Icons\bell-icon.png" alt="" class="notification-icon">
       <a href="#login" class="btn btn-primary">Log in</a>
       <a href="#signup" class="btn btn-primary">Sign up</a>
     </div>
@@ -732,7 +732,7 @@
           }
         });
       }, observerOptions);
-      fetch('api/gallery.php')
+      fetch('../api/gallery.php')
         .then(response => {
           if (!response.ok) throw new Error('Gallery request failed');
           return response.json();

@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quotation – R&amp;R Sweet Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Platypi:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-brand: 'Platypi', Georgia, serif;
+  --font-nav: 'Jost', system-ui, sans-serif;
+  --font-text: 'Jost', system-ui, sans-serif;
+  --font-header: 'Platypi', Georgia, serif;
+
+  --color-primary: #D27685;
+  --color-primary-hover: #BE5B6C;
+  --bg-main: #FAF0E6;
+  --bg-card: #FFFFFF;
+  --bg-placeholder: #F2D5D5;
+  --bg-footer: #ECCFCB;
+  --brand-icon-bg: #E8C3C3;
+  --color-border: #E0E0E0;
+  --color-text-dark: #382325;
+  --color-text-alt: #555555;
+  --color-text-muted: #666666;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.1rem;
+  --text-lg: 1.35rem;
+  --text-xl: 1.6rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.5rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.2rem;
+  --space-5: 2rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 20px;
+  --radius-full: 50%;
+
+  --shadow-sm: 0 2px 10px rgba(0,0,0,0.03);
+  --shadow-md: 0 4px 18px rgba(0,0,0,0.03);
+  --shadow-brand: 0 4px 10px rgba(210,118,133,0.2);
+  --shadow-brand-hover: 0 6px 15px rgba(210,118,133,0.35);
+  --shadow-focus: 0 0 0 3px rgba(210,118,133,0.15);
+
+  --status-error: #C65F62;
+  --status-pending: #D6A85F;
+  --status-ok: #829B7A;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-text);
+  color: var(--color-text-dark);
+  background: var(--bg-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--text-base);
+}
+
+a { color: inherit; text-decoration: none; }
+
+.frame { width: 100%; max-width: 1100px; margin: 0 auto; }
+
+/* Navbar */
+.navbar {
+  position: sticky; top: 0; z-index: 1000;
+  background-color: var(--bg-main);
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 5%;
+  box-shadow: var(--shadow-sm);
+}
+.nav-brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon { width: 40px; height: 40px; border-radius: var(--radius-full); background-color: var(--brand-icon-bg); object-fit: cover; }
+.brand-name { font-family: var(--font-brand); font-weight: 700; font-size: 1.35rem; color: var(--color-primary); letter-spacing: -0.2px; }
+.nav-links { display: flex; list-style: none; align-items: center; gap: 2rem; font-family: var(--font-nav); }
+.nav-links a { color: var(--color-text-dark); font-weight: 500; font-size: 1rem; transition: color .3s ease; padding-bottom: 4px; }
+.nav-links a:hover, .nav-links a.active { color: var(--color-primary); }
+.nav-links a.active { border-bottom: 2.5px solid var(--color-primary); font-weight: 600; }
+.nav-actions { display: flex; align-items: center; gap: 1.25rem; }
+.notification-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
+.notification-icon { width: 24px; height: 24px; object-fit: contain; }
+.notification-badge { position: absolute; top: -5px; right: -6px; background: var(--color-primary); color: white; font-size: .65rem; font-weight: 700; width: 16px; height: 16px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; }
+.user-avatar { width: 38px; height: 38px; border-radius: var(--radius-full); background: #E8CFCD; color: var(--color-text-dark); font-family: var(--font-nav); font-weight: 600; font-size: .9rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.menu-toggle { display: none; flex-direction: column; gap: 5px; padding: 5px; border: 0; background: transparent; cursor: pointer; }
+.menu-toggle span { width: 25px; height: 3px; background: var(--color-primary); border-radius: 2px; }
+
+/* Main */
+main { flex: 1; }
+main .frame { padding: 1.5rem var(--space-3) var(--space-5); }
+.breadcrumbs { margin-bottom: 1.25rem; color: var(--color-primary); font-size: var(--text-sm); font-weight: 500; }
+.breadcrumbs span { color: var(--color-text-muted); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); align-items: start; }
+@media (min-width: 900px) { .layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+
+/* Card */
+.card { background: #FAF5F0; border-radius: 20px; padding: 2.25rem; border: 1px solid #EFE4DC; box-shadow: var(--shadow-sm); }
+.top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+.tag { background: #FBF0E0; color: #D6A85F; font-size: 11px; font-weight: 700; letter-spacing: .05em; padding: .25rem .6rem; border-radius: var(--radius-pill); text-transform: uppercase; }
+.tag.ok { background: #E9EFE5; color: #5c8f63; }
+.tag.bad { background: #FBE9E9; color: #C65F62; }
+.date { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500; }
+h1 { font-family: var(--font-header); font-size: var(--text-3xl); font-weight: 700; color: var(--color-text-dark); line-height: 1.2; }
+.ref { font-size: var(--text-sm); font-weight: 600; color: var(--color-primary); margin-top: .25rem; }
+hr { border: 0; border-top: 1px solid #EAE0D8; margin: 1.75rem 0; }
+h2 { font-family: var(--font-header); font-size: var(--text-md); font-weight: 600; color: var(--color-text-dark); margin-bottom: 1.25rem; }
+
+.specs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; }
+.spec { background: #FAF0E6; border-radius: var(--radius-md); padding: .75rem 1rem; }
+.spec small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--color-text-muted); text-transform: uppercase; }
+.spec span { display: block; font-size: var(--text-sm); font-weight: 600; color: var(--color-text-dark); margin-top: .2rem; }
+
+.table-wrap { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { background: #F5E8E2; font-size: 11px; font-weight: 700; letter-spacing: .05em; color: var(--color-text-dark); text-transform: uppercase; text-align: right; padding: .6rem .75rem; }
+td { font-size: var(--text-sm); font-weight: 500; text-align: right; padding: .85rem .75rem; border-bottom: 1px solid #EAE0D8; }
+th:first-child, td:first-child { text-align: left; }
+
+.total { display: flex; justify-content: flex-end; align-items: center; gap: 3rem; margin-top: 1.25rem; padding-right: .75rem; }
+.total strong { font-size: var(--text-base); font-weight: 700; color: var(--color-text-dark); }
+.total span { font-family: var(--font-header); font-size: var(--text-xl); font-weight: 700; color: var(--color-primary); }
+
+.rev label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: .5rem; color: var(--color-text-dark); }
+textarea { display: block; width: 100%; min-height: 110px; border: 1px solid #E5D5CE; border-radius: var(--radius-md); padding: .85rem; font-family: var(--font-text); font-size: var(--text-sm); color: var(--color-text-dark); background: #FFFFFF; resize: vertical; }
+textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
+textarea:disabled { background: #F5F0EC; color: #999; }
+
+.rev-actions { display: flex; flex-direction: column; gap: var(--space-3); margin-top: 1rem; }
+@media (min-width: 600px) { .rev-actions { flex-direction: row; justify-content: space-between; align-items: center; } }
+.rev-actions p { font-size: 11px; color: var(--color-text-muted); }
+.btns { display: flex; gap: .75rem; }
+
+.btn { font-family: var(--font-brand); font-weight: 600; font-size: var(--text-sm); padding: .6rem 1.4rem; border-radius: var(--radius-pill); cursor: pointer; transition: all .15s ease-in-out; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; }
+.btn.out { background: transparent; border-color: var(--color-primary); color: var(--color-primary); }
+.btn.out:hover:not(:disabled) { background: var(--bg-main); border-color: var(--color-primary-hover); color: var(--color-primary-hover); }
+.btn.fill { background: var(--color-primary); color: #FFFFFF; box-shadow: var(--shadow-brand); }
+.btn.fill:hover:not(:disabled) { background: var(--color-primary-hover); box-shadow: var(--shadow-brand-hover); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Sidebar */
+aside { display: flex; flex-direction: column; gap: 1rem; }
+.status { background: #FAF5F0; border: 1px solid #EFE4DC; border-radius: 16px; padding: 1.25rem 1.5rem; }
+.status h3 { font-family: var(--font-header); font-size: var(--text-md); font-weight: 700; color: var(--color-text-dark); }
+.status dl { margin-top: 1rem; }
+.row { display: flex; justify-content: space-between; align-items: center; padding: .35rem 0; font-size: var(--text-xs); color: var(--color-text-alt); }
+.row b { color: var(--color-text-dark); font-weight: 600; }
+.pill-badge { background: #F3E3D3; color: #A37233; font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-pill); }
+.expiry { display: flex; align-items: center; gap: .4rem; font-size: 11px; color: var(--color-text-alt); }
+.expiry .star { color: var(--color-primary); font-size: 12px; }
+.side { background: #FFFFFF; border: 1px solid #EFE4DC; border-radius: 16px; padding: 1.25rem 1.5rem; }
+.who { display: flex; align-items: center; gap: .75rem; }
+.ab { width: 2rem; height: 2rem; border-radius: var(--radius-full); background: #F2D5D5; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--color-text-dark); }
+.who h3 { font-size: var(--text-sm); font-family: var(--font-header); font-weight: 700; }
+.notes p { font-size: var(--text-xs); line-height: 1.4; color: var(--color-text-alt); margin-top: .75rem; }
+.terms summary { list-style: none; display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); font-weight: 700; cursor: pointer; color: var(--color-text-dark); }
+.terms summary::-webkit-details-marker { display: none; }
+.terms summary::after { content: ""; width: 6px; height: 6px; border-right: 2px solid var(--color-primary); border-bottom: 2px solid var(--color-primary); transform: rotate(45deg); transition: transform .2s; }
+.terms[open] summary::after { transform: rotate(-135deg); }
+.terms p { font-size: 11px; line-height: 1.4; color: var(--color-text-muted); margin-top: .6rem; }
+
+/* Footer */
+footer { background: var(--bg-footer); text-align: center; padding: 1.5rem var(--space-3); margin-top: 3rem; }
+.flinks { display: flex; justify-content: center; align-items: center; gap: .75rem; font-size: 11px; font-weight: 600; color: var(--color-text-dark); }
+.flinks a { display: flex; align-items: center; gap: .3rem; }
+.flinks svg { width: 14px; height: 14px; }
+.flinks i { width: 1px; height: 12px; background: var(--color-text-dark); }
+.copy { margin-top: .4rem; font-size: 11px; color: var(--color-text-alt); }
+
+/* States */
+.state-msg { padding: 60px 16px; text-align: center; color: var(--color-text-muted); font-size: var(--text-base); }
+.ferr { color: var(--status-error); font-size: 12px; margin-top: 6px; }
+.ferr[hidden] { display: none; }
+
+@media (max-width: 768px) {
+  .menu-toggle { display: flex; }
+  .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 1rem; padding: 1.25rem; background: var(--bg-main); box-shadow: var(--shadow-md); }
+  .nav-links.active { display: flex; }
+  .specs { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="Customer_Orders.html" class="nav-brand">
+    <img src="../Images-Icons/R&R Logo.jpg" alt="R&R Sweet Bites Logo" class="brand-icon">
+    <span class="brand-name">R&amp;R Sweet Bites</span>
+  </a>
+  <button class="menu-toggle" id="mobile-menu" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-list">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links" id="nav-list">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Cake-Gallery.html">Gallery</a></li>
+    <li><a href="Weekly-Availability.html">Submit Request</a></li>
+    <li><a href="Customer_Orders.html" class="active">My Order</a></li>
+    <li><a href="#messages">Messages</a></li>
+  </ul>
+  <div class="nav-actions">
+    <div class="notification-wrapper" title="Notifications" id="notificationBtn">
+      <img src="../Images-Icons/bell-icon.png" alt="Bell Icon" class="notification-icon">
+      <span class="notification-badge">2</span>
+    </div>
+    <div class="user-avatar" title="User Profile" id="clientAvatar">—</div>
+  </div>
+</nav>
+
+<main>
+  <div class="frame">
+    <div class="breadcrumbs">
+      My Orders / Quotation Detail / <span id="coverRef">#—</span>
+    </div>
+
+    <p class="state-msg" id="loading">Loading quotation…</p>
+
+    <div class="layout" id="content" hidden>
+      <section class="card" aria-label="Quotation Details">
+        <div class="top-row">
+          <span class="tag" id="statusTag">—</span>
+          <span class="date">Date Issued: <span id="issuedAt">—</span></span>
+        </div>
+        <h1>Your Custom Cake Quotation</h1>
+        <div class="ref">Reference No: <span id="refNo">#—</span></div>
+        <hr>
+        <h2>Design Specifications Summary</h2>
+        <div class="specs">
+          <div>
+            <div class="spec" style="margin-bottom: 1rem;">
+              <small>Cake Type</small>
+              <span id="cakeType">—</span>
+            </div>
+            <div class="spec">
+              <small>Complexity</small>
+              <span id="complexity">—</span>
+            </div>
+          </div>
+          <div>
+            <div class="spec" style="margin-bottom: 1rem;">
+              <small>Preferred Delivery Date</small>
+              <span id="deliveryDate">—</span>
+            </div>
+            <div class="spec">
+              <small>Version</small>
+              <span id="versionNumber">—</span>
+            </div>
+          </div>
+        </div>
+        <hr>
+        <h2>Design Notes</h2>
+        <p id="designNotes" style="font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-alt);">—</p>
+        <hr>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="items">
+              <tr><td>Quoted total for your custom cake order</td><td id="lineTotal">₱0.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="total">
+          <strong>Total Amount</strong>
+          <span id="total">₱0.00</span>
+        </div>
+        <hr>
+        <form class="rev" id="revForm" novalidate>
+          <label for="rev" id="revLabel">Need adjustments? Request a Revision</label>
+          <textarea id="rev" name="message" maxlength="1000" placeholder='Ex: "Could we change the frosting to... "' aria-describedby="err-message"></textarea>
+          <p class="ferr" id="err-message" role="alert" hidden></p>
+          <div class="rev-actions">
+            <p>* Revisions usually re-estimate within 1 business day.</p>
+            <div class="btns">
+              <button class="btn out" type="button" id="btnRevision">Request Revision</button>
+              <button class="btn fill" type="button" id="btnAccept">Accept Quotation</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <aside>
+        <div class="status">
+          <h3>Quotation Status</h3>
+          <dl>
+            <div class="row"><span>Reference ID</span><b id="referenceId">—</b></div>
+            <div class="row"><span>Client</span><b id="clientInitials">—</b></div>
+            <div class="row"><span>Status</span><span class="pill-badge" id="statusBadge">—</span></div>
+            <div class="row"><span>Requested Date</span><b id="requestedDate">—</b></div>
+          </dl>
+        </div>
+
+        <div class="side notes">
+          <div class="who">
+            <div class="ab" id="adminAb">RR</div>
+            <h3>Notes from R&amp;R Sweet Bites</h3>
+          </div>
+          <p id="adminNotes">No notes yet.</p>
+        </div>
+
+        <details class="side terms">
+          <summary>Terms &amp; Booking Conditions</summary>
+          <p>20% upfront payment secures your slot. Outstanding balances must be cleared 24h prior to selected delivery slot.</p>
+        </details>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="flinks">
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>ABOUT US</a>
+    <i></i>
+    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>CONTACTS</a>
+  </div>
+  <p class="copy">© 2019 R&amp;R Sweet Bites. All Rights Reserved.</p>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var API   = '../api/quotation.php';
+  var orderId = new URLSearchParams(location.search).get('order') || '';
+  var csrf  = '';
+  var canAct = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  /* Mobile menu */
+  var menuToggle = $('mobile-menu'), navList = $('nav-list');
+  if (menuToggle && navList) {
+    menuToggle.addEventListener('click', function () {
+      var open = navList.classList.toggle('active');
+      menuToggle.setAttribute('aria-expanded', String(open));
+    });
+  }
+
+  if (!orderId) {
+    $('loading').textContent = 'No order selected. Redirecting…';
+    setTimeout(function () { location.href = 'Customer_Orders.html'; }, 1200);
+    return;
+  }
+
+  function peso(n) {
+    return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    var d = new Date(iso + 'T00:00:00');
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function render(d) {
+    var o = d.order;
+    var revs = d.revisions || [];
+    var latest = revs[0] || null;
+    csrf = d.csrf || '';
+
+    document.title = 'Quotation · RQ-' + String(o.order_id).padStart(4, '0') + ' – R&R Sweet Bites';
+    $('clientAvatar').textContent = o.initials || '—';
+    $('coverRef').textContent = '#RQ-' + String(o.order_id).padStart(4, '0');
+
+    var statusLabel = latest ? latest.status_label : 'No Quotation Yet';
+    var tagClass = 'tag';
+    if (latest) {
+      if (latest.status === 'accepted') tagClass += ' ok';
+      else if (latest.status === 'rejected') tagClass += ' bad';
+    }
+    $('statusTag').textContent = statusLabel.toUpperCase();
+    $('statusTag').className = tagClass;
+    $('statusBadge').textContent = statusLabel;
+
+    $('issuedAt').textContent = latest ? latest.created_at : '—';
+    $('refNo').textContent = '#RQ-' + String(o.order_id).padStart(4, '0');
+    $('referenceId').textContent = 'RQ-' + String(o.order_id).padStart(4, '0');
+    $('clientInitials').textContent = o.initials || '—';
+    $('cakeType').textContent = o.cake_type_label || o.cake_type || '—';
+    $('complexity').textContent = o.difficulty_label || '—';
+    $('deliveryDate').textContent = fmtDate(o.preferred_date);
+    $('requestedDate').textContent = fmtDate(o.preferred_date);
+    $('versionNumber').textContent = latest ? ('v' + latest.version_number) : '—';
+    $('designNotes').textContent = o.design_description || '—';
+
+    var amount = latest ? latest.quoted_price : 0;
+    $('lineTotal').textContent = peso(amount);
+    $('total').textContent = peso(amount);
+
+    $('adminNotes').textContent = (latest && latest.remarks) ? '“' + latest.remarks + '”' : 'No notes yet.';
+
+    // Buttons only work while pending
+    canAct = !!(latest && latest.status === 'pending');
+    $('rev').disabled = !canAct;
+    $('btnRevision').disabled = !canAct;
+    $('btnAccept').disabled = !canAct;
+
+    // If not pending, we can still show but let the user know
+    if (!canAct && latest) {
+      if (latest.status === 'accepted') {
+        $('revLabel').textContent = 'Quotation accepted — thank you!';
+        $('rev').placeholder = 'You already accepted this quotation.';
+      } else if (latest.status === 'revision_requested') {
+        $('revLabel').textContent = 'Revision requested — we\'ll be in touch.';
+        $('rev').placeholder = 'Your revision request was sent.';
+      } else if (latest.status === 'revised') {
+        $('revLabel').textContent = 'A newer version is available.';
+        $('rev').placeholder = 'Please refresh or contact us.';
+      }
+    }
+
+    // Grab CSRF by hitting the endpoint — it embeds csrf in JSON? No: we call csrf-debug style
+    // Simpler: fetch csrf separately from a tiny helper if you have one; otherwise embed from form.
+    // We'll rely on the accept POST using the same session cookie.
+    // If your server requires csrf on POST, embed it below.
+  }
+
+  function load() {
+    return fetch(API + '?action=load&order_id=' + encodeURIComponent(orderId), {
+      credentials: 'same-origin',
+      headers: { 'Accept': 'application/json' }
+    })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        if (!res.ok || !res.body.ok) {
+          if (res.body && /not your order|login/i.test(res.body.message || '')) {
+            location.href = 'Customer_Orders.html';
+            return;
+          }
+          throw new Error((res.body && res.body.message) || 'Could not load the quotation.');
+        }
+        $('loading').hidden = true;
+        $('content').hidden = false;
+        render(res.body);
+      })
+      .catch(function (e) {
+        $('loading').textContent = e.message || 'Could not load the quotation.';
+      });
+  }
+
+  /* Accept */
+  $('btnAccept').addEventListener('click', function () {
+    if (!canAct) return;
+    if (!confirm('Accept this quotation and proceed to downpayment?')) return;
+
+    var fd = new FormData();
+    fd.append('action', 'accept');
+    fd.append('order_id', orderId);
+    fd.append('csrf', csrf); 
+
+    fetch(API, { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.body.ok) {
+          alert(res.body.message || 'Quotation accepted. Thank you!');
+          location.href = 'customer-orders-PaymentAndBalance.html?order=' + encodeURIComponent(orderId);
+        } else {
+          alert((res.body && res.body.message) || 'Could not accept the quotation.');
+        }
+      })
+      .catch(function () {
+        alert('Could not reach the server. Please try again.');
+      });
+  });
+
+  /* Revision */
+  $('btnRevision').addEventListener('click', function () {
+    if (!canAct) return;
+    var msg = $('rev').value.trim();
+    var err = $('err-message');
+
+    if (msg.length < 5) {
+      err.textContent = 'Please describe the change you want (min 5 characters).';
+      err.hidden = false;
+      $('rev').focus();
+      return;
+    }
+    err.hidden = true;
+
+    var fd = new FormData();
+    fd.append('action', 'revision');
+    fd.append('order_id', orderId);
+    fd.append('message', msg);
+    fd.append('csrf', csrf); 
+
+    fetch(API, { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
+      .then(function (res) {
+        if (res.ok && res.body.ok) {
+          alert(res.body.message || 'Revision requested.');
+          location.reload();
+        } else {
+          err.textContent = (res.body && res.body.message) || 'Could not send your revision request.';
+          err.hidden = false;
+        }
+      })
+      .catch(function () {
+        err.textContent = 'Could not reach the server. Please try again.';
+        err.hidden = false;
+      });
+  });
+
+  load();
+})();
+</script>
+</body>
+</html>

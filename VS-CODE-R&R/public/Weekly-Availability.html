@@ -1,9 +1,5 @@
 <?php
 declare(strict_types=1);
-
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  session_start();
-}
 if (!isset($_SESSION['csrf_token'])) {
   $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -525,16 +521,6 @@ if (!isset($_SESSION['csrf_token'])) {
       align-items: center;
     }
 
-    .fr-tags {
-      display: flex;
-      gap: 4.8rem;
-      padding-right: 2.2rem;
-      font-family: var(--font-nav);
-      font-size: 0.8rem;
-      color: var(--color-text-muted);
-      font-weight: 600;
-    }
-
     /* Buttons */
     .btn {
       font-family: var(--font-button);
@@ -854,10 +840,6 @@ if (!isset($_SESSION['csrf_token'])) {
       .buttons-wrapper .btn {
         width: 100%;
       }
-
-      .fr-tags {
-        display: none;
-      }
     }
 
     @media (max-width: 520px) {
@@ -948,7 +930,7 @@ if (!isset($_SESSION['csrf_token'])) {
         <section class="availability-admin" aria-labelledby="availability-admin-title">
           <h3 id="availability-admin-title">Manage Weekly Availability</h3>
           <form id="availability-admin-form">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
             <label>
               Week starts
               <input type="date" id="week-start-date" name="week_start_date" value="<?= (new DateTimeImmutable('monday this week'))->format('Y-m-d') ?>" required>
@@ -989,44 +971,13 @@ if (!isset($_SESSION['csrf_token'])) {
 
         <div class="action-buttons-group">
           <div class="buttons-wrapper">
-            <button id="btn-rush" class="btn btn-outline">Request Rush Evaluation</button>
             <button id="btn-proceed" class="btn btn-primary">Proceed with Custom Request</button>
-          </div>
-          <div class="fr-tags">
-            <span>FR - 15</span>
-            <span>FR - 7</span>
           </div>
         </div>
       </div>
 
     </div>
   </main>
-
-  <!-- Rush Order Evaluation Modal (FR-15) -->
-  <div class="modal-overlay" id="rush-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Request Rush Evaluation</h3>
-        <button class="modal-close" id="close-rush-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>You have selected a closed or fully booked date (<strong id="rush-modal-date">Oct 8, 2026</strong>).</p>
-        <p>Rush requests are subject to kitchen capacity and an additional expediting fee. Please fill out details below for quick review:</p>
-        <div class="modal-field">
-          <label>Event Type / Theme</label>
-          <input type="text" placeholder="e.g. Birthday, Wedding Mini, Anniversary">
-        </div>
-        <div class="modal-field">
-          <label>Notes for Baker</label>
-          <textarea rows="3" placeholder="Tell us about your servings and design needs..."></textarea>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-outline" id="cancel-rush-modal">Cancel</button>
-        <button class="btn btn-primary" id="submit-rush-form">Submit Rush Request</button>
-      </div>
-    </div>
-  </div>
 
   <!-- Proceed Custom Request Modal (FR-7) -->
   <div class="modal-overlay" id="custom-modal">
@@ -1086,9 +1037,7 @@ if (!isset($_SESSION['csrf_token'])) {
     const statusText = document.getElementById('status-text');
 
     const btnProceed = document.getElementById('btn-proceed');
-    const btnRush = document.getElementById('btn-rush');
 
-    const rushModal = document.getElementById('rush-modal');
     const customModal = document.getElementById('custom-modal');
     const toast = document.getElementById('toast-message');
 
@@ -1132,7 +1081,7 @@ if (!isset($_SESSION['csrf_token'])) {
         if (availabilityCache.has(key)) {
           availabilityWeeks = availabilityCache.get(key);
         } else {
-          const response = await fetch(`api/weekly-availability.php?year=${year}&month=${month + 1}`);
+          const response = await fetch(`../api/weekly-availability.php?year=${year}&month=${month + 1}`);
           const result = await response.json();
           if (!response.ok || !result.success || !Array.isArray(result.weeks)) {
             throw new Error(result.error || 'Availability could not be loaded.');
@@ -1220,13 +1169,7 @@ if (!isset($_SESSION['csrf_token'])) {
       statusDot.className = `dot ${dayInfo.status}`;
       statusText.textContent = dayInfo.footerLabel;
 
-      if (dayInfo.databaseStatus !== 'open') {
-        btnProceed.disabled = true;
-        btnRush.disabled = false;
-      } else {
-        btnProceed.disabled = false;
-        btnRush.disabled = false;
-      }
+      btnProceed.disabled = dayInfo.databaseStatus !== 'open';
     }
 
     function showToast(msg) {
@@ -1257,26 +1200,14 @@ if (!isset($_SESSION['csrf_token'])) {
     });
 
     // Modal Triggers
-    btnRush.addEventListener('click', () => {
-      document.getElementById('rush-modal-date').textContent = `${monthNames[selectedDateObj.month]} ${selectedDateObj.date}, ${selectedDateObj.year}`;
-      rushModal.classList.add('active');
-    });
-
     btnProceed.addEventListener('click', () => {
       const preferredDate = `${selectedDateObj.year}-${String(selectedDateObj.month + 1).padStart(2, '0')}-${String(selectedDateObj.date).padStart(2, '0')}`;
-      window.location.href = `Custom-Cake-Request.php?preferred_date=${preferredDate}`;
+      window.location.href = `../public/Custom-Cake-Request.php?preferred_date=${encodeURIComponent(preferredDate)}`;
     });
 
     // Close Modals
-    document.getElementById('close-rush-modal').onclick = () => rushModal.classList.remove('active');
-    document.getElementById('cancel-rush-modal').onclick = () => rushModal.classList.remove('active');
     document.getElementById('close-custom-modal').onclick = () => customModal.classList.remove('active');
     document.getElementById('cancel-custom-modal').onclick = () => customModal.classList.remove('active');
-
-    document.getElementById('submit-rush-form').onclick = () => {
-      rushModal.classList.remove('active');
-      showToast("Rush Evaluation Request Submitted Successfully!");
-    };
 
     document.getElementById('confirm-custom-form').onclick = () => {
       customModal.classList.remove('active');
@@ -1313,7 +1244,7 @@ if (!isset($_SESSION['csrf_token'])) {
         availabilityMessage.textContent = 'Saving availability...';
 
         try {
-          const response = await fetch('api/weekly-availability.php', {
+          const response = await fetch('../api/weekly-availability.php', {
             method: 'POST',
             body: new FormData(availabilityAdminForm)
           });

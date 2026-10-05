@@ -1,51 +1,66 @@
 <?php
 declare(strict_types=1);
 /**
- * Backend for order-confirmation.html
- *   GET order-confirmation.php?order=ORD-2024-0423  -> order data as JSON
- *   (falls back to a confirmed order when ?order= is missing)
+ * order-confirmation.php — rebuilt against the live `r&r sweet bites` schema.
+ * GET order-confirmation.php?order=RQ-0001
  */
-require __DIR__ . '/db_connect.php';
+require_once __DIR__ . '/../includes/db_connect.php';
 
-header('Content-Type: application/json; charset=utf-8');
+json_header();
 
-function out(array $data, int $code = 200): void
-{
-    http_response_code($code);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    exit;
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    json_fail('GET only.', 405);
 }
 
-$pdo = db();
-
-/* ---------- Load order ---------- */
 $orderNo = trim((string) ($_GET['order'] ?? ''));
-$sql = 'SELECT o.*, c.initials AS client_initials, q.ref_no AS quote_ref
-        FROM orders o
-        JOIN customers c ON c.id = o.customer_id
-        LEFT JOIN quotations q ON q.id = o.quotation_id ';
-if ($orderNo !== '') {
-    $st = $pdo->prepare($sql . 'WHERE o.order_no = ?');
-    $st->execute([$orderNo]);
-} else {
-    $st = $pdo->query($sql . 'ORDER BY (o.stage >= 2) DESC, o.id ASC LIMIT 1');
+$pdo     = db();
+$oid     = $orderNo !== '' ? parse_id($orderNo) : 0;
+
+try {
+    if ($oid > 0) {
+        $stmt = $pdo->prepare(
+            "SELECT o.order_id, o.design_description, o.preferred_date, o.status,
+                    o.created_at, c.full_name,
+                    " . PRICE_SQL . " AS total
+             FROM `order` o
+             JOIN customer c ON c.customer_id = o.customer_id
+             WHERE o.order_id = ? AND o.customer_id = ?"
+        );
+        $stmt->execute([$oid, CUSTOMER_ID]);
+    } else {
+        // Fallback: most recent order for this customer
+        $stmt = $pdo->prepare(
+            "SELECT o.order_id, o.design_description, o.preferred_date, o.status,
+                    o.created_at, c.full_name,
+                    " . PRICE_SQL . " AS total
+             FROM `order` o
+             JOIN customer c ON c.customer_id = o.customer_id
+             WHERE o.customer_id = ?
+             ORDER BY o.order_id DESC LIMIT 1"
+        );
+        $stmt->execute([CUSTOMER_ID]);
+    }
+    $order = $stmt->fetch();
+} catch (Throwable $e) {
+    error_log('order-confirmation query failed: ' . $e->getMessage());
+    json_fail('Could not load order.', 500);
 }
-$order = $st->fetch();
+
 if (!$order) {
-    out(['error' => 'Order not found.'], 404);
+    json_fail('Order not found.', 404);
 }
 
-/* ---------- Payment figures ---------- */
-$st = $pdo->prepare(
-    "SELECT COALESCE(SUM(CASE WHEN status = 'verified' THEN amount END), 0) AS verified,
-            COALESCE(SUM(CASE WHEN status = 'pending'  THEN amount END), 0) AS pending
-     FROM payments WHERE order_id = ?"
+// Payments — schema uses `payment`, status enum 'pending_verification'
+$ps = $pdo->prepare(
+    "SELECT COALESCE(SUM(CASE WHEN status='verified'           THEN amount END), 0) AS verified,
+            COALESCE(SUM(CASE WHEN status='pending_verification' THEN amount END), 0) AS pending
+     FROM payment WHERE order_id = ?"
 );
-$st->execute([$order['id']]);
-$pay = $st->fetch();
+$ps->execute([$order['order_id']]);
+$pay = $ps->fetch();
 
-$total     = (float) $order['total_amount'];
-$dpPct     = (int) $order['downpayment_percent'];
+$total     = (float) $order['total'];
+$dpPct     = 20;                              // SRS FR-16: fixed at 20%
 $dpReq     = round($total * $dpPct / 100, 2);
 $verified  = (float) $pay['verified'];
 $pending   = (float) $pay['pending'];
@@ -59,10 +74,19 @@ if ($confirmed) {
     $paymentStatus = 'Awaiting ' . $dpPct . '% Deposit (' . peso(0) . ')';
 }
 
-/* ---------- Order journey tracker ---------- */
-// orders.stage = the step currently in progress (1-5); 6 = every step finished.
-// Until the downpayment is verified the tracker stays on step 1.
-$stage = $confirmed ? max((int) $order['stage'], 2) : 1;
+// Map DB status → journey stage
+$stageMap = [
+    'pending_review'                     => 1,
+    'quoted'                             => 1,
+    'confirmed'                          => 1,
+    'downpayment_pending_verification'   => 1,
+    'in_production'                      => 2,
+    'out_for_delivery'                   => 4,
+    'ready_for_pickup'                   => 4,
+    'completed'                          => 5,
+];
+$stage = $confirmed ? max($stageMap[$order['status']] ?? 1, 2) : 1;
+
 $labels = [
     1 => 'Payment Verified',
     2 => 'In Production',
@@ -79,16 +103,22 @@ foreach ($labels as $n => $label) {
     ];
 }
 
-out([
-    'client_initials'    => $order['client_initials'],
-    'crumb_ref'          => $order['quote_ref'] ?? $order['order_no'],
-    'confirmed'          => $confirmed,
+// Initials: first letter of each word in full_name
+$initials = '';
+foreach (preg_split('/\s+/', trim($order['full_name'])) as $w) {
+    if ($w !== '') $initials .= strtoupper($w[0]);
+}
+
+echo json_encode([  
+    'client_initials'     => substr($initials, 0, 2),
+    'crumb_ref'           => fmt_id($order['order_id']),
+    'confirmed'           => $confirmed,
     'downpayment_percent' => $dpPct,
-    'steps'              => $steps,
-    'order_no'           => $order['order_no'],
-    'order_date'         => fmt_date($order['order_date']),
-    'payment_status'     => $paymentStatus,
-    'total'              => peso($total),
-    'est_delivery_date'  => fmt_date($order['est_delivery_date']),
-    'cake_style'         => $order['cake_style'],
+    'steps'               => $steps,
+    'order_no'            => fmt_id($order['order_id']),
+    'order_date'          => fmt_date($order['created_at']),
+    'payment_status'      => $paymentStatus,
+    'total'               => peso($total),
+    'est_delivery_date'   => fmt_date($order['preferred_date']),
+    'cake_style'          => $order['design_description'],
 ]);

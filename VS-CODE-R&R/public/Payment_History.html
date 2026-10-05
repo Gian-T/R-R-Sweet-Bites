@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>R&amp;R Sweet Bites – My Orders</title>
+<title>R&amp;R Sweet Bites – Payment History</title>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Platypi:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
 
@@ -32,6 +32,7 @@ header{position:sticky;top:0;z-index:50;background:var(--bg);border-bottom:1px s
 .avatar{width:44px;height:44px;border-radius:var(--radius-full);background:var(--avatar-bg);border:0;font-weight:600}
 .burger{display:none;background:none;border:0;font-size:1.6rem;color:var(--brown)}
 @media(max-width:820px){
+ h2.title{font-size:var(--text-2xl)}
  .nav{display:flex}
  .burger{display:block;margin-left:auto}
  .links{position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;background:var(--bg);border-bottom:1px solid var(--pink-soft);max-height:0;overflow:hidden;transition:max-height .3s}
@@ -47,29 +48,24 @@ h2.title{font-size:var(--text-3xl);margin-bottom:4px}
 .sub{font-size:var(--text-sm);color:var(--muted);margin-bottom:20px}
 .card{background:var(--card);border:1px solid var(--rose);border-radius:var(--radius-lg);padding:var(--space-3);box-shadow:var(--shadow-md)}
 
-/* Orders list */
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
-.stat small{display:block;font-size:var(--text-xs);color:var(--muted)}
-.stat strong{font-size:var(--text-xl)}
-.filters{display:flex;gap:16px;flex-wrap:wrap;background:var(--pink-soft);padding:14px 18px;border-radius:var(--radius-lg);margin-bottom:24px;align-items:center}
-.filters select,.filters input{padding:9px 14px;border:1px solid var(--rose);border-radius:var(--radius-pill);background:var(--card);font:inherit;font-size:var(--text-sm)}
-.filters input{flex:1;min-width:200px}
-.order{font-family:'Jost',sans-serif;display:grid;grid-template-columns:90px 1fr auto auto 20px;gap:16px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--rose);border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:14px;transition:.2s;box-shadow:var(--shadow-md)}
-.order:hover{border-color:var(--pink);transform:translateX(3px);box-shadow:var(--shadow-lg)}
-.order .id{color:var(--pink);font-weight:600;font-size:var(--text-sm)}
-.order h3{font-size:var(--text-md)}
-.order small{color:var(--muted);display:block;font-size:var(--text-xs)}
-.date{font-weight:600;text-align:right}
-.pill{display:inline-block;padding:4px 12px;border-radius:var(--radius-pill);font-size:var(--text-xs);font-weight:600;background:var(--pink-soft)}
-.pill.ok{color:var(--ok)}.pill.warn{color:var(--warn)}.pill.bad{color:var(--bad)}
-.tag{padding:3px 12px;border-radius:var(--radius-pill);background:var(--pink-soft);color:var(--pink);font-size:var(--text-xs)}
-.empty{text-align:center;color:var(--muted);padding:30px}
-@media(max-width:700px){
- h2.title{font-size:var(--text-2xl)}
- .stats{grid-template-columns:1fr}
- .order{grid-template-columns:1fr auto;grid-template-areas:"a b" "c c" "d e"}
- .order>:nth-child(1){grid-area:a}.order>:nth-child(2){grid-area:c}.order>:nth-child(3){grid-area:d}.order>:nth-child(4){grid-area:b;text-align:right}.order>:nth-child(5){display:none}
-}
+/* Detail */
+.back{display:inline-block;border:1px solid var(--pink);color:var(--pink);background:none;border-radius:var(--radius-pill);padding:5px 14px;font-size:var(--text-xs);margin-bottom:10px}
+.crumb{font-size:var(--text-xs);color:var(--muted);margin-bottom:10px}
+.tabs{display:flex;gap:26px;margin:16px 0 20px;border-bottom:1px solid var(--pink-soft)}
+a.tab{font-family:'Platypi',Georgia,serif}
+.tab{background:none;border:0;padding:8px 2px;font-weight:500;color:var(--brown);border-bottom:2px solid transparent}
+.tab.on{color:var(--pink);border-color:var(--pink)}
+.panel{display:none}.panel.on{display:block}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md)}
+table{width:100%;border-collapse:collapse;min-width:560px}
+th{background:var(--pink-soft);color:var(--brown-deep);text-align:left;padding:14px;font-size:var(--text-sm)}
+td{padding:16px 14px;border-top:1px solid var(--line);font-size:var(--text-sm)}
+.bal{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px}
+.bal div{background:var(--bg);border-radius:var(--radius-lg);padding:var(--space-3)}
+.bal small{color:var(--muted);font-size:var(--text-xs)}.bal strong{display:block;font-size:var(--text-lg)}
+.bar{height:10px;background:var(--pink-soft);border-radius:var(--radius-pill);overflow:hidden;margin-bottom:6px}
+.bar span{display:block;height:100%;background:var(--pink);transition:width .8s}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
 
 footer{background:var(--footer-bg);text-align:center;padding:22px;font-size:var(--text-sm);color:var(--brown-deep)}
 footer strong{display:block;font-weight:500;margin-bottom:6px}
@@ -85,7 +81,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 <header>
  <nav class="nav" aria-label="Main">
-  <a class="brand" href="Customer_Orders.html"><img class="logo" src="Images-Icons\R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></a>
+  <a class="brand" href="Customer_Orders.html"><img class="logo" src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></a>
   <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">☰</button>
   <div class="links" id="links">
    <a href="home.html">Home</a>
@@ -103,20 +99,21 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 
 
 <main>
- <section class="page show" id="page-orders">
-  <h2 class="title">My Cake Orders</h2>
-  <p class="sub">Track your orders, payments and order status updates.</p>
-  <div class="stats">
-   <div class="card stat"><small>ACTIVE ORDERS</small><strong id="sActive">0</strong></div>
-   <div class="card stat"><small>PENDING VERIFICATION</small><strong id="sPending">0</strong></div>
-   <div class="card stat"><small>COMPLETED</small><strong id="sDone">0</strong></div>
+ <section class="page show" id="page-detail">
+  <a class="back" href="Customer_Orders.html">← Back to my Orders</a>
+  <p class="crumb">My Orders / Payment History</p>
+  <h2 class="title" id="dTitle"></h2>
+  <p class="sub" id="dSub"></p>
+  <a class="tab" id="tabBal" href="Payment_Balance.html">Payment &amp; Balance</a><a class="tab on" id="tabHist" href="#">Payment History</a></div>
+  <div class="panel on" id="tab-hist">
+   <div class="card">
+    <h3 style="font-size:1.5rem;margin-bottom:14px">Payment History</h3>
+    <div class="tablewrap"><table>
+     <thead><tr><th>DATE</th><th>TYPE</th><th>METHOD</th><th>REFERENCE</th><th>AMOUNT</th><th>STATUS</th></tr></thead>
+     <tbody id="hist"></tbody>
+    </table></div>
+   </div>
   </div>
-  <div class="filters">
-   <strong style="font-size:.8rem">Filters:</strong>
-   <select id="fStatus" aria-label="Filter by status"></select>
-   <input id="fSearch" type="search" data-filter="search" maxlength="30" placeholder="Search order ID or cake type..." aria-label="Search orders">
-  </div>
-  <div id="list"></div>
  </section>
 </main>
 
@@ -149,32 +146,29 @@ let current = null;
 /* Orders are saved in the browser so all three pages share the same data */
 let orders = [];
 async function api(url, opts){
-  try { const r = await fetch(url, opts); return await r.json(); }
-  catch(e){ return {error:'Cannot reach the server.'}; }
+  try {
+    const r = await fetch(url, opts);
+    return await r.json();
+  } catch(e) {
+    console.error('api() failed:', url, e);
+    return {error:'Cannot reach the server.'};
+  }
 }
-async function loadOrders(){ const d = await api('api/orders.php'); orders = Array.isArray(d) ? d : []; }
+async function loadOrders(){ const d = await api('../api/orders.php'); orders = Array.isArray(d) ? d : []; }
 const pillClass = s => s === 'Completed' || s === 'Verified' ? 'ok' : s.includes('Cancel') || s === 'Rejected' ? 'bad' : 'warn';
 const orderId = new URLSearchParams(location.search).get('id');
 
-/* ---------- Page 1: list ---------- */
-$('#fStatus').innerHTML = '<option value="">All Status</option>' + STATUSES.map(s => `<option>${s}</option>`).join('');
-function renderList(){
- const q = $('#fSearch').value.trim().toLowerCase(), st = $('#fStatus').value;
- $('#sActive').textContent  = orders.filter(o => ['In Progress','Awaiting Downpayment'].includes(o.status)).length;
- $('#sPending').textContent = orders.filter(o => o.status === 'Pending Verification').length;
- $('#sDone').textContent    = orders.filter(o => o.status === 'Completed').length;
- const rows = orders.filter(o => (!st || o.status === st) && (!q || (o.id + ' ' + o.title).toLowerCase().includes(q)));
- $('#list').innerHTML = rows.length ? rows.map(o => `
-    <a class="order" href="${(['Completed','Cancelled','Cancellation Requested'].includes(o.status) || o.total - paid(o) <= 0) ? 'Payment_History.html' : 'Payment_Balance.html'}?id=${o.id}">
-   <span class="id">${o.id}</span>
-   <span><h3>${o.title}</h3><small>${o.customer}</small><small>${o.occasion} · ${peso(o.total)} total · Remaining: ${peso(o.total - paid(o))}</small></span>
-   <span class="tag">${o.level}</span>
-   <span><span class="date">${o.due}</span><br><span class="pill ${pillClass(o.status)}">${o.status}</span></span>
-   <span aria-hidden="true">›</span>
-  </a>`).join('') : '<p class="empty">No orders match your filters.</p>';
+function renderHeader(o){
+ $('#dTitle').textContent = 'Order #' + o.id;
+ $('#dSub').textContent = o.title + ' · ' + o.occasion;
+ $('#tabBal').href = 'Payment_Balance.html?id=' + o.id;
+ $('#tabHist').href = 'Payment_History.html?id=' + o.id;
 }
-$('#fStatus').onchange = $('#fSearch').oninput = renderList;
-
+function renderDetail(){
+ const o = current; renderHeader(o);
+ $('#hist').innerHTML = o.payments.length ? o.payments.map(p => `<tr><td>${p.date}</td><td>${p.type}</td><td>${p.method}</td><td>${p.ref}</td><td>${peso(p.amount)}</td><td><span class="pill ${pillClass(p.status)}">${p.status}</span></td></tr>`).join('')
+  : '<tr><td colspan="6" class="empty">No payments yet. Submit your 20% downpayment to confirm the order.</td></tr>';
+}
 
 /* ---------- Input rules: block wrong characters while typing (works for paste too) ---------- */
 const BLOCK = {digits:/\D/g, letters:/[^A-Za-z\u00C0-\u024F\s.'-]/g, ref:/[^A-Za-z0-9-]/g, search:/[^A-Za-z0-9\s#-]/g};
@@ -201,7 +195,14 @@ $$('.links a:not([data-nav])').forEach(a => a.addEventListener('click', () => {}
 let t; function toast(m){ const el = $('#toast'); el.textContent = m; el.classList.add('on'); clearTimeout(t); t = setTimeout(() => el.classList.remove('on'), 2800); }
 addEventListener('scroll', () => $('#top').classList.toggle('on', scrollY > 300));
 $('#top').onclick = () => scrollTo({top:0, behavior:'smooth'});
-loadOrders().then(renderList);
+loadOrders().then(() => {
+  current = orders.find(o => o.id === orderId);
+  if(!current) return location.href = 'Customer_Orders.html';
+  renderDetail();
+  // hide the Payment & Balance tab when the order is finished or cancelled
+  const closed = ['Completed','Cancelled','Cancellation Requested'].includes(current.status) || current.total - paid(current) <= 0;
+  if(closed) $('#tabBal').style.display = 'none';
+});
 </script>
 </body>
 </html>
