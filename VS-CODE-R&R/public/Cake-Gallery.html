@@ -29,6 +29,7 @@
       --color-text-dark: #333333;
       --color-text-muted: #666666;
       --color-border: #E0E0E0;
+      --color-border-pink: #D97D8A; /* NEW: pink border color from designer */
     }
 
     * {
@@ -247,10 +248,12 @@
       flex: 1 0 auto;
     }
 
+    /* Filter box (border added) */
     .filter-card {
       background-color: #FFFFFF;
       padding: 1.25rem 1.5rem;
-      border-radius: 12px;
+      border: 1.5px solid var(--color-border-pink);   /* NEW */
+      border-radius: 16px;                             /* was 12px */
       box-shadow: 0 4px 20px rgba(0,0,0,0.03);
       display: flex;
       gap: 1rem;
@@ -259,12 +262,13 @@
       animation: fadeInUp 0.8s ease-out 0.2s both;
     }
 
+    /* Search box (border changed) */
     .search-input {
       flex: 2;
       min-width: 200px;
       padding: 0.75rem 1rem;
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
+      border: 1.5px solid var(--color-border-pink);   /* changed */
+      border-radius: 10px;
       font-family: var(--font-text);
       font-size: 0.95rem;
       outline: none;
@@ -276,12 +280,13 @@
       box-shadow: 0 0 0 3px rgba(210, 118, 133, 0.15);
     }
 
+    /* Dropdowns (border changed) */
     .filter-select {
       flex: 1;
       min-width: 150px;
       padding: 0.75rem 1rem;
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
+      border: 1.5px solid var(--color-border-pink);   /* changed */
+      border-radius: 10px;
       font-family: var(--font-header);
       font-size: 0.95rem;
       color: var(--color-text-dark);
@@ -303,9 +308,11 @@
       gap: 1.5rem;
     }
 
+    /* Gallery cards (border added) */
     .gallery-card {
       background-color: var(--bg-card);
-      border-radius: 12px;
+      border: 1.5px solid var(--color-border-pink);   /* NEW */
+      border-radius: 16px;                             /* was 12px */
       overflow: hidden;
       box-shadow: 0 4px 15px rgba(0,0,0,0.03);
       display: flex;
@@ -314,7 +321,8 @@
       transform: translateY(30px);
       transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), 
                   box-shadow 0.4s ease, 
-                  opacity 0.5s ease;
+                  opacity 0.5s ease,
+                  border-color 0.3s ease;
     }
 
     .gallery-card.visible {
@@ -325,6 +333,7 @@
     .gallery-card:hover {
       transform: translateY(-8px) scale(1.01);
       box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+      border-color: var(--color-primary-hover);       /* NEW: darker border on hover */
     }
 
     .card-image-placeholder {
@@ -397,6 +406,7 @@
       padding: 0.45rem 0.2rem;
       border-radius: 6px;
       white-space: nowrap;
+      border: 1px solid var(--color-border-pink);   /* NEW: button borderline */
     }
 
     /* --- Modal Overlay & Dialog --- */
@@ -732,16 +742,40 @@
           }
         });
       }, observerOptions);
-      fetch('../api/gallery.php')
-        .then(response => {
-          if (!response.ok) throw new Error('Gallery request failed');
-          return response.json();
-        })
-        .then(result => {
-          if (!result.success || !Array.isArray(result.items)) throw new Error('Invalid gallery response');
-          renderGallery(result.items);
-        })
-        .catch(() => showMessage('Cake designs could not be loaded. Please try again later.'));
+      // ===== HARDCODED SAMPLE CARDS (for design preview) =====
+      // true  = show the 12 sample boxes (no backend needed)
+      // false = load real designs from ../api/gallery.php
+      const USE_SAMPLE_DATA = false;
+
+      const sampleItems = [
+        { gallery_id: 1,  title: 'Floral Birthday Cake',   category: 'cakes',         occasion: 'birthday',    description: 'Sample description for this cake design.' },
+        { gallery_id: 2,  title: 'Wedding Tier Cake',      category: 'cakes',         occasion: 'wedding',     description: 'Sample description for this cake design.' },
+        { gallery_id: 3,  title: 'Anniversary Heart Cake', category: 'cakes',         occasion: 'anniversary', description: 'Sample description for this cake design.' },
+        { gallery_id: 4,  title: 'Pink Cupcake Box',       category: 'cupcakes',      occasion: 'birthday',    description: 'Sample description for this cake design.' },
+        { gallery_id: 5,  title: 'Number 1 Cake',          category: 'number-shaped', occasion: 'birthday',    description: 'Sample description for this cake design.' },
+        { gallery_id: 6,  title: 'Wedding Cupcakes',       category: 'cupcakes',      occasion: 'wedding',     description: 'Sample description for this cake design.' },
+        { gallery_id: 7,  title: 'Number 18 Cake',         category: 'number-shaped', occasion: 'birthday',    description: 'Sample description for this cake design.' },
+        { gallery_id: 8,  title: 'Rose Anniversary Cake',  category: 'cakes',         occasion: 'anniversary', description: 'Sample description for this cake design.' },
+        { gallery_id: 9,  title: 'Chocolate Drip Cake',    category: 'cakes',         occasion: 'birthday',    description: 'Sample description for this cake design.' },
+        { gallery_id: 10, title: 'Anniversary Cupcakes',   category: 'cupcakes',      occasion: 'anniversary', description: 'Sample description for this cake design.' },
+        { gallery_id: 11, title: 'Number 50 Cake',         category: 'number-shaped', occasion: 'anniversary', description: 'Sample description for this cake design.' },
+        { gallery_id: 12, title: 'Classic Wedding Cake',   category: 'cakes',         occasion: 'wedding',     description: 'Sample description for this cake design.' }
+      ];
+
+      if (USE_SAMPLE_DATA) {
+        renderGallery(sampleItems);
+      } else {
+        fetch('../api/gallery.php')
+          .then(response => {
+            if (!response.ok) throw new Error('Gallery request failed');
+            return response.json();
+          })
+          .then(result => {
+            if (!result.success || !Array.isArray(result.items)) throw new Error('Invalid gallery response');
+            renderGallery(result.items);
+          })
+          .catch(() => showMessage('Cake designs could not be loaded. Please try again later.'));
+      }
 
       searchInput.addEventListener('input', filterGallery);
       categoryFilter.addEventListener('change', filterGallery);
