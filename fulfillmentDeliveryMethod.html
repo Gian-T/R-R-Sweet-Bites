@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R&R Sweet Bites — Fulfillment & Delivery</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&family=Platypi:wght@400;500;600;700&display=swap');
+
+  :root{
+    /* R&R Sweet Bites Design System v1.1 tokens */
+    --color-primary:#D27685;
+    --color-primary-hover:#BE5B6C;
+    --bg-main:#FAF0E6;
+    --bg-card:#FFFFFF;
+    --bg-placeholder:#F2D5D5;
+    --bg-footer:#ECCFCB;
+    --brand-icon-bg:#E8C3C3;
+    --color-border:#E0E0E0;
+    --color-text-dark:#333333;
+    --color-text-alt:#555555;
+    --color-text-muted:#666666;
+    --color-text-deep:#382325;
+
+    --font-header:"Playfair Display", Georgia, serif;
+    --font-brand:"Platypi", Georgia, serif;
+    --font-button:"Platypi", Georgia, serif;
+    --font-nav:"Jost", Arial, Helvetica, sans-serif;
+    --font-text:"Jost", Arial, Helvetica, sans-serif;
+
+    --text-xs:.75rem;
+    --text-sm:.875rem;
+    --text-base:1rem;
+    --text-md:1.1rem;
+    --text-lg:1.35rem;
+    --text-xl:1.6rem;
+    --text-2xl:2rem;
+    --text-3xl:2.5rem;
+
+    --space-1:.25rem;
+    --space-2:.5rem;
+    --space-3:1rem;
+    --space-4:1.2rem;
+    --space-5:2rem;
+    --space-6:5%;
+
+    --radius-sm:4px;
+    --radius-md:8px;
+    --radius-lg:12px;
+    --radius-xl:16px;
+    --radius-pill:20px;
+    --radius-full:50%;
+
+    --shadow-sm:0 2px 10px rgba(0,0,0,.03);
+    --shadow-md:0 4px 18px rgba(0,0,0,.03);
+    --shadow-lg:0 14px 32px rgba(0,0,0,.12);
+    --shadow-brand:0 4px 10px rgba(210,118,133,.2);
+    --shadow-brand-hover:0 6px 15px rgba(210,118,133,.35);
+    --shadow-focus:0 0 0 3px rgba(210,118,133,.15);
+
+    /* Existing component aliases keep the current layout intact. */
+    --bg:var(--bg-main);
+    --card:var(--bg-card);
+    --pink:var(--color-primary);
+    --pink-dark:var(--color-primary-hover);
+    --pink-soft:var(--bg-placeholder);
+    --pink-pale:#FFF1F0;
+    --border:var(--color-border);
+    --text:var(--color-text-alt);
+    --muted:var(--color-text-muted);
+    --green:#77A77D;
+    --green-soft:#EAF4EA;
+    --shadow:var(--shadow-md);
+  }
+
+  *{box-sizing:border-box}
+  button{font-family:"Platypi", serif}
+  body{
+    margin:0;
+    background:#eeeae7;
+    font-family:var(--font-text);
+    color:var(--color-text-alt);
+    font-size:var(--text-xs);
+  }
+
+  .page{
+    width:min(1440px,100%);
+    min-height:100vh;
+    margin:auto;
+    background:var(--bg);
+    position:relative;
+    overflow:hidden;
+  }
+
+  header{
+    height:66px;
+    display:flex;
+    align-items:center;
+    padding:0 42px;
+    background:#fffaf7;
+    border-bottom:1px solid #f0e3de;
+    gap:42px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:260px;
+  }
+  .brand-logo{
+    width:34px;height:34px;border-radius:50%;
+    background:var(--pink-soft);
+    border:1px solid #edc4c6;
+    display:block;
+    object-fit:cover;
+  }
+  .brand-name{
+    color:var(--pink-dark);
+    font-family:var(--font-button);
+    font-size:15px;
+    font-weight:bold;
+  }
+
+  nav{display:flex;align-items:center;gap:30px;flex:1}
+  nav a{
+    text-decoration:none;
+    color:#443b38;
+    font-size:var(--text-base);
+    padding:25px 0 22px;
+    position:relative;
+    cursor:pointer;
+  }
+  nav a.active{font-weight:700;}
+  nav a.active::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:13px;
+    height:1.5px;
+    background:var(--pink);
+    border-radius:2px;
+  }
+  nav a:hover{color:var(--pink-dark)}
+
+  .header-actions{display:flex;align-items:center;gap:22px}
+  .bell{
+    width:22px;
+    height:22px;
+    position:relative;
+    display:grid;
+    place-items:center;
+    cursor:pointer;
+    color:#6f625d;
+  }
+  .bell svg{
+    width:17px;
+    height:17px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.5;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .notification-dot{
+    position:absolute;
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:#d76575;
+    right:1px;
+    top:1px;
+    border:1px solid #fffaf7;
+  }
+  .bell:hover{color:var(--pink-dark)}
+  .avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:#eee4df;display:grid;place-items:center;
+    color:#766862;font-size:11px;font-weight:bold;text-decoration:none;cursor:pointer;
+  }
+  .avatar:hover{filter:brightness(.97)}
+
+  /* Profile dropdown */
+  .header-actions{position:relative;}
+  .avatar{position:relative;z-index:61;}
+  .profile-menu{
+    position:absolute;
+    top:calc(100% + 10px);
+    right:0;
+    width:230px;
+    background:#fff;
+    border:1px solid #F0D3CB;
+    border-radius:10px;
+    box-shadow:0 6px 14px rgba(60,45,40,.10);
+    padding:10px 8px;
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(-6px);
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+    z-index:60;
+  }
+  .profile-menu.open{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0);
+    pointer-events:auto;
+  }
+  .profile-menu a,
+  .profile-menu button{
+    width:100%;
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    padding:7px 11px;
+    border:0;
+    border-radius:8px;
+    background:transparent;
+    color:#493735;
+    text-decoration:none;
+    font-family:var(--font-text);
+    font-size:.9rem;
+    font-weight:500;
+    text-align:left;
+    cursor:pointer;
+  }
+  .profile-menu a:hover,
+  .profile-menu button:hover{
+    background:#faf0e6;
+    color:var(--pink-dark);
+  }
+  .profile-menu-icon{
+    width:23px;
+    height:23px;
+    flex:none;
+    display:grid;
+    place-items:center;
+    color:#513d39;
+    font-size:20px;
+    line-height:1;
+  }
+  .profile-menu a:hover .profile-menu-icon,
+  .profile-menu button:hover .profile-menu-icon{color:var(--pink-dark);}
+
+  main{padding:26px 50px 82px}
+  .back{
+    float:right;color:#8d8079;font-size:9px;margin-top:2px;cursor:pointer;
+  }
+  .eyebrow{
+    text-transform:uppercase;letter-spacing:1.3px;
+    color:var(--pink-dark);font-size:7px;font-weight:bold;margin-bottom:5px;
+  }
+  h1{
+    font-family:var(--font-header);font-size:var(--text-2xl);margin:0 0 17px;
+    color:#4a403d;font-weight:bold;
+  }
+
+  .order-strip{
+    border:1px solid var(--border);border-radius:10px;background:var(--bg-card);
+    padding:11px 14px;display:flex;align-items:center;gap:13px;margin-bottom:15px;
+    box-shadow:var(--shadow);
+  }
+  .cake-thumb{
+    width:48px;height:48px;border-radius:8px;background:var(--pink-soft);
+    display:grid;place-items:center;font-size:24px;border:1px solid #eed6d2;
+  }
+  .order-title{font-family:Georgia,serif;font-weight:bold;font-size:13px}
+  .order-sub{font-size:8px;color:#92867f;margin-top:4px}
+  .status{
+    margin-left:auto;font-size:8px;padding:5px 9px;border-radius:12px;
+    background:var(--green-soft);color:#5d8864;
+  }
+
+  .layout{
+    display:grid;grid-template-columns:minmax(0, 2.25fr) minmax(300px, 1fr);
+    gap:28px;align-items:start;
+  }
+  .left{min-width:0}
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:11px;
+    padding:17px 19px;margin-bottom:18px;box-shadow:var(--shadow);
+  }
+  .card-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:13px}
+  .card-title{
+    font-family:var(--font-header);font-size:var(--text-xl);font-weight:bold;color:#4a403d;margin:0;
+  }
+  .card-desc{font-size:8px;color:#93867e;line-height:1.5;margin-top:4px}
+  .help{font-size:7px;color:#b26c77;white-space:nowrap}
+
+  .method{
+    border:1px solid #e9d9d2;border-radius:9px;margin:8px 0;
+    padding:12px 13px;display:flex;align-items:center;gap:10px;
+    cursor:pointer;transition:.15s;background:var(--bg-card);
+  }
+  .method:hover{border-color:#e5aab3}
+  .method.selected{border-color:var(--pink);background:#fff7f6}
+  .radio{
+    width:15px;height:15px;border-radius:50%;border:1.5px solid #cbbab3;
+    flex:none;display:grid;place-items:center;
+  }
+  .method.selected .radio{border-color:var(--pink)}
+  .method.selected .radio:after{content:"";width:7px;height:7px;background:var(--pink);border-radius:50%}
+  .method-icon{font-size:19px;width:28px;text-align:center}
+  .method-info{flex:1}
+  .method-name{font-weight:bold;font-size:10px}
+  .tag{
+    display:inline-block;font-size:6px;padding:3px 5px;border-radius:7px;
+    margin-left:5px;background:#f5e4e2;color:#a45e69;vertical-align:1px;
+  }
+  .method-desc{font-size:7px;color:#94877f;line-height:1.45;margin-top:4px}
+  .method-price{text-align:right;min-width:75px}
+  .method-price strong{font-size:11px}
+  .method-price small{display:block;color:#9b8d86;font-size:7px;margin-top:2px}
+
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field.full{grid-column:1/-1}
+  label{
+    font-size:7px;font-weight:bold;color:#756963;
+    text-transform:uppercase;letter-spacing:.4px;
+  }
+  input,select,textarea{
+    width:100%;border:1px solid #ead9d2;border-radius:6px;
+    padding:9px 10px;background:#fff;font:inherit;color:#554a45;outline:none;
+  }
+  input:focus,select:focus,textarea:focus{border-color:#d98b98}
+  .phone-row{display:flex;gap:10px;width:100%;align-items:stretch}
+  .phone-prefix{flex:0 0 25%;min-width:0;border:1px solid #e0e0e0;border-radius:6px;padding:9px 10px;background:#fff;font:inherit;color:#554a45;display:flex;align-items:center}
+  .phone-row #phone{flex:1;min-width:0;margin:0}
+  textarea{height:53px;resize:vertical}
+
+
+  .mapbox{
+    margin-top:11px;border:1px solid #ebd7d0;border-radius:9px;overflow:hidden;background:#fff;
+  }
+  .map{
+    height:155px;position:relative;
+    background:
+      linear-gradient(25deg,transparent 47%,#f1d8d5 48%,#f1d8d5 49%,transparent 50%),
+      linear-gradient(-18deg,transparent 46%,#eee0d9 47%,#eee0d9 49%,transparent 50%),
+      #fff9f4;
+  }
+  .road{
+    position:absolute;height:2px;background:#e8b5bc;border-radius:5px;
+    transform:rotate(-18deg);left:12%;top:55%;width:72%;
+    border-top:1px dashed #df7f8e;
+  }
+  .pin{
+    position:absolute;width:28px;height:28px;border-radius:50% 50% 50% 0;
+    background:#e99aa5;transform:rotate(-45deg);display:grid;place-items:center;
+    box-shadow:0 2px 5px #d9b7b1;
+  }
+  .pin span{transform:rotate(45deg);font-size:12px}
+  .pin.shop{left:8%;top:58%}
+  .pin.home{right:12%;top:28%;background:#fff;border:2px solid #e5a1aa}
+  .route-label{
+    position:absolute;left:42%;top:38%;background:#4e3e3c;color:#fff;
+    padding:5px 8px;border-radius:12px;font-size:7px;
+  }
+  .map-place{
+    position:absolute;background:#fff;border:1px solid #eadbd5;border-radius:7px;
+    padding:7px 9px;box-shadow:var(--shadow);font-size:7px;
+  }
+  .map-place.shop-label{left:8px;bottom:8px}
+  .map-place.home-label{right:8px;top:8px}
+
+  .distance-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:9px}
+  .metric{border:1px solid #f0e2dd;border-radius:6px;padding:8px}
+  .metric small{display:block;color:#9b8e86;font-size:6px;text-transform:uppercase}
+  .metric strong{font-size:10px;display:block;margin-top:4px}
+
+  .window{
+    margin:0 9px 10px;border:1px solid #ebd8d2;border-radius:7px;
+    padding:9px;display:flex;align-items:center;gap:9px;cursor:pointer;
+  }
+  .window.selected{border-color:#e38b99;background:#fff8f7}
+  .window .radio{width:13px;height:13px}
+  .window.selected .radio{border-color:var(--pink)}
+  .window.selected .radio:after{content:"";width:6px;height:6px;background:var(--pink);border-radius:50%;display:block}
+  .window-info{flex:1}
+  .window-name{font-weight:bold;font-size:8px}
+  .window-time{font-size:7px;color:#92847d;margin-top:3px}
+  .recommend{font-size:6px;color:#b86170;background:#fae4e5;padding:3px 5px;border-radius:7px}
+
+  .summary{position:sticky;top:15px}
+  .summary .card{padding:17px;border-radius:18px}
+  .summary-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:30px}
+  .summary-title{font-family:"Playfair Display", Georgia, serif;font-size:15px;font-weight:bold;line-height:1.55;margin:0;color:#4f4541}
+  .verified-badge{border:0;border-radius:var(--radius-pill);background:var(--bg-placeholder);padding:6px 20px;color:#5f4b47;font-size:7px;font-weight:bold;cursor:pointer;white-space:nowrap}
+  .summary-details{margin-bottom:20px}
+  .summary-line{display:flex;justify-content:space-between;align-items:center;padding:6px 0;color:#756963;font-size:8px}
+  .summary-line span:last-child{font-weight:bold;color:#4c423e}
+  .balance-due{position:relative;min-height:55px;margin:0 0 20px;padding-top:2px}
+  .balance-due-label{font-size:7px;font-weight:bold;letter-spacing:.4px;color:#8c6d67}
+  .balance-due-sub{font-size:6.5px;color:#927c76;margin-top:5px}
+  .balance-due-value{position:absolute;right:0;top:1px;color:var(--pink-dark);font-family:"Playfair Display", Georgia, serif;font-size:17px;font-weight:bold}
+  .cta{
+    width:100%;border:0;border-radius:var(--radius-pill);background:var(--color-primary);color:#fff;
+    padding:.6rem 1.5rem;font-weight:600;font-size:var(--text-base);cursor:pointer;
+    box-shadow:var(--shadow-brand);
+  }
+  .summary-cta{height:55px;min-height:55px;padding:0 12px;font-family:var(--font-button);font-size:var(--text-base);line-height:1.45;position:relative}
+  .summary-cta span{position:absolute;right:17px;font-family:Arial,sans-serif;font-size:15px;font-weight:normal}
+  .cta:hover{background:var(--pink-dark)}
+  .small-note{
+    background:#fff8f5;border:1px solid #efcfc8;border-radius:var(--radius-md);padding:9px;margin-top:12px;
+    text-align:center;font-size:7px;color:#8f716b;
+  }
+  .checklist{margin-top:14px}
+  .check{
+    display:flex;gap:7px;margin:9px 0;color:#756963;font-size:7px;line-height:1.35;
+  }
+  .check b{color:#fff;background:#79a77e;border-radius:50%;width:13px;height:13px;display:grid;place-items:center;flex:none;font-size:7px}
+
+  .feedback-card{background:#fff0ed}
+  .feedback-card p{font-size:7px;line-height:1.45;color:#867873}
+  .feedback-card button{
+    width:100%;border:1px solid #e7b1b5;background:#fff8f7;color:#a75e6a;
+    border-radius:6px;padding:7px;font-size:7px;cursor:pointer;
+  }
+
+  footer{
+    position:absolute;bottom:0;left:0;right:0;height:50px;
+    background:var(--bg-footer);display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:#806e68;font-size:8px;gap:5px;
+  }
+
+  .toast{
+    position:fixed;right:25px;bottom:25px;background:#4b403c;color:#fff;
+    padding:11px 15px;border-radius:8px;opacity:0;transform:translateY(12px);
+    pointer-events:none;transition:.25s;z-index:20;font-size:9px;
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+
+
+  html{scroll-behavior:smooth}
+  body{scroll-behavior:smooth}
+
+  /* Animated cover / hero intro */
+  .page::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:var(--bg);
+    z-index:100;
+    pointer-events:none;
+    animation:coverReveal 1.05s cubic-bezier(.77,0,.18,1) .15s forwards;
+    transform-origin:top;
+  }
+  .page::after{
+    content:"R&R Sweet Bites";
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%) scale(.96);
+    z-index:101;
+    color:var(--pink-dark);
+    font-family:Georgia,serif;
+    font-size:clamp(20px,3vw,38px);
+    font-weight:bold;
+    letter-spacing:.5px;
+    pointer-events:none;
+    opacity:1;
+    animation:coverTitle 1s ease .05s forwards;
+  }
+  @keyframes coverReveal{
+    0%{transform:scaleY(1)}
+    100%{transform:scaleY(0)}
+  }
+  @keyframes coverTitle{
+    0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    55%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-55%) scale(1.06)}
+  }
+
+  /* Navigation appearance */
+  nav a{transition:none}
+
+  /* Mobile navigation */
+  .menu-toggle{
+    display:none;
+    width:38px;height:34px;
+    border:1px solid var(--border);
+    border-radius:7px;
+    background:#fffaf7;
+    cursor:pointer;
+    padding:7px;
+    flex-direction:column;
+    justify-content:center;
+    gap:4px;
+  }
+  .menu-toggle span{
+    display:block;
+    height:2px;
+    width:100%;
+    background:#6f625c;
+    border-radius:2px;
+    transition:.25s ease;
+  }
+  .menu-toggle.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+  .menu-toggle.open span:nth-child(2){opacity:0}
+  .menu-toggle.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+  /* Gentle entrance animation for main content */
+  main{
+    animation:contentRise .8s ease .85s both;
+  }
+  @keyframes contentRise{
+    from{opacity:0;transform:translateY(12px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  /* Smooth anchor target spacing */
+  [id]{scroll-margin-top:80px}
+
+  @media(max-width:900px){
+    header{position:sticky;top:0;z-index:50}
+    .menu-toggle{display:flex;margin-left:auto}
+    nav{
+      position:absolute;
+      top:100%;
+      left:0;
+      right:0;
+      width:auto;
+      order:initial;
+      background:#fffaf7;
+      border-top:1px solid #f0e3de;
+      border-bottom:1px solid var(--border);
+      box-shadow:0 8px 18px rgba(97,61,54,.08);
+      display:flex;
+      flex-direction:column;
+      align-items:stretch;
+      gap:0;
+      padding:7px 14px;
+      max-height:0;
+      overflow:hidden;
+      opacity:0;
+      transform:translateY(-5px);
+      pointer-events:none;
+      transition:max-height .3s ease, opacity .25s ease, transform .3s ease;
+    }
+    nav.open{
+      max-height:300px;
+      opacity:1;
+      transform:translateY(0);
+      pointer-events:auto;
+    }
+    nav a{
+      padding:12px 10px;
+      border-radius:6px;
+    }
+  }
+
+  @media(max-width:600px){
+    .header-actions{margin-left:0}
+    .menu-toggle{order:2}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .page::before,.page::after,main{animation:none!important}
+    .page::before{display:none}
+    .page::after{display:none}
+    nav,nav a,.menu-toggle span{transition:none!important}
+  }
+
+  @media(max-width:900px){
+    header{padding:0 20px;gap:15px}.brand{min-width:auto}.brand-name{display:none}
+    nav{gap:14px}.header-actions{gap:10px}
+    main{padding:22px 20px 75px}
+    .feedback-pill{height:28px}
+    .layout{grid-template-columns:1fr}
+    .summary{position:static}
+  }
+  @media(max-width:600px){
+    body{font-size:10px}
+    header{height:auto;min-height:58px;flex-wrap:wrap;padding:10px 14px}
+    nav{order:3;width:100%;overflow:auto}
+    .layout{gap:0}.card{padding:13px}
+    .fields{grid-template-columns:1fr}.field.full{grid-column:auto}
+    .phone-prefix{flex-basis:26%}
+    .distance-row{grid-template-columns:1fr}
+    .method{align-items:flex-start}.method-price{min-width:60px}
+    .back{display:none}
+  }
+
+
+  .payment-responsibility{
+    padding:10px 0;
+    background:var(--bg-card);
+    border:1px solid #e9d9d2;
+    border-radius:14px;
+    box-shadow:none;
+  }
+  .responsibility-option{
+    border:1px solid #e9d9d2;
+    border-radius:9px;
+    margin:8px 10px;
+    padding:12px 13px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    cursor:pointer;
+    transition:.15s;
+    background:var(--bg-card);
+  }
+  .responsibility-option:first-child{
+    margin-top:0;
+  }
+  .responsibility-option:last-child{
+    margin-bottom:0;
+  }
+  .responsibility-option + .responsibility-option{
+    margin-top:8px;
+  }
+  .responsibility-option.selected{
+    background:#fff7f6;
+    box-shadow:0 0 0 1px rgba(223,120,137,.12);
+  }
+  .responsibility-radio{
+    width:15px;
+    height:15px;
+    flex:none;
+    border:1.5px solid #cbbab3;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:#fff;
+    position:relative;
+  }
+  .responsibility-option.selected .responsibility-radio{
+    border-color:var(--pink);
+  }
+  .responsibility-option.selected .responsibility-radio::after{
+    content:"";
+    width:7px;
+    height:7px;
+    background:var(--pink);
+    border-radius:50%;
+  }
+  .responsibility-copy{
+    min-width:0;
+  }
+  .responsibility-title{
+    font-family:"Jost",sans-serif;
+    font-weight:bold;
+    font-size:10px;
+    color:var(--color-text-dark);
+    margin-bottom:0;
+  }
+  .responsibility-desc{
+    font-size:7px;
+    color:#94877f;
+    line-height:1.45;
+    margin-top:4px;
+  }
+
+
+  .booking-organizer,
+  .courier-choice{
+    padding:11px 14px 12px;
+    background:var(--bg-card);
+    border:1px solid #e9d9d2;
+    border-radius:14px;
+  }
+  .booking-organizer h3,
+  .courier-choice h3{
+    margin:0 0 8px;
+    font-family:var(--font-header);
+    font-size:var(--text-md);
+    line-height:1.2;
+    color:#4f3935;
+  }
+  .responsibility-option,
+  .courier-option{
+    border:1px solid #e98692;
+    border-radius:9px;
+    margin:6px 0 0;
+    padding:8px 10px;
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-height:0;
+    cursor:pointer;
+    transition:.15s;
+    background:var(--bg-card);
+  }
+  .responsibility-option + .responsibility-option,
+  .courier-option + .courier-option{
+    margin-top:5px;
+  }
+  .responsibility-option.selected,
+  .courier-option.selected{
+    background:#fff7f6;
+  }
+  .responsibility-radio,
+  .courier-radio{
+    width:15px;
+    height:15px;
+    flex:none;
+    border:1.5px solid #efc9c4;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:#fff;
+  }
+  .responsibility-option.selected .responsibility-radio,
+  .courier-option.selected .courier-radio{
+    border-color:var(--pink);
+  }
+  .responsibility-option.selected .responsibility-radio::after,
+  .courier-option.selected .courier-radio::after{
+    content:"";
+    width:7px;
+    height:7px;
+    background:var(--pink);
+    border-radius:50%;
+  }
+  .responsibility-title,
+  .courier-title{
+    font-family:"Jost",sans-serif;
+    font-weight:700;
+    font-size:10px;
+    color:var(--color-text-dark);
+  }
+  .responsibility-desc,
+  .courier-desc{
+    font-size:7px;
+    color:#94877f;
+    line-height:1.4;
+    margin-top:2px;
+  }
+  .courier-choice{
+    margin-top:12px;
+  }
+
+
+  .booking-organizer.disabled,
+  .courier-choice.disabled{
+    opacity:.55;
+  }
+  .booking-organizer.disabled .responsibility-option,
+  .courier-choice.disabled .courier-option{
+    pointer-events:none;
+    cursor:not-allowed;
+  }
+
+  /* When the customer books the courier, the shop does not manage
+     the delivery address/travel estimate. The delivery window remains active. */
+  #delivery.customer-booked .fields,
+  #delivery.customer-booked .distance-row{
+    opacity:.55;
+  }
+  #delivery.customer-booked .fields{
+    pointer-events:none;
+  }
+  #delivery.customer-booked .distance-row{
+    pointer-events:none;
+  }
+  #delivery.customer-booked .fields input,
+  #delivery.customer-booked .fields select,
+  #delivery.customer-booked .fields textarea{
+    cursor:not-allowed;
+    background:#f5f1ef;
+  }
+
+
+    .footer-link{color:inherit;text-decoration:none;}
+    .footer-link:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="page" id="top">
+  <header>
+    <div class="brand">
+      <img class="brand-logo" src=" " alt="" aria-hidden="true">
+      <div class="brand-name">R&R Sweet Bites</div>
+    </div>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav id="mainNav">
+      <a class="nav-link" href="#home">Home</a>
+      <a class="nav-link" href="#gallery">Gallery</a>
+      <a class="nav-link" href="#submit-request">Submit Request</a>
+      <a class="nav-link active" href="#my-order">My Order</a>
+      <a class="nav-link" href="#messages">Messages</a>
+    </nav>
+    <div class="header-actions">
+      <div class="bell" aria-label="Notifications" title="Notifications">
+      <img src=" " alt="" aria-hidden="true">
+      <span class="notification-dot"></span>
+    </div>
+      <button class="avatar" id="profileToggle" type="button" aria-label="Open profile menu" aria-expanded="false">AP</button>
+      <div class="profile-menu" id="profileMenu" aria-hidden="true">
+        <a href="#profile" class="profile-menu-item">
+          <span class="profile-menu-icon">◎</span>
+          <span>HalamanHatdog</span>
+        </a>
+        <a href="#settings" class="profile-menu-item">
+          <span class="profile-menu-icon">⚙</span>
+          <span>Settings</span>
+        </a>
+        <a href="#my-reviews" class="profile-menu-item">
+          <span class="profile-menu-icon">☆</span>
+          <span>My Reviews</span>
+        </a>
+        <button type="button" class="profile-menu-item" id="logoutBtn">
+          <span class="profile-menu-icon">↪</span>
+          <span>Log Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="eyebrow">CUSTOM ORDER PROCESS</div>
+    <h1>Fulfillment &amp; Delivery Method</h1>
+
+    <div class="order-strip">
+      <div class="cake-thumb">🎂</div>
+      <div>
+        <div class="order-title">Custom 2-Tier Pastel Floral Dream Cake</div>
+        <div class="order-sub">Order #RR-2509-0142 &nbsp; • &nbsp; ₱3,250.00 &nbsp; • &nbsp; 2 Tiers &nbsp; • &nbsp; 2 Layers &nbsp; • &nbsp; Vanilla</div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="left">
+        <div class="card" id="fulfillment">
+          <div class="card-head">
+            <div>
+              <h2 class="card-title">FULFILLMENT METHOD</h2>
+              <div class="card-desc">Please choose how you would like to receive your custom cake.</div>
+            </div>
+            
+          </div>
+
+          <div class="method selected" data-method="shop" data-fee="180">
+            <div class="radio"></div><div class="method-icon">🛵</div>
+            <div class="method-info">
+              <div class="method-name">Shop-Owned Delivery <span class="tag">Recommended</span></div>
+              <div class="method-desc">Delivered by R&amp;R Sweet Bites with personalized handling and handled exclusively by the R&amp;R Sweet Bites staff.</div>
+            </div>
+            <div class="method-price"><strong>₱180.00</strong><small>Delivery Fee</small></div>
+          </div>
+
+          <div class="method" data-method="courier" data-fee="0">
+            <div class="radio"></div><div class="method-icon">📦</div>
+            <div class="method-info">
+              <div class="method-name">Third-Party Courier <span class="tag">Customer's Choice</span></div>
+              <div class="method-desc">Booking via GrabExpress / Lalamove. Customer covers driver fee upon arrival. Motorcycle dispatch is strictly prohibited.</div>
+            </div>
+            <div class="method-price"><strong>Paid Seperately</strong><small>Courier Fee</small></div>
+          </div>
+
+          <div class="method" data-method="pickup" data-fee="0">
+            <div class="radio"></div><div class="method-icon">🏪</div>
+            <div class="method-info">
+              <div class="method-name">Self Store Pick-Up <span class="tag">Free Service</span></div>
+              <div class="method-desc">Pick up directly from R&amp;R Sweet Bites in Caloocan City. Please arrive within your selected time window.</div>
+            </div>
+            <div class="method-price"><strong>₱0.00</strong><small>Store Pick-Up</small></div>
+          </div>
+        </div>
+
+        
+        
+        <div class="card booking-organizer" id="paymentResponsibility">
+          <h3>Booking Organizer</h3>
+
+          <div class="responsibility-option selected">
+            <div class="responsibility-radio" role="radio" aria-checked="true" tabindex="0"></div>
+            <div class="responsibility-copy">
+              <div class="responsibility-title">Booked By The Shop</div>
+              <div class="responsibility-desc">The delivery fee is not included in your online total and will be paid separately to the courier upon arrival.</div>
+            </div>
+          </div>
+
+          <div class="responsibility-option">
+            <div class="responsibility-radio" role="radio" aria-checked="false" tabindex="0"></div>
+            <div class="responsibility-copy">
+              <div class="responsibility-title">Booked By The Customer</div>
+              <div class="responsibility-desc">The delivery fee is not included in your online total and will be paid separately to the courier upon arrival.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card courier-choice" id="courierChoice">
+          <h3>Choose a Courier</h3>
+
+          <div class="courier-option selected">
+            <div class="courier-radio" role="radio" aria-checked="true" tabindex="0"></div>
+            <div class="courier-copy">
+              <div class="courier-title">Grab Express</div>
+              <div class="courier-desc">Recommended: Instant Car Delivery</div>
+            </div>
+          </div>
+
+          <div class="courier-option">
+            <div class="courier-radio" role="radio" aria-checked="false" tabindex="0"></div>
+            <div class="courier-copy">
+              <div class="courier-title">Lalamove</div>
+              <div class="courier-desc">Recommended: Sedan</div>
+            </div>
+          </div>
+        </div>
+
+<div class="card" id="delivery">
+          <div class="card-head">
+            <div>
+              <div class="delivery-eyebrow"></div><h2 class="card-title">Delivery Address &amp; Travel Estimate</h2>
+              <div class="card-desc">Enter your venue address to calculate the travel time and distance for your cake.</div>
+            </div>
+            <div class="help delivery-verified"><span></span></div>
+          </div>
+
+          <div class="fields">
+            <div class="field">
+              <label>Recipient / Event Contact Name *</label>
+              <input id="name" placeholder="Name" value="" autocomplete="name" inputmode="text" pattern="[A-Za-zÀ-ÖØ-öø-ÿ .,-]*">
+            </div>
+            <div class="field">
+              <label>Mobile Number *</label>
+              <div class="phone-row">
+                <div class="phone-prefix" aria-hidden="true">+63</div>
+                <input id="phone" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="10" autocomplete="tel" placeholder="Enter mobile number" value="" aria-label="Mobile number">
+              </div>
+            </div>
+            <div class="field full">
+              <label>Street Address, House/Unit No., Village / Landmark *</label>
+              <input id="address" placeholder="Address" value="" autocomplete="street-address">
+            </div>
+            <div class="field">
+              <label>Barangay / District *</label>
+              <input id="barangay" placeholder="Barangay / District" value="">
+            </div>
+            <div class="field">
+              <label>City / Municipality *</label>
+              <select id="city">
+  <option value="Caloocan City">Caloocan City</option>
+  <option value="Las Piñas City">Las Piñas City</option>
+  <option value="Makati City">Makati City</option>
+  <option value="Malabon City">Malabon City</option>
+  <option value="Mandaluyong City">Mandaluyong City</option>
+  <option value="Manila City">Manila City</option>
+  <option value="Marikina City">Marikina City</option>
+  <option value="Muntinlupa City">Muntinlupa City</option>
+  <option value="Navotas City">Navotas City</option>
+  <option value="Parañaque City">Parañaque City</option>
+  <option value="Pasay City">Pasay City</option>
+  <option value="Pasig City">Pasig City</option>
+  <option value="" selected disabled>Select City</option>
+  <option value="Quezon City">Quezon City</option>
+  <option value="San Juan City">San Juan City</option>
+  <option value="Taguig City">Taguig City</option>
+  <option value="Valenzuela City">Valenzuela City</option>
+</select>
+            </div>
+            <div class="field full">
+              <label>Special Delivery &amp; Gate Instructions</label>
+              <textarea id="notes" placeholder="Write something..."></textarea>
+            </div>
+          </div>
+
+          <div class="mapbox">
+            <div class="map">
+              <div class="road"></div>
+              <div class="pin shop" id="shopPin"><span>🏪</span></div>
+              <div class="pin home" id="homePin"><span>⌂</span></div>
+              <div class="route-label" id="routeLabel">● River Blvd → Approx. 12.4 km</div>
+              <div class="map-place shop-label"><b>R&amp;R Sweet Bites</b><br>Home bakery &amp; shop</div>
+              <div class="map-place home-label" id="homeLabel"><b>Your Delivery Address</b><br><span id="mapLocation">Balong, Angeles City</span></div>
+            </div>
+            <div class="distance-row">
+              <div class="metric"><small>Travel Distance</small><strong>12.4 km</strong></div>
+              <div class="metric"><small>Estimated Travel Time</small><strong>25 – 35 mins</strong></div>
+              <div class="metric"><small>Designated Vehicle</small><strong id="designatedVehicle">Shop's Car</strong></div>
+            </div>
+
+            <div style="padding:4px 9px 0;font-size:7px;font-weight:bold;text-transform:uppercase;color:#71655f">Select Delivery Window (Tue, 26 Sep, 2026)</div>
+            <div class="window selected" data-window="Morning Window">
+              <div class="radio"></div>
+              <div class="window-info"><div class="window-name">Morning Window</div><div class="window-time">09:00 AM – 12:00 PM</div></div>
+              <span class="recommend">Recommended</span>
+            </div>
+            <div class="window" data-window="Afternoon Window">
+              <div class="radio"></div>
+              <div class="window-info"><div class="window-name">Afternoon Window</div><div class="window-time">01:00 PM – 04:00 PM</div></div>
+              <span style="font-size:7px;color:#a0928b">Standard</span>
+            </div>
+            
+          </div>
+        </div>
+      </section>
+
+      <aside class="summary">
+        <div class="card" id="summary">
+          <div class="summary-head">
+            <h2 class="summary-title">Payment &amp; Balance<br>Summary</h2>
+                     </div>
+
+          <div class="summary-details">
+            <div class="summary-line"><span>Accepted Cake Quotation</span><span>₱15,000.00</span></div>
+            <div class="summary-line"><span>Delivery Fee</span><span id="feeValue">₱180.00</span></div>
+            <div class="summary-line"><span>Rush Order Fee</span><span>₱200.00</span></div>
+          </div>
+
+          <div class="balance-due">
+            <div class="balance-due-label">BALANCE DUE</div>
+            <div class="balance-due-sub">Payable via GCash and Bank Transfer</div>
+            <div class="balance-due-value" id="balanceValue">₱15,380.00</div>
+          </div>
+
+          <button class="cta summary-cta" onclick="confirmFulfillment()">Confirm Fulfillment &amp;<br>Proceed </button>
+          <div class="small-note">Next Step: Balance</div>
+
+        </div>
+
+        <div class="card" id="support">
+          <div class="card-title" style="font-size:13px">⏱ Need assistance with your order?</div>
+          <div class="card-desc" style="margin-top:6px">Our customer support team can help with fulfillment, delivery, or payment questions.</div>
+          <button class="cta" style="margin-top:10px;background:#fff;color:#a75d68;border:1px solid #e3b1b4;box-shadow:none" onclick="toast('Support request opened.')">Message Support</button>
+        </div>
+
+      </aside>
+    </div>
+  </main>
+
+  <footer>
+    <div><a href="#about-us" class="footer-link">ⓘ ABOUT US</a> &nbsp; | &nbsp; <a href="#contacts" class="footer-link">▧ CONTACTS</a></div>
+    <div>© 2019 R&amp;R Sweet Bites. All Rights Reserved.</div>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let selectedMethod = "shop";
+  let deliveryFee = 180;
+
+  const methods = document.querySelectorAll(".method");
+  const windows = document.querySelectorAll(".window");
+
+  methods.forEach(method => {
+    method.addEventListener("click", () => {
+      methods.forEach(m => m.classList.remove("selected"));
+      method.classList.add("selected");
+      selectedMethod = method.dataset.method;
+      deliveryFee = Number(method.dataset.fee);
+
+      const deliveryCard = document.getElementById("delivery");
+      deliveryCard.style.opacity = selectedMethod === "pickup" ? ".65" : "1";
+      deliveryCard.style.pointerEvents = selectedMethod === "pickup" ? "none" : "auto";
+
+      document.getElementById("feeValue").textContent =
+        deliveryFee ? "₱" + deliveryFee.toFixed(2) : "₱0.00";
+      document.getElementById("balanceValue").textContent =
+        "₱" + (15000 + deliveryFee + 200).toFixed(2);
+
+      if(selectedMethod === "pickup") toast("Store pick-up selected. No delivery fee.");
+      if(selectedMethod === "courier") toast("Third-party courier selected. Courier fee is paid separately.");
+      if(selectedMethod === "shop") toast("Shop-owned delivery selected.");
+    });
+  });
+
+  windows.forEach(w => {
+    w.addEventListener("click", () => {
+      windows.forEach(x => x.classList.remove("selected"));
+      w.classList.add("selected");
+      toast(w.dataset.window + " selected.");
+    });
+  });
+
+
+
+
+  // Keep the map location label in sync with the customer's Barangay and City.
+  // This does not calculate distance, time, or routes.
+  const barangayInput = document.getElementById("barangay");
+  const citySelect = document.getElementById("city");
+  const mapLocation = document.getElementById("mapLocation");
+
+  function updateMapLocationLabel(){
+    const barangay = barangayInput.value.trim() || "Barangay";
+    const city = citySelect.value.trim() || "City";
+    mapLocation.textContent = `${barangay}, ${city}`;
+  }
+
+  barangayInput.addEventListener("input", updateMapLocationLabel);
+  citySelect.addEventListener("change", updateMapLocationLabel);
+  updateMapLocationLabel();
+
+  // Responsive navigation
+  const menuToggle = document.getElementById("menuToggle");
+  const mainNav = document.getElementById("mainNav");
+  const navLinks = document.querySelectorAll(".nav-link");
+
+  menuToggle.addEventListener("click", () => {
+    const isOpen = mainNav.classList.toggle("open");
+    menuToggle.classList.toggle("open", isOpen);
+    menuToggle.setAttribute("aria-expanded", isOpen);
+    menuToggle.setAttribute("aria-label", isOpen ? "Close navigation menu" : "Open navigation menu");
+  });
+
+
+
+  function confirmFulfillment(){
+    // Store pick-up and customer-booked courier do not require the shop-managed
+    // delivery address/travel estimate. Allow the customer to proceed immediately.
+    const selectedMethodElement = document.querySelector('.method.selected');
+    const currentMethod = selectedMethodElement?.dataset.method || selectedMethod;
+    const selectedOrganizer = document.querySelector('.responsibility-option.selected .responsibility-title')?.textContent.trim() || '';
+    const shopBooked = selectedOrganizer === 'Booked By The Shop';
+    const customerBooked = selectedOrganizer === 'Booked By The Customer';
+
+    // Store pick-up does not require delivery details.
+    if(currentMethod === "pickup"){
+      toast("Fulfillment confirmed. Proceeding to the next step…");
+      return;
+    }
+
+    // Third-party courier requires the customer to choose who will book it
+    // before the order can proceed.
+    if(currentMethod === "courier"){
+      if(!selectedOrganizer){
+        toast("Please select who will book the courier.");
+        const organizerCard = document.getElementById('paymentResponsibility');
+        if(organizerCard) organizerCard.scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+
+      // Customer-booked courier does not require the shop-managed delivery
+      // address/travel estimate.
+      if(customerBooked){
+        toast("Fulfillment confirmed. Proceeding to the next step…");
+        return;
+      }
+    }
+
+    // Validate every delivery-address field for shop-managed delivery.
+    const requiredFields = [
+      { id: "name", message: "Please enter the recipient/contact name." },
+      { id: "phone", message: "Please enter the mobile number." },
+      { id: "address", message: "Please enter the street address, house/unit number, village, or landmark." },
+      { id: "barangay", message: "Please enter the Barangay / District." },
+      { id: "city", message: "Please select a City / Municipality." },
+    ];
+
+    for(const field of requiredFields){
+      const element = document.getElementById(field.id);
+      if(!element || !element.value.trim()){
+        toast(field.message);
+        if(element) element.focus();
+        return;
+      }
+
+      // The mobile number must contain exactly 10 digits before a
+      // shop-booked delivery can proceed. The +63 prefix is separate
+      // and is not included in these 10 digits.
+      if(field.id === "phone" && !/^\d{10}$/.test(element.value.trim())){
+        toast("Please enter a complete 10-digit mobile number.");
+        element.focus();
+        return;
+      }
+    }
+
+    toast("Fulfillment confirmed. Proceeding to the next step…");
+  }
+
+
+
+  // Profile dropdown
+  const profileToggle = document.getElementById("profileToggle");
+  const profileMenu = document.getElementById("profileMenu");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  function setProfileMenu(open){
+    profileMenu.classList.toggle("open", open);
+    profileMenu.setAttribute("aria-hidden", String(!open));
+    profileToggle.setAttribute("aria-expanded", String(open));
+  }
+
+  profileToggle.addEventListener("click", event => {
+    event.stopPropagation();
+    setProfileMenu(!profileMenu.classList.contains("open"));
+  });
+
+  profileMenu.addEventListener("click", event => {
+    const item = event.target.closest("a");
+    if(item) setProfileMenu(false);
+  });
+
+  logoutBtn.addEventListener("click", () => {
+    setProfileMenu(false);
+    toast("Log out selected.");
+  });
+
+  document.addEventListener("click", event => {
+    if(!profileMenu.contains(event.target) && !profileToggle.contains(event.target)){
+      setProfileMenu(false);
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if(event.key === "Escape") setProfileMenu(false);
+  });
+
+  function toast(message){
+    const el = document.getElementById("toast");
+    el.textContent = message;
+    el.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove("show"), 2600);
+  }
+
+document.querySelectorAll('.responsibility-option').forEach(option=>{
+  const radio = option.querySelector('.responsibility-radio');
+
+  function selectOption(){
+    document.querySelectorAll('.responsibility-option').forEach(item=>{
+      item.classList.remove('selected');
+      item.querySelector('.responsibility-radio').setAttribute('aria-checked','false');
+    });
+    option.classList.add('selected');
+    radio.setAttribute('aria-checked','true');
+    updateBookingOrganizerState();
+  }
+
+  option.addEventListener('click', selectOption);
+  radio.addEventListener('keydown', event=>{
+    if(event.key === 'Enter' || event.key === ' '){
+      event.preventDefault();
+      selectOption();
+    }
+  });
+});
+
+
+document.querySelectorAll('.responsibility-option').forEach(option=>{
+  const radio = option.querySelector('.responsibility-radio');
+  const select = ()=>{
+    document.querySelectorAll('.responsibility-option').forEach(item=>{
+      item.classList.remove('selected');
+      item.querySelector('.responsibility-radio').setAttribute('aria-checked','false');
+    });
+    option.classList.add('selected');
+    radio.setAttribute('aria-checked','true');
+    updateBookingOrganizerState();
+  };
+  option.addEventListener('click', select);
+  radio.addEventListener('keydown', e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();select();}
+  });
+});
+
+document.querySelectorAll('.courier-option').forEach(option=>{
+  const radio = option.querySelector('.courier-radio');
+  const select = ()=>{
+    document.querySelectorAll('.courier-option').forEach(item=>{
+      item.classList.remove('selected');
+      item.querySelector('.courier-radio').setAttribute('aria-checked','false');
+    });
+    option.classList.add('selected');
+    radio.setAttribute('aria-checked','true');
+    updateBookingOrganizerState();
+  };
+  option.addEventListener('click', select);
+  radio.addEventListener('keydown', e=>{
+    if(e.key==='Enter'||e.key===' '){e.preventDefault();select();}
+  });
+});
+
+
+const nameInput = document.getElementById('name');
+
+// Recipient / Event Contact Name: allow letters, spaces, hyphens, periods, and commas only.
+nameInput.addEventListener('input', () => {
+  nameInput.value = nameInput.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ .,-]/g, '');
+});
+
+const phoneInput = document.getElementById('phone');
+if(phoneInput){
+  phoneInput.addEventListener('input', ()=>{
+    phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+  });
+  phoneInput.addEventListener('keydown', (e)=>{
+    if(['Backspace','Delete','Tab','ArrowLeft','ArrowRight','Home','End'].includes(e.key)) return;
+    if(!/^[0-9]$/.test(e.key)) e.preventDefault();
+  });
+}
+
+const bookingOrganizerCard = document.getElementById('paymentResponsibility');
+
+const courierChoiceCard = document.getElementById('courierChoice');
+const deliveryCard = document.getElementById('delivery');
+
+function updateBookingOrganizerState(){
+  const selectedMethod = document.querySelector('.method.selected');
+  const bookingEnabled = selectedMethod?.dataset.method === 'courier';
+
+  bookingOrganizerCard.classList.toggle('disabled', !bookingEnabled);
+  bookingOrganizerCard.setAttribute('aria-disabled', String(!bookingEnabled));
+
+  const shopBooked = document.querySelector('.responsibility-option.selected .responsibility-title')?.textContent.trim() === 'Booked By The Shop';
+  const courierEnabled = bookingEnabled && shopBooked;
+
+  // If the customer books the courier themselves, disable the shop-managed
+  // delivery address/travel estimate while keeping the delivery window usable.
+  deliveryCard.classList.toggle('customer-booked', bookingEnabled && !shopBooked);
+
+  courierChoiceCard.classList.toggle('disabled', !courierEnabled);
+  courierChoiceCard.setAttribute('aria-disabled', String(!courierEnabled));
+
+  if(!bookingEnabled){
+    document.querySelectorAll('.responsibility-option').forEach(item=>{
+      item.classList.remove('selected');
+      const radio = item.querySelector('.responsibility-radio');
+      if(radio) radio.setAttribute('aria-checked','false');
+    });
+  }
+
+  if(!courierEnabled){
+    document.querySelectorAll('.courier-option').forEach(item=>{
+      item.classList.remove('selected');
+      const radio = item.querySelector('.courier-radio');
+      if(radio) radio.setAttribute('aria-checked','false');
+    });
+  }
+
+  // Update the designated vehicle based on the selected fulfillment/courier.
+  const vehicle = document.getElementById('designatedVehicle');
+  if(vehicle){
+    if(selectedMethod?.dataset.method === 'shop'){
+      vehicle.textContent = "Shop's Car";
+    } else if(courierEnabled){
+      const selectedCourier = document.querySelector('.courier-option.selected .courier-title')?.textContent.trim();
+      vehicle.textContent = selectedCourier || 'Select Courier';
+    } else if(selectedMethod?.dataset.method === 'courier'){
+      vehicle.textContent = 'Select Courier';
+    } else {
+      vehicle.textContent = 'No Delivery Vehicle';
+    }
+  }
+}
+
+/* Watch the fulfillment cards for selection changes, regardless of how
+   the existing fulfillment code changes the selected class. */
+const fulfillmentMethods = document.querySelectorAll('.method');
+fulfillmentMethods.forEach(method=>{
+  method.addEventListener('click', ()=>{
+    fulfillmentMethods.forEach(item=>item.classList.remove('selected'));
+    method.classList.add('selected');
+    updateBookingOrganizerState();
+  });
+});
+
+const methodObserver = new MutationObserver(updateBookingOrganizerState);
+fulfillmentMethods.forEach(method=>{
+  methodObserver.observe(method, {attributes:true, attributeFilter:['class']});
+});
+
+updateBookingOrganizerState();
+</script>
+</body>
+</html>
