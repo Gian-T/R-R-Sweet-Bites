@@ -7,922 +7,340 @@ if (!isset($_SESSION['csrf_token'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>R&R Sweet Bites - Select Your Event Date & Week</title>
-  
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Platypi:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-
-  <style>
-    /* --- CSS Variables & Theme Setup --- */
-    :root {
-      --font-nav: 'Jost', sans-serif;
-      --font-brand: 'Platypi', serif;
-      --font-header: 'Playfair Display', serif;
-      --font-button: 'Platypi', serif;
-      --font-text: 'Jost', sans-serif;
-
-      --bg-main: #FAF0E6;
-      --bg-card: #FFFFFF;
-      --bg-day-card: #F8ECE8;
-      --bg-footer: #ECCFCB;
-      
-      --color-primary: #D27685;
-      --color-primary-hover: #BE5B6C;
-      --color-text-dark: #382325;
-      --color-text-body: #4A3B3C;
-      --color-text-muted: #7A6B6C;
-      --color-border: #E6D8D5;
-
-      /* Availability Status Colors */
-      --color-open: #5E8B5A;
-      --color-open-bg: #8FA287;
-      --color-limited: #DDA25E;
-      --color-booked: #D98C8C;
-      --color-selected: #B83B5E;
-      --color-selected-bg: #FFF0F3;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-      height: 100%;
-    }
-
-    body {
-      font-family: var(--font-text);
-      background-color: var(--bg-main);
-      color: var(--color-text-dark);
-      line-height: 1.6;
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* --- Navigation Bar --- */
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      background-color: #FAF0E6;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 5%;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-      transition: all 0.3s ease;
-    }
-
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      text-decoration: none;
-    }
-
-    .brand-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background-color: #E8C3C3;
-        object-fit: cover;
-    }
-
-    .brand-name {
-      font-family: var(--font-brand);
-      font-weight: 700;
-      font-size: 1.35rem;
-      color: var(--color-primary);
-      letter-spacing: -0.2px;
-    }
-
-    .nav-links {
-      display: flex;
-      list-style: none;
-      align-items: center;
-      gap: 2rem;
-      font-family: var(--font-nav);
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: var(--color-text-dark);
-      font-weight: 500;
-      font-size: 1rem;
-      transition: color 0.3s ease, border-color 0.3s ease;
-      padding-bottom: 4px;
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      color: var(--color-primary);
-    }
-
-    .nav-links a.active {
-      border-bottom: 2.5px solid var(--color-primary);
-      font-weight: 600;
-    }
-
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-    }
-
-    .notification-wrapper {
-      position: relative;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      user-select: none;
-    }
-
-    .notification-wrapper:hover {
-      background-color: rgba(210, 118, 133, 0.1);
-    }
-
-    .notification-icon {
-      width: 24px;
-      height: 24px;
-      object-fit: contain;
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .notification-wrapper:hover .notification-icon {
-      transform: scale(1.1) rotate(10deg);
-    }
-
-    .notification-wrapper.clicked .notification-icon {
-      animation: bellRing 0.5s ease forwards;
-    }
-
-    .notification-badge {
-      position: absolute;
-      top: -5px;
-      right: -6px;
-      background-color: #D27685;
-      color: white;
-      font-size: 0.65rem;
-      font-weight: 700;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s ease;
-    }
-
-    .notification-wrapper:hover .notification-badge {
-      transform: scale(1.1);
-    }
-
-    .user-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background-color: #E8CFCD;
-      color: #5C3D42;
-      font-family: 'Jost', sans-serif;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .user-avatar:hover {
-      transform: scale(1.05);
-    }
-
-    @keyframes bellRing {
-      0% { transform: scale(1.1) rotate(0deg); }
-      20% { transform: scale(1.15) rotate(15deg); }
-      40% { transform: scale(1.15) rotate(-15deg); }
-      60% { transform: scale(1.1) rotate(8deg); }
-      80% { transform: scale(1.1) rotate(-8deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-
-    .menu-toggle {
-      display: none;
-      flex-direction: column;
-      cursor: pointer;
-      gap: 5px;
-      padding: 5px;
-    }
-
-    .menu-toggle span {
-      width: 25px;
-      height: 3px;
-      background-color: var(--color-primary);
-      border-radius: 2px;
-      transition: all 0.3s ease;
-    }
-
-    /* --- Animated Header & Breadcrumbs --- */
-    .cover-banner {
-      text-align: center;
-      padding: 2.2rem 1.5rem 1.2rem 1.5rem;
-      animation: fadeInDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .breadcrumbs {
-      font-family: var(--font-nav);
-      font-size: 0.88rem;
-      color: var(--color-primary);
-      margin-bottom: 0.75rem;
-      font-weight: 500;
-    }
-
-    .breadcrumbs span {
-      color: var(--color-text-muted);
-    }
-
-    .cover-banner h1 {
-      font-family: var(--font-header);
-      font-size: 2.5rem;
-      color: var(--color-text-dark);
-      margin-bottom: 0.6rem;
-      font-weight: 700;
-    }
-
-    .cover-banner p {
-      font-family: var(--font-text);
-      font-size: 1.05rem;
-      color: var(--color-text-muted);
-      max-width: 650px;
-      margin: 0 auto;
-    }
-
-    @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* --- Interactive Calendar Container --- */
-    .calendar-container {
-      max-width: 1100px;
-      width: 100%;
-      margin: 0 auto;
-      padding: 0 1.5rem 3.5rem 1.5rem;
-      flex: 1 0 auto;
-    }
-
-    .calendar-card {
-      background-color: #FAF5F0;
-      border: 1px solid var(--color-border);
-      border-radius: 24px;
-      padding: 2rem 2.5rem;
-      box-shadow: 0 10px 30px rgba(88, 48, 54, 0.04);
-      transition: all 0.3s ease;
-    }
-
-    /* Calendar Controls & Legend */
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      flex-wrap: wrap;
-      gap: 1.2rem;
-    }
-
-    .month-controls {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-    }
-
-    .nav-arrow {
-      width: 42px;
-      height: 42px;
-      border-radius: 50%;
-      background-color: var(--color-primary);
-      color: #FFFFFF;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      border: none;
-      cursor: pointer;
-      transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-      box-shadow: 0 4px 10px rgba(210, 118, 133, 0.25);
-      user-select: none;
-    }
-
-    .nav-arrow:hover {
-      background-color: var(--color-primary-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 14px rgba(210, 118, 133, 0.35);
-    }
-
-    .nav-arrow:active {
-      transform: translateY(0);
-    }
-
-    .month-title {
-      font-family: var(--font-header);
-      font-size: 1.85rem;
-      color: var(--color-text-dark);
-      font-weight: 700;
-      min-width: 210px;
-      text-align: center;
-    }
-
-    .legend {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      font-family: var(--font-nav);
-      font-size: 0.88rem;
-      color: var(--color-text-body);
-      background-color: rgba(255, 255, 255, 0.6);
-      padding: 0.5rem 1rem;
-      border-radius: 30px;
-      border: 1px solid rgba(230, 216, 213, 0.8);
-    }
-
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-
-    .dot.open { background-color: var(--color-open); }
-    .dot.limited { background-color: var(--color-limited); }
-    .dot.booked { background-color: var(--color-booked); }
-
-    /* Calendar Grid */
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 0.8rem;
-      margin-bottom: 2rem;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-    }
-
-    .calendar-grid.fade-out {
-      opacity: 0;
-      transform: scale(0.98);
-    }
-
-    .weekday-header {
-      text-align: center;
-      font-family: var(--font-header);
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--color-text-dark);
-      padding-bottom: 0.5rem;
-      letter-spacing: 0.5px;
-    }
-
-    .day-card {
-      background-color: var(--bg-day-card);
-      border-radius: 14px;
-      height: 98px;
-      padding: 0.65rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      user-select: none;
-    }
-
-    .day-card:not(.muted):hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-      border-color: rgba(210, 118, 133, 0.4);
-    }
-
-    .day-card.muted {
-      opacity: 0.45;
-      background-color: #F2E8E4;
-      cursor: not-allowed;
-    }
-
-    .day-card.selected {
-      border: 2.5px solid var(--color-selected);
-      background-color: var(--color-selected-bg);
-      box-shadow: 0 8px 22px rgba(184, 59, 94, 0.35);
-      transform: translateY(-4px);
-      outline: 2px solid rgba(184, 59, 94, 0.3);
-      outline-offset: 2px;
-      z-index: 2;
-    }
-
-    .day-number {
-      font-family: var(--font-header);
-      font-weight: 700;
-      font-size: 1.15rem;
-      color: var(--color-text-dark);
-    }
-
-    .day-card.selected .day-number {
-      color: var(--color-selected);
-      font-size: 1.25rem;
-    }
-
-    .status-pill {
-      width: 100%;
-      padding: 0.28rem 0;
-      border-radius: 6px;
-      text-align: center;
-      font-family: var(--font-nav);
-      font-size: 0.68rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: #FFFFFF;
-      transition: all 0.2s ease;
-    }
-
-    .status-pill.open { background-color: var(--color-open-bg); }
-    .status-pill.selected-pill {
-      background-color: var(--color-selected);
-      box-shadow: 0 2px 8px rgba(184, 59, 94, 0.4);
-      letter-spacing: 0.8px;
-    }
-    .status-pill.limited { background-color: var(--color-limited); }
-    .status-pill.booked { background-color: var(--color-booked); }
-
-    /* Summary Footer / Actions Bar */
-    .calendar-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 1.5rem;
-      border-top: 1.5px dashed var(--color-border);
-      flex-wrap: wrap;
-      gap: 1.5rem;
-    }
-
-    .selected-info {
-      font-family: var(--font-nav);
-    }
-
-    .selected-info h3 {
-      font-size: 1.15rem;
-      font-weight: 600;
-      color: var(--color-text-dark);
-      margin-bottom: 0.25rem;
-    }
-
-    .status-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.95rem;
-      color: var(--color-text-body);
-    }
-
-    .status-badge-inline {
-      font-weight: 600;
-      text-transform: capitalize;
-    }
-
-    .action-buttons-group {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 0.6rem;
-    }
-
-    .buttons-wrapper {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    /* Buttons */
-    .btn {
-      font-family: var(--font-button);
-      font-weight: 600;
-      font-size: 1rem;
-      padding: 0.6rem 1.5rem;
-      border-radius: 20px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.25s ease;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      text-align: center;
-      outline: none;
-    }
-
-    .btn-primary {
-      background-color: var(--color-primary);
-      color: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(210, 118, 133, 0.25);
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background-color: var(--color-primary-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(210, 118, 133, 0.35);
-    }
-
-    .btn-outline {
-      background-color: #FFFFFF;
-      border-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-
-    .btn-outline:hover:not(:disabled) {
-      background-color: var(--color-primary);
-      color: #FFFFFF;
-      transform: translateY(-2px);
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none !important;
-      box-shadow: none !important;
-    }
-
-    /* --- Modals / Action Dialogs --- */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(56, 35, 37, 0.5);
-      backdrop-filter: blur(4px);
-      z-index: 2000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-      padding: 1rem;
-    }
-
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .modal-card {
-      background-color: #FAF5F0;
-      border-radius: 20px;
-      width: 100%;
-      max-width: 520px;
-      padding: 2rem;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-      transform: scale(0.9);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .modal-overlay.active .modal-card {
-      transform: scale(1);
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    .modal-title {
-      font-family: var(--font-header);
-      font-size: 1.6rem;
-      color: var(--color-text-dark);
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--color-text-muted);
-      line-height: 1;
-    }
-
-    .modal-body {
-      font-family: var(--font-text);
-      color: var(--color-text-body);
-      margin-bottom: 1.5rem;
-      font-size: 0.98rem;
-    }
-
-    .modal-body p {
-      margin-bottom: 0.8rem;
-    }
-
-    .modal-field {
-      margin-bottom: 1rem;
-    }
-
-    .modal-field label {
-      display: block;
-      font-family: var(--font-nav);
-      font-weight: 600;
-      font-size: 0.85rem;
-      margin-bottom: 0.35rem;
-      color: var(--color-text-dark);
-    }
-
-    .modal-field input, .modal-field textarea {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--color-border);
-      font-family: var(--font-text);
-      background-color: #FFFFFF;
-      outline: none;
-    }
-
-    .modal-field input:focus, .modal-field textarea:focus {
-      border-color: var(--color-primary);
-    }
-
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-    }
-
-    .availability-admin {
-      border-block: 1px solid var(--color-border);
-      margin: 1.5rem 0;
-      padding: 1.25rem 0;
-    }
-
-    .availability-admin h3 {
-      font-family: var(--font-header);
-      font-size: 1.15rem;
-      margin-bottom: 1rem;
-    }
-
-    .availability-admin form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 0.8rem;
-      align-items: end;
-    }
-
-    .availability-admin label {
-      display: grid;
-      gap: 0.35rem;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
-
-    .availability-admin input,
-    .availability-admin select {
-      width: 100%;
-      min-height: 42px;
-      padding: 0.55rem 0.7rem;
-      border: 1px solid var(--color-border);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--color-text-dark);
-      font: inherit;
-    }
-
-    .availability-admin button {
-      min-height: 42px;
-    }
-
-    .availability-message {
-      min-height: 1.5em;
-      margin-top: 0.65rem;
-      color: var(--color-text-muted);
-      font-size: 0.9rem;
-    }
-
-    /* --- Toast Notification --- */
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background-color: var(--color-text-dark);
-      color: #FFFFFF;
-      padding: 0.85rem 1.5rem;
-      border-radius: 10px;
-      font-family: var(--font-nav);
-      font-size: 0.9rem;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-      z-index: 3000;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    /* --- Footer --- */
-    footer {
-      background-color: var(--bg-footer);
-      text-align: center;
-      padding: 1.8rem 1rem;
-      font-family: var(--font-nav);
-      font-size: 0.88rem;
-      color: #555555;
-      flex-shrink: 0;
-      width: 100%;
-      margin-top: auto;
-    }
-
-    footer p.footer-title {
-      font-weight: 600;
-      letter-spacing: 1px;
-      margin-bottom: 0.3rem;
-      text-transform: uppercase;
-      color: var(--color-text-dark);
-    }
-
-    /* --- Responsive Styling --- */
-    @media (max-width: 900px) {
-      .calendar-grid {
-        gap: 0.5rem;
-      }
-      .day-card {
-        height: 82px;
-        padding: 0.45rem;
-      }
-      .status-pill {
-        font-size: 0.6rem;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .menu-toggle {
-        display: flex;
-      }
-
-      .nav-links {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background-color: #FAF0E6;
-        flex-direction: column;
-        padding: 1.5rem;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      }
-
-      .nav-links.active {
-        display: flex;
-      }
-
-      .calendar-card {
-        padding: 1.25rem;
-      }
-
-      .calendar-header {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .month-controls {
-        justify-content: center;
-      }
-
-      .legend {
-        justify-content: center;
-      }
-
-      .calendar-footer {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-
-      .action-buttons-group {
-        width: 100%;
-        align-items: stretch;
-      }
-
-      .buttons-wrapper {
-        width: 100%;
-        flex-direction: column;
-      }
-
-      .buttons-wrapper .btn {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .day-card {
-        height: 62px;
-        padding: 0.25rem;
-      }
-      .day-number {
-        font-size: 0.9rem;
-      }
-      .status-pill {
-        font-size: 0.52rem;
-        padding: 0.15rem 0;
-      }
-      .cover-banner h1 {
-        font-size: 2rem;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Select Your Event Date &amp; Week | R&amp;R Sweet Bites</title>
+<style>
+:root{--bg:#FAF0E6;--pink:#D27685;--pink-b:#E58A97;--btn:#DB7F8E;--deep:#382325;--text:#4a2a2e;--muted:#7A6B6C;--open:#8FA287;--limited:#DDA25E;--booked:#E3A5A5;--key-booked:#D4727A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Jost',system-ui,sans-serif;background:var(--bg);color:var(--deep);min-height:100vh;display:flex;flex-direction:column}
+main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
+[hidden]{display:none!important}
+.back-btn{display:inline-block;margin-bottom:10px;padding:5px 14px;border-radius:8px;background:var(--btn);color:#fff;font:600 .72rem 'Platypi',Georgia,serif;text-decoration:none;transition:background .2s,transform .2s}
+.back-btn:hover{background:#cf6c7d;transform:translateX(-2px)}
+.btn{font:600 .85rem 'Platypi',Georgia,serif;padding:.55rem 1.3rem;border:0;border-radius:99px;background:var(--btn);color:#fff;cursor:pointer;transition:background .2s,transform .2s}
+.btn:hover:not(:disabled){background:#cf6c7d;transform:translateY(-2px)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.hero{text-align:center;margin:0 0 22px}
+.hero h1{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:2.2rem;color:var(--deep);margin-bottom:8px}
+.hero p{max-width:620px;margin:0 auto;color:var(--muted)}
+.title{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:2.2rem;color:var(--deep)}
+.sub{color:var(--muted);font-size:.9rem;margin:2px 0 20px}
+
+/* ===== Calendar ===== */
+.cal{background:#FFF8F5;border:1px solid var(--pink-b);border-radius:12px;padding:20px 26px 22px}
+.cal-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:22px}
+.month{display:flex;align-items:center;gap:12px}
+.arrow{width:34px;height:34px;border-radius:50%;border:0;background:var(--btn);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer;display:grid;place-items:center;transition:background .2s,transform .2s}
+.arrow:hover{background:#cf6c7d;transform:translateY(-2px)}
+.month h2{font:400 1.15rem 'Jost',sans-serif;min-width:130px;text-align:center}
+.legend{display:flex;align-items:center;gap:16px;font-size:.72rem;color:var(--text)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:12px;height:12px;border-radius:50%;display:inline-block}
+.dot.none{background:#CDBDB9}.dot.open{background:var(--open)}.dot.limited{background:var(--limited)}.dot.booked{background:var(--key-booked)}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:14px 12px}
+.wd{text-align:center;font:700 .85rem 'Playfair Display',Georgia,serif;padding-bottom:2px}
+.day{height:76px;padding:7px 8px 8px;border-radius:10px;background:#F9E9E1;border:1px solid #8C7B78;display:flex;flex-direction:column;justify-content:space-between;text-align:left;font-family:inherit;color:var(--deep);cursor:pointer;transition:transform .2s,box-shadow .2s}
+.day:hover{transform:translateY(-3px);box-shadow:0 6px 14px rgba(0,0,0,.08)}
+.day .n{font:700 .85rem 'Jost',sans-serif}
+.day .p{display:block;width:100%;padding:2px 0;border-radius:3px;text-align:center;font:700 .52rem 'Jost',sans-serif;letter-spacing:.4px;text-transform:uppercase;color:#fff}
+.day .p.open{background:var(--open)}.day .p.limited{background:var(--limited)}.day .p.booked{background:var(--booked)}
+.day.booked{background:#FBF3EF;border-color:#D8CAC6}
+.day.out{background:#FAF5F2;border-color:#E3D8D4;cursor:default;pointer-events:none}
+.day.out .n{color:#A39797}
+.day.sel{border:2px solid var(--pink-b);background:#FFF0F3;box-shadow:0 6px 16px rgba(229,138,151,.3)}
+.day.sel .p{background:var(--open)}
+.cal-foot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-top:26px}
+.cal-foot h3{font:400 .85rem 'Jost',sans-serif;color:var(--deep)}
+.cal-foot .st{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text)}
+.cal-foot .st .dot{width:11px;height:11px}
+.availability-admin{border-block:1px solid #E6D8D5;margin:0 0 1.5rem;padding:1.1rem 0}
+.availability-admin h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:.9rem}
+.availability-admin form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem;align-items:end}
+.availability-admin label{display:grid;gap:.3rem;font-size:.85rem;font-weight:600}
+.availability-admin input,.availability-admin select{width:100%;min-height:40px;padding:.5rem .7rem;border:1px solid #E6D8D5;border-radius:6px;background:#fff;font:inherit}
+.availability-message{min-height:1.4em;margin-top:.6rem;color:var(--muted);font-size:.9rem}
+
+/* ===== Messages ===== */
+.chat{display:grid;grid-template-columns:210px 1fr;border:1px solid var(--pink-b);border-radius:6px;background:#fff;overflow:hidden}
+.chat-side{border-right:1px solid var(--pink-b)}
+.chat-side .top{height:46px;border-bottom:1px solid var(--pink-b)}
+.conv{display:flex;align-items:center;gap:8px;width:100%;padding:10px;border:0;border-bottom:1px solid var(--pink-b);background:#fff;text-align:left;cursor:pointer;font-family:inherit;color:var(--deep);transition:background .15s}
+.conv:hover,.conv.active{background:#FBEBE4}
+.conv img,.chat-head img{width:34px;height:34px;border-radius:50%;object-fit:cover;background:#F2D5D5;flex:none}
+.conv b,.chat-head b{display:block;font:700 .66rem 'Platypi',Georgia,serif}
+.conv small,.chat-head small{display:block;font:500 .56rem 'Platypi',Georgia,serif;color:var(--text)}
+.chat-main{display:flex;flex-direction:column;min-width:0}
+.chat-head{display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;border-bottom:1px solid var(--pink-b)}
+.chat-head b{font-size:.75rem}
+.msgs{height:360px;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.bub{max-width:62%;padding:10px 14px;border-radius:5px;font-size:.85rem;line-height:1.45;overflow-wrap:anywhere}
+.bub.shop{align-self:flex-start;background:#F7D9D6}
+.bub.me{align-self:flex-end;background:#FBEAEA}
+.bub time{display:block;margin-top:4px;font-size:.62rem;color:#9a8587}
+.bub img{display:block;max-width:100%;max-height:220px;border-radius:4px;margin-bottom:6px}
+.composer{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:1px solid var(--pink-b)}
+.attach{width:28px;height:28px;border:0;background:none;color:var(--pink);cursor:pointer;display:grid;place-items:center;border-radius:6px}
+.attach:hover{background:#FBEBE4}
+.attach svg{width:20px;height:20px}
+.composer input[type=text]{flex:1;min-width:0;height:30px;border:1px solid var(--pink-b);border-radius:4px;padding:0 10px;font:400 .8rem 'Jost',sans-serif;outline:none}
+.composer input[type=text]:focus{box-shadow:0 0 0 3px rgba(229,138,151,.25)}
+.send{padding:.4rem 1.3rem;border-radius:5px;font-size:.8rem}
+.none{text-align:center;color:var(--muted);padding:20px;font-size:.85rem}
+
+
+/* ===== Account page + popups ===== */
+.acct{max-width:800px;margin:0 auto;background:#FFF8F5;border:1px solid var(--pink-b);border-radius:12px;padding:20px 22px 26px}
+.acct h2{font:700 1.6rem 'Playfair Display',Georgia,serif;margin-bottom:14px}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:16px 90px}
+.acct label,.mbox label{display:block;font:700 .85rem 'Platypi',Georgia,serif;margin-bottom:5px}
+.acct input{width:100%;height:30px;border:1px solid var(--pink-b);border-radius:6px;background:#fff;padding:0 10px;font:500 .9rem 'Platypi',Georgia,serif;color:var(--deep);outline:none}
+.phone{display:flex;gap:6px}
+.pfx{flex:none;display:grid;place-items:center;width:34px;height:30px;border:1px solid var(--pink-b);border-radius:6px;background:#fff;font:500 .85rem 'Platypi',Georgia,serif}
+.acct-links{max-width:800px;margin:16px auto 0;display:flex;justify-content:space-between;padding:0 2px}
+.ulink{border:0;background:none;font:700 .95rem 'Platypi',Georgia,serif;color:var(--deep);text-decoration:underline;cursor:pointer}
+.ulink:hover{color:var(--pink)}
+.overlay{position:fixed;inset:0;z-index:2000;display:none;place-items:center;padding:16px;background:rgba(0,0,0,.5);backdrop-filter:blur(3px)}
+.overlay.open{display:grid}
+.mbox{width:min(100%,440px);background:#fff;border:1px solid var(--pink-b);border-radius:6px;padding:22px 26px 24px}
+.mbox h3{text-align:center;font:700 1rem 'Platypi',Georgia,serif;letter-spacing:.3px;text-transform:uppercase;margin-bottom:18px}
+.mbox input{width:100%;height:30px;border:1px solid var(--pink-b);border-radius:6px;padding:0 10px;font:400 .85rem 'Jost',sans-serif;color:var(--deep);outline:none}
+.mbox input:focus{box-shadow:0 0 0 3px rgba(229,138,151,.25)}
+.mbox input[aria-invalid="true"]{border-color:#b3263e}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px 22px}
+.mrow{display:grid;grid-template-columns:130px 1fr;gap:10px;align-items:start;margin-bottom:12px}
+.mrow label{margin:6px 0 0}
+.mact{text-align:center;margin-top:20px}
+.err{display:block;color:#b3263e;font-size:.68rem;font-weight:500;margin-top:3px;line-height:1.25}
+.err:empty{display:none}
+.done .mbox{width:min(100%,310px);background:#F8D9D9;text-align:center;padding:22px 20px 24px}
+.done .mbox h3{text-transform:none;font-size:1.05rem;letter-spacing:0;margin-bottom:10px}
+.done .mbox p{font-size:.72rem;line-height:1.5;margin-bottom:16px}
+@media(max-width:700px){.agrid,.mgrid{grid-template-columns:1fr}.agrid{gap:14px}.mrow{grid-template-columns:1fr;gap:2px}.mrow label{margin:0 0 4px}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,100px);background:var(--deep);color:#fff;padding:11px 20px;border-radius:10px;font-size:.88rem;z-index:3000;opacity:0;transition:.3s}
+.toast.show{transform:translate(-50%,0);opacity:1}
+
+@media(max-width:700px){
+  .hero h1,.title{font-size:1.8rem}
+  .cal{padding:16px 12px}
+  .grid{gap:8px 5px}
+  .day{height:58px;padding:4px}
+  .day .n{font-size:.75rem}.day .p{font-size:.4rem}
+  .chat{grid-template-columns:1fr}
+  .chat-side{border-right:0;border-bottom:1px solid var(--pink-b)}
+  .chat-side .top{display:none}
+  .bub{max-width:82%}
+}
+</style>
 </head>
 <body>
 
-  <!-- Navigation Bar -->
-  <nav class="navbar">
-    <a href="#home" class="nav-brand">
-      <img src="Images-Icons\R&R Logo.jpg" alt="" class="brand-icon">
-      <span class="brand-name">R&amp;R Sweet Bites</span>
-      
-    </a>
+<div id="site-header"></div>
+<script data-active="submit">
+/* R&R Sweet Bites - shared header + footer (used by Gallery, My Orders, Notifications) */
+(function () {
+  "use strict";
 
-    <div class="menu-toggle" id="mobile-menu" aria-label="Toggle navigation menu">
-      <span></span>
-      <span></span>
-      <span></span>
+  /* ===== SETTINGS ===== */
+  // true  = preview as the logged-in customer "Lia Norman" (no backend needed)
+  // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
+  const DEMO_MODE = true;
+  const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
+  const PAGE = {
+    home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
+    orders: "Customer_Orders.html", messages: "messages.html", notifications: "Customer_Orders.html#notifications",
+    settings: "settings.html", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+  };
+  const DEMO_USER = { name: "Lia Norman" };
+  const DEMO_NOTIFS = [
+    { type: "payment", title: "Payment Verified", text: "Your final payment was approved.", unread: true },
+    { type: "quote", title: "Quotation Updated", text: "Your quotation has new details. Please review it.", unread: true },
+    { type: "order", title: "Order Confirmed", text: "Your order request was approved.", unread: false },
+    { type: "message", title: "New Message From R&R Sweet Bites", text: "You have a new message about your order.", unread: false },
+    { type: "payment", title: "Payment Verified", text: "Your down payment was approved.", unread: false },
+    { type: "quote", title: "Quotation Updated", text: "Your quotation was updated by the shop.", unread: false },
+    { type: "order", title: "Order Confirmed", text: "Your order request was approved.", unread: false },
+    { type: "message", title: "New Message From R&R Sweet Bites", text: "The shop replied to your message.", unread: false }
+  ];
+
+  const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
+  if (ACTIVE === "submit") { PAGE.gallery = "Customer_Orders.html#gallery"; PAGE.orders = "Customer_Orders.html#orders"; PAGE.notifications = "Customer_Orders.html#notifications"; PAGE.submit = "#request"; PAGE.messages = "#messages"; PAGE.settings = "#account"; }   // this page also holds Messages
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const svg = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
+  const ICON = {
+    user: svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 18.6c1.2-2.4 3.6-3.6 6.2-3.6s5 1.2 6.2 3.6"/>'),
+    gear: svg('<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'),
+    star: svg('<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>'),
+    out: svg('<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/>'),
+    info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+    card: svg('<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.8-1.6 2.2-2.4 4-2.4s3.2.8 4 2.4"/>'),
+    star2: svg('<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>'),
+    check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+    chat: svg('<path d="M4 5h16v11H9l-5 4z"/>'),
+    peso: '<span aria-hidden="true" style="font-weight:700;font-size:1.1rem">&#8369;</span>'
+  };
+  const notifIcon = (t) => t === "payment" ? ICON.peso : t === "quote" ? ICON.star2 : t === "order" ? ICON.check : ICON.chat;
+  const initialsOf = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+
+  const RR = (window.RR = { user: null, notifs: [], esc, ICON, notifIcon, PAGE });
+  const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+
+  /* ===== STYLES ===== */
+  const css = `
+  #site-header{position:sticky;top:0;z-index:1000}
+  .rr-header{background:#FAF0E6;box-shadow:0 2px 10px rgba(0,0,0,.04);font-family:'Jost',system-ui,sans-serif;color:#333}
+  .rr-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:.9rem 5%}
+  .rr-brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:'Platypi',Georgia,serif;font-weight:700;font-size:1.3rem;color:#D27685;white-space:nowrap}
+  .rr-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#E8C3C3;display:block}
+  .rr-links{display:flex;align-items:center;gap:2rem}
+  .rr-links a{position:relative;text-decoration:none;color:#333;font-weight:500;white-space:nowrap;padding:4px 0;transition:color .2s}
+  .rr-links a::after{content:"";position:absolute;left:0;bottom:-3px;height:2px;width:0;background:#D27685;transition:width .25s}
+  .rr-links a:hover,.rr-links a.active{color:#D27685}
+  .rr-links a:hover::after,.rr-links a.active::after{width:100%}
+  .rr-tools{display:flex;align-items:center;gap:1.1rem}
+  .rr-menu-wrap{position:relative}
+  .rr-bell{position:relative;display:block;width:26px;height:26px;padding:0;border:0;background:transparent;cursor:pointer}
+  .rr-bell img{width:24px;height:24px;object-fit:contain;display:block}
+  .rr-bell b{position:absolute;top:-5px;right:-6px;min-width:15px;height:15px;padding:0 3px;border-radius:99px;background:#c0525a;color:#fff;font:600 .62rem 'Jost',sans-serif;display:grid;place-items:center}
+  .rr-avatar{width:40px;height:40px;border-radius:50%;border:0;background:#F6D9DC;color:#4a2a2e;font:600 .95rem 'Jost',sans-serif;cursor:pointer;transition:background .2s}
+  .rr-avatar:hover{background:#F0C6CC}
+  .rr-btn{font-family:'Platypi',Georgia,serif;font-weight:600;font-size:.95rem;padding:.55rem 1.4rem;border-radius:20px;background:#D27685;color:#fff;text-decoration:none;transition:.2s}
+  .rr-btn:hover{background:#BE5B6C}
+  .rr-pop{position:absolute;right:0;top:calc(100% + 12px);z-index:1100;background:#FFF8F3;border:1px solid #D97D8A;border-radius:10px;box-shadow:0 12px 30px rgba(74,38,46,.18);animation:rrpop .18s ease}
+  .rr-pop[hidden]{display:none}
+  @keyframes rrpop{from{opacity:0;transform:translateY(-6px)}}
+  .rr-account{width:200px;padding:8px}
+  .rr-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#4a2a2e;font:500 .95rem 'Jost',sans-serif;text-decoration:none;text-align:left;cursor:pointer;transition:background .15s}
+  a.rr-item:hover,button.rr-item:hover{background:#F8EBE3}
+  .rr-item svg{width:21px;height:21px;flex:none}
+  .rr-name{cursor:default}
+  .rr-account form{margin:0}
+  .rr-notif{width:260px;padding:14px 16px}
+  .rr-notif-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .rr-notif-head strong{font-family:'Platypi',Georgia,serif;font-size:1.05rem;color:#382325}
+  .rr-notif-head a{font-size:.72rem;color:#D27685;text-decoration:none}
+  .rr-notif-head a:hover{text-decoration:underline}
+  .rr-n{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0}
+  .rr-n small{display:block;font-size:.62rem;color:#666;font-weight:500}
+  .rr-n span{font-size:.7rem;font-weight:600;color:#382325;letter-spacing:.2px}
+  .rr-n i{width:8px;height:8px;border-radius:50%;background:#D27685;flex:none}
+  .rr-empty{font-size:.8rem;color:#666;padding:8px 0}
+  .rr-footer{background:#ECCFCB;text-align:center;padding:1.6rem 1rem;font-family:'Jost',sans-serif;font-size:.9rem;color:#555;width:100%}
+  .rr-footer a{display:inline-flex;align-items:center;gap:6px;color:#555;text-decoration:none;font-weight:500;letter-spacing:.5px}
+  .rr-footer a:hover{color:#D27685}
+  .rr-footer svg{width:15px;height:15px}
+  .rr-footer .sep{margin:0 8px}
+  @media(max-width:820px){.rr-nav{flex-wrap:wrap;row-gap:.6rem}.rr-links{order:3;width:100%;justify-content:center;gap:1.3rem;font-size:.92rem}}
+  @media(max-width:420px){.rr-brand span{font-size:1.05rem}}`;
+
+  /* ===== RENDER ===== */
+  function render() {
+    const link = (key, label) => '<a href="' + PAGE[key] + '"' + (ACTIVE === key ? ' class="active" aria-current="page"' : "") + ">" + label + "</a>";
+    const user = RR.user;
+    const links = (user ? "" : link("home", "Home")) + link("gallery", "Gallery") + link("submit", "Submit Request") + link("orders", "My Order") + link("messages", "Messages");
+    let tools;
+    if (user) {
+      const unread = RR.notifs.filter((n) => n.unread).length;
+      const items = RR.notifs.slice(0, 3).map((n) =>
+        '<div class="rr-n"><div><small>' + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "") + "</div>").join("");
+      tools =
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
+        '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
+        '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
+        '<div class="rr-item rr-name">' + ICON.user + "<span>" + esc(user.name) + "</span></div>" +
+        '<a class="rr-item" href="' + PAGE.settings + '">' + ICON.gear + "Settings</a>" +
+        '<a class="rr-item" href="' + PAGE.reviews + '">' + ICON.star + "My Reviews</a>" +
+        '<form method="post" action="' + API.logout + '"><button class="rr-item" type="submit">' + ICON.out + "Log Out</button></form></div></div>";
+    } else {
+      tools = '<a class="rr-btn" href="' + PAGE.login + '">Log in</a><a class="rr-btn" href="' + PAGE.register + '">Sign up</a>';
+    }
+
+    const host = document.getElementById("site-header");
+    if (host) {
+      host.innerHTML = '<header class="rr-header"><nav class="rr-nav" aria-label="Main"><a class="rr-brand" href="' + PAGE.home + '"><img class="rr-logo" src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></a><div class="rr-links">' + links + '</div><div class="rr-tools">' + tools + "</div></nav></header>";
+    }
+    const foot = document.getElementById("site-footer");
+    if (foot) {
+      foot.innerHTML = '<footer class="rr-footer"><div><a href="' + PAGE.home + '#about">' + ICON.info + 'ABOUT US</a><span class="sep">|</span><a href="' + PAGE.home + '#contact">' + ICON.card + "CONTACTS</a></div><p>&copy; 2019 R&amp;R Sweet Bites. All Rights Reserved.</p></footer>";
+    }
+    wireMenus();
+  }
+
+  function wireMenus() {
+    const pairs = [["rrBell", "rrNotif"], ["rrAvatar", "rrAccount"]];
+    const closeAll = () => pairs.forEach(([b, p]) => {
+      const btn = document.getElementById(b), pop = document.getElementById(p);
+      if (btn && pop) { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+    });
+    pairs.forEach(([b, p]) => {
+      const btn = document.getElementById(b), pop = document.getElementById(p);
+      if (!btn) return;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = pop.hidden;
+        closeAll();
+        pop.hidden = !willOpen;
+        btn.setAttribute("aria-expanded", String(willOpen));
+      });
+    });
+    document.addEventListener("click", (e) => { if (!e.target.closest(".rr-menu-wrap") || e.target.closest(".rr-pop a")) closeAll(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+  }
+
+  async function getJSON(url) {
+    const res = await fetch(url, { credentials: "same-origin" });
+    return res.json();
+  }
+
+  RR.ready = new Promise((resolve) => {
+    onReady(async () => {
+      const fonts = document.createElement("link");
+      fonts.rel = "stylesheet";
+      fonts.href = "https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Platypi:wght@400;600;700&family=Playfair+Display:wght@600;700;800&display=swap";
+      document.head.append(fonts);
+      const style = document.createElement("style");
+      style.textContent = css;
+      document.head.append(style);
+
+      if (DEMO_MODE) {
+        RR.user = { name: DEMO_USER.name };
+        RR.notifs = DEMO_NOTIFS;
+      } else {
+        try { const me = await getJSON(API.me); if (me && me.ok) RR.user = { name: me.name }; } catch (e) {}
+        if (RR.user) {
+          try { const n = await getJSON(API.notifications); RR.notifs = Array.isArray(n) ? n : (n && n.items) || []; } catch (e) {}
+        }
+      }
+      if (RR.user) { RR.user.first = RR.user.name.split(" ")[0]; RR.user.initials = initialsOf(RR.user.name); }
+      render();
+      resolve();
+    });
+  });
+})();
+
+</script>
+
+<main>
+  <!-- ===== VIEW 1: SELECT EVENT DATE & WEEK ===== -->
+  <section id="viewRequest">
+    <a class="back-btn" href="Customer_Orders.html#orders">Back to My Orders</a>
+    <div class="hero">
+      <h1>Select Your Event Date &amp; Week</h1>
+      <p>We bake fresh for every order! Please check our weekly availability calendar before submitting your custom cake request.</p>
     </div>
 
-    <ul class="nav-links" id="nav-list">
-      <li><a href="#home">Home</a></li>
-      <li><a href="Cake-Gallery.html">Gallery</a></li>
-      <li><a href="Weekly-Availability.html" class="active">Submit Request</a></li>
-      <li><a href="Customer_Orders.html">My Order</a></li>
-      <li><a href="#messages">Messages</a></li>
-    </ul>
-
-    <div class="nav-actions">
-      <div class="notification-wrapper" title="Notifications" id="notificationBtn">
-        <img src="Images-Icons\bell-icon.png" alt="Bell" class="notification-icon">
-        <span class="notification-badge">2</span>
-      </div>
-      <div class="user-avatar" title="User Profile">AP</div>
-    </div>
-  </nav>
-
-  <!-- Animated Cover Banner -->
-  <header class="cover-banner" id="home">
-    <div class="breadcrumbs">
-      Submit Request / <span>Select Event Date &amp; Event</span>
-    </div>
-    <h1>Select Your Event Date &amp; Week</h1>
-    <p>We bake fresh for every order! Please check our weekly availability calendar before submitting your custom cake request.</p>
-  </header>
-
-  <!-- Main Calendar Section -->
-  <main class="calendar-container">
-    <div class="calendar-card">
-      
-      <!-- Controls & Availability Legend -->
-      <div class="calendar-header">
-        <div class="month-controls">
-          <button class="nav-arrow" id="prev-month" aria-label="Previous Month">&lsaquo;</button>
-          <h2 class="month-title" id="month-display">October 2026</h2>
-          <button class="nav-arrow" id="next-month" aria-label="Next Month">&rsaquo;</button>
+    <div class="cal">
+      <div class="cal-head">
+        <div class="month">
+          <button class="arrow" id="prev-month" type="button" aria-label="Previous month">&lsaquo;</button>
+          <h2 id="month-display">October 2026</h2>
+          <button class="arrow" id="next-month" type="button" aria-label="Next month">&rsaquo;</button>
         </div>
-
         <div class="legend">
-          <div class="legend-item">
-            <span class="dot open"></span>
-            <span>Open</span>
-          </div>
-          <div class="legend-item">
-            <span class="dot booked"></span>
-            <span>Fully booked</span>
-          </div>
+          <span><i class="dot open"></i>Open</span>
+          <span><i class="dot limited"></i>Limited Slots</span>
+          <span><i class="dot booked"></i>Fully booked</span>
         </div>
       </div>
 
@@ -947,323 +365,551 @@ if (!isset($_SESSION['csrf_token'])) {
                 <option value="fully_booked">Fully booked</option>
               </select>
             </label>
-            <button class="btn btn-primary" type="submit">Save week</button>
+            <button class="btn" type="submit">Save week</button>
           </form>
           <p class="availability-message" id="availability-message" role="status" aria-live="polite"></p>
         </section>
       <?php endif; ?>
 
-      <!-- Calendar Grid -->
-      <div class="calendar-grid" id="calendar-grid">
-        <!-- Grid dynamically populated via JS -->
-      </div>
+      <div class="grid" id="calendar-grid"></div>
 
-      <!-- Selection Banner / Action Bar -->
-      <div class="calendar-footer">
-        <div class="selected-info">
-          <h3 id="selected-date-text">Selected Date: Thursday, October 1, 2026</h3>
-          <div class="status-indicator">
-            <span>Status:</span>
-            <span class="dot open" id="status-dot"></span>
-            <span class="status-badge-inline" id="status-text">Open</span>
-          </div>
+      <div class="cal-foot">
+        <div>
+          <h3 id="selected-date-text">Selected Date:</h3>
+          <div class="st"><span>Status:</span><i class="dot open" id="status-dot"></i><span id="status-text">Open</span></div>
         </div>
-
-        <div class="action-buttons-group">
-          <div class="buttons-wrapper">
-            <button id="btn-proceed" class="btn btn-primary">Proceed with Custom Request</button>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Proceed Custom Request Modal (FR-7) -->
-  <div class="modal-overlay" id="custom-modal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Custom Request - <span id="custom-modal-date">Oct 1, 2026</span></h3>
-        <button class="modal-close" id="close-custom-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>Great! This date is available for standard custom cake orders.</p>
-        <p>You are about to proceed to Step 2: Customizing design, flavor, size, and reference image uploads.</p>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-outline" id="cancel-custom-modal">Back</button>
-        <button class="btn btn-primary" id="confirm-custom-form">Continue to Order Builder</button>
+        <button id="btn-proceed" class="btn" type="button">Proceed with Custom Request</button>
       </div>
     </div>
+  </section>
+
+  <!-- ===== VIEW 2: MESSAGES ===== -->
+  <section id="viewMessages" hidden>
+    <h1 class="title">Messages</h1>
+    <p class="sub">Chat with the shop about cake requests, quotations, revisions, and order concerns.</p>
+    <div class="chat">
+      <aside class="chat-side"><div class="top"></div><div id="convList"></div></aside>
+      <div class="chat-main">
+        <div class="chat-head"><img src="../Images-Icons/R&R Logo.jpg" alt=""><div><b>R&amp;R Sweet Bites</b><small id="headOrder">Order Request:</small></div></div>
+        <div class="msgs" id="msgs" aria-live="polite"></div>
+        <div class="composer">
+          <button class="attach" id="attachBtn" type="button" aria-label="Attach an image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M4 18l5-5 4 4 3-3 4 4"/></svg></button>
+          <input type="file" id="fileInput" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          <input type="text" id="msgInput" maxlength="500" placeholder="Type a message..." aria-label="Type a message" autocomplete="off">
+          <button class="btn send" id="sendBtn" type="button">Send</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== VIEW 3: MANAGE YOUR ACCOUNT (opens from the account menu > Settings) ===== -->
+  <section id="viewAccount" hidden>
+    <a class="back-btn" href="Customer_Orders.html#orders">Back to My Orders</a>
+    <h1 class="title">Manage Your Account</h1>
+    <p class="sub">Update your personal information and password.</p>
+    <div class="acct">
+      <h2>Personal Information</h2>
+      <div class="agrid">
+        <div><label for="acFirst">First Name</label><input id="acFirst" readonly></div>
+        <div><label for="acSurname">Surname</label><input id="acSurname" readonly></div>
+        <div><label for="acEmail">Email</label><input id="acEmail" readonly></div>
+        <div><label for="acContact">Contact No.</label><div class="phone"><span class="pfx">+63</span><input id="acContact" readonly></div></div>
+      </div>
+    </div>
+    <div class="acct-links">
+      <button type="button" class="ulink" id="editInfoBtn">Edit Info</button>
+      <button type="button" class="ulink" id="changePwBtn">Change Password</button>
+    </div>
+  </section>
+</main>
+
+<!-- Edit Information -->
+<div class="overlay" id="editOverlay">
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <h3 id="editTitle">Edit Information</h3>
+    <form id="editForm" novalidate>
+      <div class="mgrid">
+        <div><label for="eFirst">First Name</label><input id="eFirst" data-f="name" maxlength="30" autocomplete="given-name"><span class="err" id="eFirst-err"></span></div>
+        <div><label for="eSurname">Surname</label><input id="eSurname" data-f="name" maxlength="30" autocomplete="family-name"><span class="err" id="eSurname-err"></span></div>
+        <div><label for="eEmail">Email</label><input id="eEmail" type="email" data-f="email" maxlength="254" placeholder="you@gmail.com" autocomplete="email" spellcheck="false"><span class="err" id="eEmail-err"></span></div>
+        <div><label for="eContact">Contact No</label><input id="eContact" type="tel" inputmode="numeric" data-f="phone" maxlength="11" placeholder="09XXXXXXXXX" autocomplete="tel-national"><span class="err" id="eContact-err"></span></div>
+      </div>
+      <div class="mact"><button class="btn" type="submit" id="editSave">Save</button></div>
+    </form>
   </div>
+</div>
 
-  <!-- Toast Container -->
-  <div class="toast" id="toast-message">Notification message here</div>
+<!-- Change Password -->
+<div class="overlay" id="pwOverlay">
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <h3 id="pwTitle">Change Password</h3>
+    <form id="pwForm" novalidate>
+      <div class="mrow"><label for="pCurrent">Current Password</label><div><input id="pCurrent" type="password" data-f="pw" maxlength="64" autocomplete="current-password"><span class="err" id="pCurrent-err"></span></div></div>
+      <div class="mrow"><label for="pNew">New Password</label><div><input id="pNew" type="password" data-f="pw" maxlength="64" autocomplete="new-password"><span class="err" id="pNew-err"></span></div></div>
+      <div class="mrow"><label for="pConfirm">Confirm Password</label><div><input id="pConfirm" type="password" data-f="pw" maxlength="64" autocomplete="new-password"><span class="err" id="pConfirm-err"></span></div></div>
+      <div class="mact"><button class="btn" type="submit" id="pwSave">Save</button></div>
+    </form>
+  </div>
+</div>
 
-  <!-- Footer -->
-  <footer>
-    <p class="footer-title">About Us</p>
-    <p>&copy; 2019 R&amp;R Sweet Bites. All Rights Reserved.</p>
-  </footer>
+<!-- Success popup (used for both) -->
+<div class="overlay done" id="doneOverlay">
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="doneTitle">
+    <h3 id="doneTitle"></h3>
+    <p id="doneText"></p>
+    <button class="btn" id="doneOk" type="button">Okay</button>
+  </div>
+</div>
 
-  <!-- JavaScript Interactions & Logic -->
-  <script>
-    const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
+<div id="site-footer"></div>
+<div class="toast" id="toast" role="status"></div>
 
-    const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+<script>
+(function () {
+  "use strict";
 
-    let availabilityWeeks = [];
-    const availabilityCache = new Map();
-    let renderRequestId = 0;
-    const today = new Date();
-    let currentYear = today.getFullYear();
-    let currentMonth = today.getMonth();
-    let selectedDateObj = {
-      year: today.getFullYear(),
-      month: today.getMonth(),
-      date: today.getDate()
-    };
+  /* ===== SETTINGS ===== */
+  // true  = preview with sample calendar days and a sample chat (no backend needed)
+  // false = real mode: ../api/weekly-availability.php (calendar) and ../api/messages.php (chat)
+  const DEMO_MODE = true;
 
-    const monthDisplay = document.getElementById('month-display');
-    const calendarGrid = document.getElementById('calendar-grid');
-    const prevBtn = document.getElementById('prev-month');
-    const nextBtn = document.getElementById('next-month');
+  const $ = (id) => document.getElementById(id);
+  const pad = (n) => String(n).padStart(2, "0");
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const SHORT = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  let toastTimer;
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3000); }
 
-    const selectedDateText = document.getElementById('selected-date-text');
-    const statusDot = document.getElementById('status-dot');
-    const statusText = document.getElementById('status-text');
+  /* ================= CALENDAR ================= */
+  let weeks = [], reqId = 0;
+  const cache = new Map();
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  let year = now.getFullYear(), month = now.getMonth();
+  let sel = { year, month, date: now.getDate() };
 
-    const btnProceed = document.getElementById('btn-proceed');
-
-    const customModal = document.getElementById('custom-modal');
-    const toast = document.getElementById('toast-message');
-
-    function getMonthKey(year, month) {
-      const mStr = String(month + 1).padStart(2, '0');
-      return `${year}-${mStr}`;
+  function demoDay(y, m, d) {
+    if (y === 2026 && m === 9) {
+      if ([8, 10, 12, 17, 20, 24, 28, 29].includes(d)) return { status: "booked", label: "BOOKED", text: "Fully booked" };
+      const slots = { 6: 5, 9: 1, 15: 3, 23: 1 }[d];
+      if (slots) return { status: "limited", label: slots + " SLOT", text: "Limited slots" };
+    } else {
+      const k = (d * 7 + m * 3 + y) % 11;
+      if (k === 0 || k === 5) return { status: "booked", label: "BOOKED", text: "Fully booked" };
+      if (k === 3) return { status: "limited", label: "2 SLOT", text: "Limited slots" };
     }
+    return { status: "open", label: "OPEN", text: "Open" };
+  }
 
-    function generateFallbackMonth(year, month) {
-      const firstDay = new Date(year, month, 1).getDay();
-      const totalDays = new Date(year, month + 1, 0).getDate();
-      return {
-        year: year,
-        month: month,
-        startDayOffset: firstDay,
-        daysInMonth: totalDays,
-        statuses: {}
-      };
+  function dayInfo(y, m, d) {
+    if (DEMO_MODE) return demoDay(y, m, d);
+    const key = y + "-" + pad(m + 1) + "-" + pad(d);
+    const w = weeks.find((x) => key >= x.week_start_date && key <= x.week_end_date);
+    if (!w || w.status === "open") {
+      const n = Number(w && w.slots_left);                 // optional: the server may send slots_left
+      if (Number.isFinite(n) && n > 0 && n <= 5) return { status: "limited", label: n + " SLOT", text: "Limited slots" };
+      return { status: "open", label: "OPEN", text: "Open" };
     }
+    if (w.status === "closed") return { status: "booked", label: "CLOSED", text: "Closed" };
+    return { status: "booked", label: "FULLY BOOKED", text: "Fully booked" };
+  }
 
-    function getAvailabilityForDate(year, month, day) {
-      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const week = availabilityWeeks.find(item => dateKey >= item.week_start_date && dateKey <= item.week_end_date);
-      if (!week || week.status === 'open') {
-        return { status: 'open', label: 'OPEN', footerLabel: 'Open', databaseStatus: 'open' };
-      }
-      if (week.status === 'closed') {
-        return { status: 'booked', label: 'CLOSED', footerLabel: 'Closed', databaseStatus: 'closed' };
-      }
-      return { status: 'booked', label: 'FULLY BOOKED', footerLabel: 'Fully booked', databaseStatus: 'fully_booked' };
-    }
-
-    async function renderCalendar(year, month) {
-      const key = getMonthKey(year, month);
-      const requestId = ++renderRequestId;
-      monthDisplay.textContent = `${monthNames[month]} ${year}`;
-
-      calendarGrid.classList.add('fade-out');
-
+  async function renderCalendar(y, m) {
+    const id = ++reqId, key = y + "-" + pad(m + 1);
+    if (!DEMO_MODE) {
       try {
-        if (availabilityCache.has(key)) {
-          availabilityWeeks = availabilityCache.get(key);
-        } else {
-          const response = await fetch(`../api/weekly-availability.php?year=${year}&month=${month + 1}`);
-          const result = await response.json();
-          if (!response.ok || !result.success || !Array.isArray(result.weeks)) {
-            throw new Error(result.error || 'Availability could not be loaded.');
-          }
-          availabilityWeeks = result.weeks;
-          availabilityCache.set(key, availabilityWeeks);
+        if (cache.has(key)) weeks = cache.get(key);
+        else {
+          const res = await fetch("../api/weekly-availability.php?year=" + y + "&month=" + (m + 1));
+          const data = await res.json();
+          if (!res.ok || !data.success || !Array.isArray(data.weeks)) throw new Error(data.error || "Availability could not be loaded.");
+          weeks = data.weeks; cache.set(key, weeks);
         }
-      } catch (error) {
-        if (requestId !== renderRequestId) return;
-        availabilityWeeks = [];
-        showToast(error.message || 'Availability could not be loaded.');
-      }
-
-      if (requestId !== renderRequestId) return;
-
-      setTimeout(() => {
-        if (requestId !== renderRequestId) return;
-        calendarGrid.innerHTML = '';
-
-        const weekdays = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-        weekdays.forEach(day => {
-          const header = document.createElement('div');
-          header.className = 'weekday-header';
-          header.textContent = day;
-          calendarGrid.appendChild(header);
-        });
-
-        const monthData = generateFallbackMonth(year, month);
-        for (let i = 0; i < monthData.startDayOffset; i++) {
-          const card = document.createElement('div');
-          card.className = 'day-card muted';
-          card.innerHTML = `<span class="day-number"></span>`;
-          calendarGrid.appendChild(card);
-        }
-
-        for (let d = 1; d <= monthData.daysInMonth; d++) {
-          const dayCard = document.createElement('div');
-          dayCard.className = 'day-card';
-
-          const dayInfo = getAvailabilityForDate(year, month, d);
-          const isSelected = (selectedDateObj.year === year &&
-                              selectedDateObj.month === month &&
-                              selectedDateObj.date === d);
-
-          if (isSelected) {
-            dayCard.classList.add('selected');
-          }
-
-          const numSpan = document.createElement('span');
-          numSpan.className = 'day-number';
-          numSpan.textContent = d;
-
-          const pill = document.createElement('div');
-          pill.className = `status-pill ${isSelected ? 'selected-pill' : dayInfo.status}`;
-          pill.textContent = isSelected ? 'SELECTED' : dayInfo.label;
-
-          dayCard.appendChild(numSpan);
-          dayCard.appendChild(pill);
-
-          dayCard.addEventListener('click', () => {
-            selectedDateObj = { year, month, date: d };
-            renderCalendar(year, month);
-            updateFooterUI(dayInfo);
-          });
-
-          calendarGrid.appendChild(dayCard);
-        }
-
-        updateFooterUI(getAvailabilityForDate(
-          selectedDateObj.year,
-          selectedDateObj.month,
-          selectedDateObj.date
-        ));
-        calendarGrid.classList.remove('fade-out');
-      }, 150);
+      } catch (err) { weeks = []; toast(err.message || "Availability could not be loaded."); }
+      if (id !== reqId) return;
     }
 
-    function updateFooterUI(dayInfo) {
-      const dateObj = new Date(selectedDateObj.year, selectedDateObj.month, selectedDateObj.date);
-      const dayOfWeek = dayNames[dateObj.getDay()];
-      const monthStr = monthNames[selectedDateObj.month];
-
-      selectedDateText.textContent = `Selected Date: ${dayOfWeek}, ${monthStr} ${selectedDateObj.date}, ${selectedDateObj.year}`;
-
-      statusDot.className = `dot ${dayInfo.status}`;
-      statusText.textContent = dayInfo.footerLabel;
-
-      btnProceed.disabled = dayInfo.databaseStatus !== 'open';
+    $("month-display").textContent = MONTHS[m] + " " + y;
+    const grid = $("calendar-grid");
+    let html = SHORT.map((d) => '<div class="wd">' + d + "</div>").join("");
+    const first = new Date(y, m, 1).getDay(), total = new Date(y, m + 1, 0).getDate(), prevTotal = new Date(y, m, 0).getDate();
+    for (let i = 0; i < first; i++) html += '<div class="day out"><span class="n">' + (prevTotal - first + 1 + i) + "</span></div>";
+    for (let d = 1; d <= total; d++) {
+      if (new Date(y, m, d) < todayStart) { html += '<div class="day out" aria-disabled="true" title="This date has already passed"><span class="n">' + d + "</span></div>"; continue; }   // past dates can't be picked
+      const info = dayInfo(y, m, d), isSel = !!sel && sel.year === y && sel.month === m && sel.date === d;
+      html += '<button type="button" class="day ' + info.status + (isSel ? " sel" : "") + '" data-d="' + d + '" aria-label="' + MONTHS[m] + " " + d + ", " + info.text + '"><span class="n">' + d + '</span><span class="p ' + info.status + '">' + (isSel ? "SELECTED" : info.label) + "</span></button>";
     }
+    const rest = (7 - ((first + total) % 7)) % 7;
+    for (let i = 1; i <= rest; i++) html += '<div class="day out"><span class="n">' + i + "</span></div>";
+    grid.innerHTML = html;
+    updateFooter();
+  }
 
-    function showToast(msg) {
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
+  function updateFooter() {
+    const btn = $("btn-proceed");
+    if (!sel) {                                   // nothing picked in this month yet
+      $("selected-date-text").textContent = "Selected Date: none. Please pick an available date.";
+      $("status-dot").className = "dot none";
+      $("status-text").textContent = "-";
+      btn.disabled = true;
+      return;
     }
+    const info = dayInfo(sel.year, sel.month, sel.date);
+    const dt = new Date(sel.year, sel.month, sel.date);
+    $("selected-date-text").textContent = "Selected Date: " + DAYS[dt.getDay()] + ", " + MONTHS[sel.month] + " " + sel.date + ", " + sel.year;
+    $("status-dot").className = "dot " + info.status;
+    $("status-text").textContent = info.text;
+    btn.disabled = info.status === "booked" || dt < todayStart;
+  }
 
-    // Event Listeners
-    prevBtn.addEventListener('click', () => {
-      currentMonth--;
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-      renderCalendar(currentYear, currentMonth);
+  // Changing month clears the selection (today is picked again when you come back to this month)
+  function resetSelection() {
+    sel = (year === now.getFullYear() && month === now.getMonth()) ? { year, month, date: now.getDate() } : null;
+  }
+
+  $("calendar-grid").addEventListener("click", (e) => {
+    const card = e.target.closest(".day[data-d]");
+    if (!card) return;
+    sel = { year, month, date: Number(card.dataset.d) };
+    renderCalendar(year, month);
+  });
+  $("prev-month").addEventListener("click", () => { month--; if (month < 0) { month = 11; year--; } resetSelection(); renderCalendar(year, month); });
+  $("next-month").addEventListener("click", () => { month++; if (month > 11) { month = 0; year++; } resetSelection(); renderCalendar(year, month); });
+  $("btn-proceed").addEventListener("click", () => {
+    // safety check: never continue with a missing, past or fully booked date
+    if (!sel || new Date(sel.year, sel.month, sel.date) < todayStart || dayInfo(sel.year, sel.month, sel.date).status === "booked") { toast("Please pick an available date first."); return; }
+    const date = sel.year + "-" + pad(sel.month + 1) + "-" + pad(sel.date);
+    window.location.href = "../public/Custom-Cake-Request.php?preferred_date=" + encodeURIComponent(date);
+  });
+
+  /* Admin "Manage Weekly Availability" form (only appears when PHP shows it) */
+  const admin = document.querySelector(".availability-admin");
+  const csrf = admin && admin.querySelector('input[name="csrf"]');
+  if (admin && csrf && !/^[a-f0-9]{64}$/i.test(csrf.value)) admin.hidden = true;   // PHP is not running: hide it
+  const adminForm = $("availability-admin-form");
+  if (adminForm) {
+    const startInput = $("week-start-date"), endInput = $("week-end-date"), adminMsg = $("availability-message");
+    startInput.addEventListener("change", () => {
+      if (!startInput.value) return;
+      const end = new Date(startInput.value + "T00:00:00");
+      end.setDate(end.getDate() + 6);
+      endInput.value = end.getFullYear() + "-" + pad(end.getMonth() + 1) + "-" + pad(end.getDate());
     });
+    adminForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      adminMsg.textContent = "Saving availability...";
+      try {
+        const res = await fetch("../api/weekly-availability.php", { method: "POST", body: new FormData(adminForm) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || "Unable to update weekly availability.");
+        cache.clear();
+        await renderCalendar(year, month);
+        adminMsg.textContent = data.message;
+      } catch (err) { adminMsg.textContent = err.message || "Unable to update weekly availability."; }
+    });
+  }
 
-    nextBtn.addEventListener('click', () => {
-      currentMonth++;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
+  /* ================= MESSAGES ================= */
+  const DEMO_CONVOS = [
+    { id: "RR2026050", messages: [
+      { from: "shop", text: "Hello! Thank you for your cake request. We have reviewed the details of your order.", time: "9:12 AM" },
+      { from: "me", text: "Hi! Could I change the flavor to ube?", time: "9:20 AM" },
+      { from: "shop", text: "Yes, ube is available. Your quotation will be updated shortly so you can review it.", time: "9:34 AM" },
+      { from: "me", text: "Great, thank you!", time: "9:36 AM" }
+    ]},
+    { id: "RR2026049", messages: [
+      { from: "shop", text: "Your down payment was received. We will start baking on the week of your event.", time: "Yesterday" }
+    ]}
+  ];
+  let convos = [], activeId = null;
+  const esc = (s) => RR.esc(s);
+  const timeNow = () => new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  const active = () => convos.find((c) => c.id === activeId);
+
+  async function loadConvos() {
+    if (DEMO_MODE) return DEMO_CONVOS;
+    try {
+      const res = await fetch("../api/messages.php", { credentials: "same-origin" });
+      const data = await res.json();
+      return Array.isArray(data.conversations) ? data.conversations : [];
+    } catch (e) { return []; }
+  }
+  function renderList() {
+    $("convList").innerHTML = convos.length ? convos.map((c) =>
+      '<button type="button" class="conv' + (c.id === activeId ? " active" : "") + '" data-id="' + esc(c.id) + '"><img src="../Images-Icons/R&R Logo.jpg" alt=""><span><b>R&amp;R Sweet Bites</b><small>Order Request: ' + esc(c.id) + "</small></span></button>").join("")
+      : '<p class="none">No conversations yet.</p>';
+  }
+  function scrollMsgs() { const box = $("msgs"); box.scrollTop = box.scrollHeight; }
+  function renderThread() {
+    const c = active();
+    $("headOrder").textContent = "Order Request: " + (c ? c.id : "");
+    $("msgs").innerHTML = c && c.messages.length ? c.messages.map((m) =>
+      '<div class="bub ' + (m.from === "me" ? "me" : "shop") + '">' + (m.image ? '<img src="' + esc(m.image) + '" alt="Attached image">' : "") + (m.text ? "<span>" + esc(m.text) + "</span>" : "") + "<time>" + esc(m.time || "") + "</time></div>").join("")
+      : '<p class="none">No messages yet. Say hello!</p>';
+    scrollMsgs();
+  }
+  $("convList").addEventListener("click", (e) => {
+    const b = e.target.closest(".conv"); if (!b) return;
+    activeId = b.dataset.id; renderList(); renderThread();
+  });
+
+  async function send(file) {
+    const c = active(), text = $("msgInput").value.trim();
+    if (!c || (!text && !file)) return;
+    $("sendBtn").disabled = true;
+    try {
+      if (DEMO_MODE) c.messages.push({ from: "me", text, image: file ? URL.createObjectURL(file) : "", time: timeNow() });
+      else {
+        const fd = new FormData();
+        fd.append("conversation_id", c.id); fd.append("text", text); if (file) fd.append("image", file);
+        const res = await fetch("../api/messages.php", { method: "POST", body: fd, credentials: "same-origin" });
+        const data = await res.json();
+        if (!res.ok || !data.ok) throw new Error(data.message || "Message could not be sent.");
+        c.messages.push(data.message);
       }
-      renderCalendar(currentYear, currentMonth);
-    });
+      $("msgInput").value = "";
+      renderThread();
+    } catch (err) { toast(err.message || "Message could not be sent."); }
+    finally { $("sendBtn").disabled = false; }
+  }
+  $("sendBtn").addEventListener("click", () => send(null));
+  $("msgInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); send(null); } });
+  $("attachBtn").addEventListener("click", () => $("fileInput").click());
+  $("fileInput").addEventListener("change", (e) => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    if (!/^image\/(png|jpe?g|webp|gif)$/.test(f.type)) return toast("Please choose a PNG, JPG, WEBP or GIF image.");
+    if (f.size > 5 * 1024 * 1024) return toast("The image must be 5 MB or smaller.");
+    send(f);
+  });
 
-    // Modal Triggers
-    btnProceed.addEventListener('click', () => {
-      const preferredDate = `${selectedDateObj.year}-${String(selectedDateObj.month + 1).padStart(2, '0')}-${String(selectedDateObj.date).padStart(2, '0')}`;
-      window.location.href = `../public/Custom-Cake-Request.php?preferred_date=${encodeURIComponent(preferredDate)}`;
-    });
-
-    // Close Modals
-    document.getElementById('close-custom-modal').onclick = () => customModal.classList.remove('active');
-    document.getElementById('cancel-custom-modal').onclick = () => customModal.classList.remove('active');
-
-    document.getElementById('confirm-custom-form').onclick = () => {
-      customModal.classList.remove('active');
-      showToast("Navigating to Custom Order Builder...");
-    };
-
-    // Mobile Navbar Toggle
-    document.getElementById('mobile-menu').onclick = () => {
-      document.getElementById('nav-list').classList.toggle('active');
-    };
-
-    // Bell Notification
-    document.getElementById('notificationBtn').onclick = function() {
-      this.classList.add('clicked');
-      showToast("You have 2 pending notifications");
-      setTimeout(() => this.classList.remove('clicked'), 600);
-    };
-
-    const availabilityAdminForm = document.getElementById('availability-admin-form');
-    if (availabilityAdminForm) {
-      const weekStartInput = document.getElementById('week-start-date');
-      const weekEndInput = document.getElementById('week-end-date');
-      const availabilityMessage = document.getElementById('availability-message');
-
-      weekStartInput.addEventListener('change', () => {
-        if (!weekStartInput.value) return;
-        const weekEnd = new Date(`${weekStartInput.value}T00:00:00`);
-        weekEnd.setDate(weekEnd.getDate() + 6);
-        weekEndInput.value = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
-      });
-
-      availabilityAdminForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        availabilityMessage.textContent = 'Saving availability...';
-
-        try {
-          const response = await fetch('../api/weekly-availability.php', {
-            method: 'POST',
-            body: new FormData(availabilityAdminForm)
-          });
-          const result = await response.json();
-          if (!response.ok || !result.success) {
-            throw new Error(result.error || 'Unable to update weekly availability.');
-          }
-
-          availabilityCache.clear();
-          await renderCalendar(currentYear, currentMonth);
-          availabilityMessage.textContent = result.message;
-        } catch (error) {
-          availabilityMessage.textContent = error.message || 'Unable to update weekly availability.';
-        }
-      });
+  /* ================= ACCOUNT (Edit Info / Change Password) ================= */
+  // Real Philippine mobile prefixes (same list as the Register page)
+  const VALID_PREFIXES = new Set([
+    "0904","0905","0906","0907","0908","0909","0910","0911","0912","0913","0914","0915","0916","0917","0918","0919",
+    "0920","0921","0922","0923","0924","0925","0926","0927","0928","0929","0930","0931","0932","0933","0934","0935",
+    "0936","0937","0938","0939","0940","0941","0942","0943","0944","0945","0946","0947","0948","0949","0950","0951",
+    "0953","0954","0955","0956","0961","0963","0965","0966","0967","0968","0969","0970","0973","0974","0975","0976",
+    "0977","0978","0979","0981","0989","0991","0992","0993","0994","0995","0996","0997","0998","0999"
+  ]);
+  function hasRun(str, n) {
+    let up = 1, down = 1;
+    for (let i = 1; i < str.length; i++) {
+      const diff = str.charCodeAt(i) - str.charCodeAt(i - 1);
+      up = diff === 1 ? up + 1 : 1; down = diff === -1 ? down + 1 : 1;
+      if (up >= n || down >= n) return true;
     }
+    return false;
+  }
+  function isFakeNumber(d) {
+    const rest = d.slice(2);
+    return new Set(rest).size < 3 || /(\d)\1{4,}/.test(d.slice(4)) || /^(\d{2,3})\1{2,}/.test(rest) || hasRun(d.slice(4), 6);
+  }
+  function cleanPhone(raw) {
+    let d = raw.replace(/\D/g, "");
+    if (d.startsWith("63")) d = "0" + d.slice(2);
+    else if (d.length === 10 && d[0] === "9") d = "0" + d;
+    if (d.length >= 1 && d[0] !== "0") d = "";
+    if (d.length >= 2 && d[1] !== "9") d = d.slice(0, 1);
+    return d.slice(0, 11);
+  }
+  const NAME_RE = /^\p{L}+(?: \p{L}+)*$/u;
+  const nameRule = (label) => (v) => {
+    if (!v) return "Enter your " + label + ".";
+    if (!NAME_RE.test(v)) return "Letters only. No numbers or special characters.";
+    if (v.replace(/ /g, "").length < 2) return "That is too short.";
+  };
+  const accountRules = {
+    eFirst: nameRule("first name"),
+    eSurname: nameRule("surname"),
+    eEmail(v) {
+      if (!v) return "Enter your Gmail address.";
+      if (/\s/.test(v)) return "Email can't contain spaces.";
+      const at = v.indexOf("@");
+      if (at === 0) return "Add your name before @gmail.com.";
+      if (at < 0 || at !== v.lastIndexOf("@")) return "Email needs one @, like you@gmail.com.";
+      const local = v.slice(0, at), domain = v.slice(at + 1);
+      if (domain !== "gmail.com") return "Email must end with @gmail.com.";
+      if (/^\d+$/.test(local)) return "Email name can't be numbers only.";
+      if (!/^[a-z]/.test(local)) return "Email name must start with a letter.";
+      if (!/^[a-z0-9.]+$/.test(local)) return "Use only letters, numbers and periods before @.";
+      if (local.includes("..") || local.endsWith(".")) return "Remove the extra dots in your email.";
+      if (local.length < 6 || local.length > 30) return "Gmail name must be 6 to 30 characters.";
+      if (/(.)\1{3,}/.test(local)) return "That email looks incorrect.";
+    },
+    eContact(v) {
+      if (!v) return "Enter your contact number.";
+      if (!/^\d+$/.test(v)) return "Use numbers only.";
+      if (!v.startsWith("09")) return "Number must start with 09.";
+      if (v.length < 11) return "Number must be 11 digits.";
+      if (!VALID_PREFIXES.has(v.slice(0, 4)) || isFakeNumber(v)) return "Enter a real mobile number.";
+    },
+    pCurrent(v) { if (!v) return "Enter your current password."; },
+    pNew(v) {
+      if (!v) return "Create a new password.";
+      if (/\s/.test(v)) return "Password can't contain spaces.";
+      if (v.length < 8) return "Use at least 8 characters.";
+      if (!/[A-Za-z]/.test(v)) return "Add at least one letter.";
+      if (!/\d/.test(v)) return "Add at least one number.";
+      if (v === $("pCurrent").value) return "Use a different password from your current one.";
+    },
+    pConfirm(v) {
+      if (!v) return "Confirm your new password.";
+      if (v !== $("pNew").value) return "Passwords do not match.";
+    }
+  };
+  const acVal = (id) => {
+    const v = $(id).value;
+    if (id === "eFirst" || id === "eSurname") return v.trim().replace(/\s+/g, " ");
+    if (id === "eEmail") return v.trim().toLowerCase();
+    if (id === "eContact") return v.trim();
+    return v;
+  };
+  function acCheck(id) {
+    const msg = accountRules[id](acVal(id));
+    $(id + "-err").textContent = msg || "";
+    $(id).setAttribute("aria-invalid", msg ? "true" : "false");
+    return !msg;
+  }
+  function acClear(ids) { ids.forEach((id) => { $(id + "-err").textContent = ""; $(id).setAttribute("aria-invalid", "false"); }); }
 
-    // Initial Render
-    renderCalendar(currentYear, currentMonth);
-  </script>
+  /* typing filters: only the right characters can be typed or pasted */
+  const FILTERS = {
+    name: (v) => v.replace(/[^\p{L} ]/gu, "").replace(/^ +/, "").replace(/ {2,}/g, " "),
+    email: (v) => v.replace(/\s/g, ""),
+    phone: cleanPhone,
+    pw: (v) => v.replace(/\s/g, "")
+  };
+  document.querySelectorAll("[data-f]").forEach((inp) => {
+    inp.addEventListener("input", () => {
+      const c = FILTERS[inp.dataset.f](inp.value);
+      if (c !== inp.value) inp.value = c;
+      if (inp.getAttribute("aria-invalid") === "true") acCheck(inp.id);
+      if (inp.id === "pNew" && $("pConfirm").value) acCheck("pConfirm");
+    });
+    inp.addEventListener("blur", () => { if (inp.value) acCheck(inp.id); });
+  });
+
+  /* account data */
+  let account = { firstName: "Lia", surname: "Norman", email: "lianorman@gmail.com", contact: "09178452316" };   // sample (preview)
+  const fmtPhone = (c) => c.replace(/^(\d{4})(\d{3})(\d{4})$/, "$1 $2 $3");
+  function renderAccount() {
+    $("acFirst").value = account.firstName; $("acSurname").value = account.surname;
+    $("acEmail").value = account.email; $("acContact").value = fmtPhone(account.contact);
+  }
+  async function loadAccount() {
+    if (!DEMO_MODE) {
+      try {
+        const res = await fetch("../api/account.php", { credentials: "same-origin" });
+        const d = await res.json();
+        if (d && d.ok) account = { firstName: d.firstName, surname: d.surname, email: d.email, contact: d.contact };
+      } catch (e) {}
+    }
+    renderAccount();
+  }
+  function refreshHeader() {
+    const name = account.firstName + " " + account.surname;
+    if (RR.user) RR.user.name = name;
+    const av = $("rrAvatar"); if (av) av.textContent = name.split(/\s+/).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+    const nm = document.querySelector(".rr-name span"); if (nm) nm.textContent = name;
+  }
+  async function postJSON(url, body) {
+    const res = await fetch(url, { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok && data.ok, data };
+  }
+
+  /* popups */
+  const MODALS = ["editOverlay", "pwOverlay", "doneOverlay"];
+  function openModal(id, focusId) {
+    MODALS.forEach((m) => $(m).classList.remove("open"));
+    if (id) { $(id).classList.add("open"); if (focusId) setTimeout(() => $(focusId).focus(), 50); }
+  }
+  ["editOverlay", "pwOverlay"].forEach((id) => $(id).addEventListener("click", (e) => { if (e.target === $(id)) openModal(null); }));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && ($("editOverlay").classList.contains("open") || $("pwOverlay").classList.contains("open"))) openModal(null); });
+  function showDone(title, text) { $("doneTitle").textContent = title; $("doneText").textContent = text; openModal("doneOverlay", "doneOk"); }
+  $("doneOk").addEventListener("click", () => openModal(null));
+
+  $("editInfoBtn").addEventListener("click", () => {
+    $("eFirst").value = account.firstName; $("eSurname").value = account.surname;
+    $("eEmail").value = account.email; $("eContact").value = account.contact;
+    acClear(["eFirst", "eSurname", "eEmail", "eContact"]);
+    openModal("editOverlay", "eFirst");
+  });
+  $("changePwBtn").addEventListener("click", () => {
+    ["pCurrent", "pNew", "pConfirm"].forEach((id) => { $(id).value = ""; });
+    acClear(["pCurrent", "pNew", "pConfirm"]);
+    openModal("pwOverlay", "pCurrent");
+  });
+
+  $("editForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const ids = ["eFirst", "eSurname", "eEmail", "eContact"];
+    if (ids.map(acCheck).includes(false)) return $("editForm").querySelector('[aria-invalid="true"]').focus();
+    const next = { firstName: acVal("eFirst"), surname: acVal("eSurname"), email: acVal("eEmail"), contact: acVal("eContact") };
+    $("editSave").disabled = true;
+    try {
+      if (!DEMO_MODE) {
+        const { ok, data } = await postJSON("../api/account.php", next);
+        if (!ok) {
+          const map = { firstName: "eFirst", surname: "eSurname", email: "eEmail", contact: "eContact" };
+          Object.keys(data.errors || {}).forEach((k) => { if (map[k]) { $(map[k] + "-err").textContent = data.errors[k]; $(map[k]).setAttribute("aria-invalid", "true"); } });
+          return toast(data.message || "Information could not be updated.");
+        }
+      }
+      account = next; renderAccount(); refreshHeader();
+      showDone("Information Updated Successfully!", "Your account information has been successfully updated.");
+    } catch (err) { toast("Can't reach the server. Please try again."); }
+    finally { $("editSave").disabled = false; }
+  });
+
+  $("pwForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const ids = ["pCurrent", "pNew", "pConfirm"];
+    if (ids.map(acCheck).includes(false)) return $("pwForm").querySelector('[aria-invalid="true"]').focus();
+    $("pwSave").disabled = true;
+    try {
+      if (!DEMO_MODE) {   // preview mode accepts any current password
+        const { ok, data } = await postJSON("../api/change-password.php", { currentPassword: $("pCurrent").value, newPassword: $("pNew").value });
+        if (!ok) {
+          const wrong = data.errors && data.errors.currentPassword;
+          $("pCurrent-err").textContent = wrong || data.message || "Password could not be updated.";
+          $("pCurrent").setAttribute("aria-invalid", "true");
+          return;
+        }
+      }
+      ids.forEach((id) => { $(id).value = ""; });
+      showDone("Password Updated Successfully!", "Your account is now secure with your new password.");
+    } catch (err) { toast("Can't reach the server. Please try again."); }
+    finally { $("pwSave").disabled = false; }
+  });
+
+  /* ================= VIEW SWITCHING (#request / #messages) ================= */
+  function showView() {
+    const h = location.hash, view = h === "#messages" ? "messages" : h === "#account" ? "account" : "request";
+    $("viewRequest").hidden = view !== "request";
+    $("viewMessages").hidden = view !== "messages";
+    $("viewAccount").hidden = view !== "account";
+    document.title = ({ request: "Select Your Event Date & Week", messages: "Messages", account: "Manage Your Account" })[view] + " | R&R Sweet Bites";
+    const on = view === "messages" ? "#messages" : view === "request" ? "#request" : null;
+    document.querySelectorAll(".rr-links a").forEach((a) => a.classList.toggle("active", a.getAttribute("href") === on));
+    if (view === "messages") scrollMsgs();
+    openModal(null);
+    window.scrollTo({ top: 0 });
+  }
+  addEventListener("hashchange", showView);
+
+  (async () => {
+    await RR.ready;
+    convos = await loadConvos();
+    activeId = convos.length ? convos[0].id : null;
+    renderList(); renderThread();
+    await loadAccount();
+    await renderCalendar(year, month);
+    showView();
+  })();
+})();
+</script>
 </body>
 </html>
