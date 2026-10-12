@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
 json_header();
 $db  = db_mysqli();
-$cid = CUSTOMER_ID;   // bind_param needs a variable, not a constant
+$cid = require_customer();
 try {
   $st = $db->prepare("
     SELECT o.order_id, o.design_description, o.cake_type, o.preferred_date,

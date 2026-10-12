@@ -166,6 +166,18 @@
 
     .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
+    /* ---------- Emailed code step ---------- */
+    [hidden] { display: none !important; }
+    .code-intro { margin-bottom: calc(var(--u) * 18); line-height: 1.45; font-size: calc(var(--u) * 14); font-weight: 500; }
+    .code-input { text-align: center; letter-spacing: calc(var(--u) * 10); font-weight: 600 !important; }
+    .code-actions { display: flex; justify-content: space-between; gap: calc(var(--u) * 12); margin-top: calc(var(--u) * 18); }
+    .link-btn {
+      background: none; border: 0; padding: 0; cursor: pointer;
+      color: var(--pink-accent); font: 600 calc(var(--u) * 14) var(--font-text);
+    }
+    .link-btn:hover:not(:disabled) { text-decoration: underline; }
+    .link-btn:disabled { color: var(--placeholder); cursor: default; }
+
     /* ---------- Phones ---------- */
     @media (max-width: 720px) {
       .stage { padding: 16px; }
@@ -241,11 +253,32 @@
               </div>
             </div>
 
+            <div class="field">
+              <label for="inviteCode">Admin invite code</label>
+              <input id="inviteCode" name="inviteCode" type="text" placeholder="Given by the shop owner"
+                     autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="64">
+              <span class="error" id="inviteCode-error"></span>
+            </div>
+
             <input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
             <button class="submit" type="submit">Create Account</button>
           </form>
+          <form id="codeForm" hidden novalidate>
+            <p class="code-intro" id="codeIntro"></p>
+            <div class="field">
+              <label for="code">6-digit code</label>
+              <input id="code" class="code-input" name="code" type="text" inputmode="numeric"
+                     autocomplete="one-time-code" maxlength="6" placeholder="000000">
+              <span class="error" id="code-error"></span>
+            </div>
+            <button class="submit" type="submit" id="codeSubmit">Verify Email</button>
+            <div class="code-actions">
+              <button type="button" class="link-btn" id="resendBtn">Resend code</button>
+              <button type="button" class="link-btn" id="backBtn">Back</button>
+            </div>
+          </form>
 
-          <p class="alt">Already have an admin account? <a href="../public/admin-login.html">Log in</a></p>
+          <p class="alt" id="altLink">Already have an admin account? <a href="../private/admin-login.html">Log in</a></p>
         </section>
       </main>
     </div>
@@ -258,7 +291,7 @@
     const form       = document.getElementById("registerForm");
     const messageBox = document.getElementById("message");
     const submitBtn  = form.querySelector(".submit");
-    const fields     = ["fullName", "email", "password", "confirm"];
+    const fields     = ["fullName", "email", "password", "confirm", "inviteCode"];
     const $          = (id) => document.getElementById(id);
     const dirty      = {};
 
@@ -300,6 +333,9 @@
         if (!/[A-Z]/.test(v)) return "Add one capital letter.";
         if (!/\d/.test(v)) return "Add one number.";
       },
+      inviteCode(v) {
+        if (v.length > 64) return "That code is too long.";
+      },
       confirm(v, all) {
         if (!v) return "Confirm your password.";
         if (v !== all.password) return "Passwords do not match.";
@@ -311,7 +347,8 @@
         fullName: $("fullName").value.trim().replace(/\s+/g, " "),
         email:    $("email").value.trim().toLowerCase(),
         password: $("password").value,
-        confirm:  $("confirm").value
+        confirm:  $("confirm").value,
+        inviteCode: $("inviteCode").value.trim()
       };
     }
 
@@ -403,19 +440,107 @@
           body: JSON.stringify({ ...v, website: form.website.value })
         });
         const data = await res.json().catch(() => ({}));
+        if (data.unverified) {
+          showCodeStep(v.email, { email_sent: false });
+          return showMessage(data.message + ' Tap "Resend code" to get a new code.', "fail");
+        }
         if (!res.ok || !data.ok) {
           Object.keys(data.errors || {}).forEach((id) => { if ($(id)) showError(id, data.errors[id]); });
           const bad = document.querySelector('[aria-invalid="true"]');
           if (bad) bad.focus();
           throw new Error(data.message || "Something went wrong. Please try again.");
         }
-        form.reset();
-        fields.forEach((id) => { showError(id, "", false); dirty[id] = false; });
-        showMessage(data.message, "success");
+        showCodeStep(v.email, data);
+        showMessage(data.message, data.email_sent ? "success" : "fail");
       } catch (err) {
         showMessage(err instanceof TypeError ? "Can't reach the server. Please try again." : err.message, "fail");
       } finally {
         submitBtn.disabled = false;
+      }
+    });
+    /* ---------- Emailed code step ---------- */
+    const codeForm = $("codeForm"), codeInput = $("code"), codeSubmit = $("codeSubmit"), resendBtn = $("resendBtn");
+    let cooldownTimer = null;
+
+    async function post(url, body) {
+      const res = await fetch(url, {
+        method: "POST", credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body || {})
+      });
+      const data = await res.json().catch(() => ({}));
+      return { res, data };
+    }
+    function startCooldown(sec) {
+      clearInterval(cooldownTimer);
+      let left = Math.max(0, Math.ceil(sec));
+      const tick = () => {
+        resendBtn.textContent = left > 0 ? "Resend code (" + left + "s)" : "Resend code";
+        resendBtn.disabled = left > 0;
+        if (left <= 0) clearInterval(cooldownTimer);
+        left--;
+      };
+      tick();
+      cooldownTimer = setInterval(tick, 1000);
+    }
+    codeInput.addEventListener("input", () => {
+      codeInput.value = codeInput.value.replace(/\D/g, "").slice(0, 6);
+      $("code-error").textContent = "";
+    });
+    function codeLooksValid() {
+      if (codeInput.value.length === 6) return true;
+      $("code-error").textContent = "Enter the 6-digit code from your email.";
+      codeInput.focus();
+      return false;
+    }
+
+
+    let pendingEmail = "";
+    function showCodeStep(email, data) {
+      pendingEmail = email;
+      form.hidden = true; $("altLink").hidden = true; codeForm.hidden = false;
+      $("codeIntro").textContent = "Enter the 6-digit code we emailed to " + email + " to verify your admin account.";
+      codeInput.value = ""; $("code-error").textContent = "";
+      startCooldown(data && data.email_sent ? (data.cooldown || 60) : 0);
+      codeInput.focus();
+    }
+    $("backBtn").addEventListener("click", () => {
+      clearInterval(cooldownTimer);
+      codeForm.hidden = true; form.hidden = false; $("altLink").hidden = false;
+      messageBox.className = "message";
+    });
+
+    codeForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      messageBox.className = "message";
+      if (!codeLooksValid()) return;
+      codeSubmit.disabled = true;
+      try {
+        const { res, data } = await post("../api/admin-verify-email.php", { email: pendingEmail, code: codeInput.value });
+        if (!res.ok || !data.ok) {
+          codeInput.value = ""; codeInput.focus();
+          return showMessage(data.message || "Incorrect code. Please try again.", "fail");
+        }
+        showMessage("Email verified! Taking you to log in…", "success");
+        clearInterval(cooldownTimer); resendBtn.disabled = true; codeSubmit.disabled = true;
+        setTimeout(() => { window.location.href = "../private/admin-login.html"; }, 1500);
+        return;
+      } catch (err) {
+        showMessage("Can't reach the server. Please try again.", "fail");
+      }
+      codeSubmit.disabled = false;
+    });
+
+    resendBtn.addEventListener("click", async () => {
+      resendBtn.disabled = true;
+      try {
+        const { res, data } = await post("../api/admin-resend-code.php", { email: pendingEmail });
+        if (res.ok && data.ok) { showMessage(data.message, "success"); return startCooldown(data.cooldown || 60); }
+        showMessage(data.message || "Could not resend the code.", "fail");
+        startCooldown(data.retry_after || 0);
+      } catch (err) {
+        showMessage("Can't reach the server. Please try again.", "fail");
+        startCooldown(0);
       }
     });
   })();

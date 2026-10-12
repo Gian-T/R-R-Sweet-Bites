@@ -5,6 +5,7 @@ declare(strict_types=1);
  * GET order-confirmation.php?order=RQ-0001
  */
 require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
 json_header();
 
@@ -13,8 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 $orderNo = trim((string) ($_GET['order'] ?? ''));
-$pdo     = db();
-$oid     = $orderNo !== '' ? parse_id($orderNo) : 0;
+$pdo = db();
+$cid = require_customer();
+$oid = $orderNo !== '' ? parse_id($orderNo) : 0;
 
 try {
     if ($oid > 0) {
@@ -26,7 +28,7 @@ try {
              JOIN customer c ON c.customer_id = o.customer_id
              WHERE o.order_id = ? AND o.customer_id = ?"
         );
-        $stmt->execute([$oid, CUSTOMER_ID]);
+        $stmt->execute([$oid, $cid]);
     } else {
         // Fallback: most recent order for this customer
         $stmt = $pdo->prepare(
@@ -38,7 +40,7 @@ try {
              WHERE o.customer_id = ?
              ORDER BY o.order_id DESC LIMIT 1"
         );
-        $stmt->execute([CUSTOMER_ID]);
+        $stmt->execute([$cid]);
     }
     $order = $stmt->fetch();
 } catch (Throwable $e) {
