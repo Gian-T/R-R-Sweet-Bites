@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R&R Sweet Bites | Gallery Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Platypi:wght@500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#D27685;
+  --primary-hover:#BE5B6C;
+  --bg:#FAF0E6;
+  --card:#FFFFFF;
+  --footer:#ECCFCB;
+  --brand-icon:#E8C3C3;
+  --border:#E0E0E0;
+  --soft-border:#F0D3CB;
+  --deep:#382325;
+  --text:#333333;
+  --alt:#555555;
+  --muted:#666666;
+  --placeholder:#F2D5D5;
+  --published:#88A582;
+  --draft:#D9A552;
+  --sidebar:#FFFFFF;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:#1d1d1d;
+  font-family:"Jost",sans-serif;
+  color:var(--text);
+}
+
+.app{
+  width:min(1200px,calc(100% - 24px));
+  min-height:calc(100vh - 24px);
+  margin:12px auto;
+  background:var(--bg);
+  border-radius:16px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 0 0 1px rgba(255,255,255,.35);
+}
+
+/* Header */
+.topbar{
+  height:91px;
+  flex:none;
+  background:#fff;
+  border-bottom:1px solid var(--soft-border);
+  display:flex;
+  align-items:center;
+  padding:0 32px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.brand-logo{
+  width:54px;
+  height:54px;
+  border-radius:50%;
+  background:var(--brand-icon);
+  display:grid;
+  place-items:center;
+  font-size:27px;
+  overflow:hidden;
+}
+
+.brand-name{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand-name strong{
+  font-family:"Platypi",serif;
+  font-size:19px;
+  font-weight:600;
+  color:var(--primary);
+}
+
+.admin-pill{
+  border:1px solid #F0D3CB;
+  background:#FAE9E6;
+  color:var(--primary-hover);
+  border-radius:20px;
+  padding:4px 13px;
+  font-family:"Platypi",serif;
+  font-size:11px;
+}
+
+.owner{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:20px;
+}
+
+.owner-name{
+  font-size:18px;
+  font-weight:600;
+  color:#4B3937;
+}
+
+.owner-avatar{
+  width:56px;
+  height:56px;
+  border:0;
+  border-radius:50%;
+  background:#F2D5D5;
+  display:grid;
+  place-items:center;
+  font-family:"Platypi",serif;
+  font-size:18px;
+  color:#4B3937;
+  cursor:pointer;
+  padding:0;
+  transition:.15s;
+}
+.owner-avatar:hover{
+  filter:brightness(.98);
+}
+.owner-avatar:focus-visible{
+  outline:2px solid var(--primary);
+  outline-offset:3px;
+}
+
+/* Main shell */
+.content-shell{
+  display:flex;
+  flex:1;
+  min-height:0;
+}
+
+.sidebar{
+  width:162px;
+  flex:none;
+  background:var(--sidebar);
+  border-right:1px solid var(--soft-border);
+  padding:24px 10px;
+}
+
+.side-heading{
+  margin:0 0 12px 7px;
+  font-size:11px;
+  color:#8C6F68;
+  letter-spacing:.2px;
+  font-weight:500;
+}
+
+.side-heading:not(:first-child){
+  margin-top:15px;
+}
+
+.side-link{
+  display:block;
+  width:100%;
+  border:0;
+  background:transparent;
+  text-align:left;
+  color:#4B3937;
+  text-decoration:none;
+  font-size:11.5px;
+  padding:5px 7px;
+  border-radius:9px;
+  cursor:pointer;
+  font-family:"Jost",sans-serif;
+}
+
+.side-link:hover{
+  background:#FAF0E6;
+}
+
+.side-link.active{
+  background:#F5E9E3;
+  font-weight:600;
+}
+
+/* Main */
+main{
+  flex:1;
+  min-width:0;
+  padding:28px 23px 40px;
+}
+
+.page-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  margin:0 0 20px;
+}
+
+.page-head h1{
+  margin:0;
+  font-family:"Playfair Display",serif;
+  color:var(--deep);
+  font-size:38px;
+  line-height:1.05;
+  font-weight:600;
+}
+
+.page-head p{
+  margin:7px 0 0;
+  color:#927873;
+  font-size:17px;
+  font-weight:500;
+}
+
+.primary-btn{
+  border:0;
+  background:var(--primary);
+  color:#fff;
+  border-radius:4px;
+  padding:7px 23px;
+  min-width:105px;
+  font-family:"Platypi",serif;
+  font-size:12px;
+  cursor:pointer;
+  transition:.15s;
+}
+
+.primary-btn:hover{background:var(--primary-hover)}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:39px;
+  margin-bottom:48px;
+}
+
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--soft-border);
+  border-radius:8px;
+  min-height:107px;
+  padding:13px 16px;
+}
+
+.stat-label{
+  color:#8E706A;
+  font-size:11px;
+}
+
+.stat-value{
+  font-family:"Playfair Display",serif;
+  color:var(--deep);
+  font-size:30px;
+  line-height:1;
+  margin:7px 0 8px;
+}
+
+.stat-note{
+  color:#987D77;
+  font-size:11px;
+}
+
+/* Gallery */
+.gallery-card{
+  background:#fff;
+  border:1px solid var(--soft-border);
+  border-radius:8px;
+  overflow:hidden;
+}
+
+.gallery-head{
+  padding:13px 16px 12px;
+}
+
+.gallery-head h2{
+  margin:0;
+  font-family:"Playfair Display",serif;
+  font-size:36px;
+  line-height:1.05;
+  color:var(--deep);
+}
+
+.gallery-head p{
+  margin:5px 0 0;
+  color:#927873;
+  font-size:16px;
+  font-weight:500;
+}
+
+.table{
+  width:100%;
+}
+
+.table-head,.table-row{
+  display:grid;
+  grid-template-columns:2.05fr 1fr 1fr 1fr 1fr 1.05fr;
+  align-items:center;
+}
+
+.table-head{
+  min-height:55px;
+  background:#FBE7E7;
+  border-top:1px solid #F4D9D8;
+  border-bottom:1px solid #F0D3CB;
+  color:#A78F89;
+  font-size:16px;
+  font-weight:600;
+}
+
+.table-head div{
+  padding:0 15px;
+}
+
+.table-row{
+  min-height:65px;
+  border-bottom:1px solid #F0DAD6;
+}
+
+.table-row:last-child{border-bottom:0}
+
+.table-row > div{
+  padding:8px 15px;
+  font-size:11px;
+  color:#806C67;
+}
+
+.design-name{
+  color:#513D3A!important;
+  font-family:"Playfair Display",serif;
+  font-size:16px!important;
+  line-height:1.1;
+}
+
+.design-details{
+  display:block;
+  margin-top:4px;
+  color:#A48B85;
+  font-family:"Jost",sans-serif;
+  font-size:10px;
+}
+
+.status{
+  display:inline-block;
+  min-width:76px;
+  text-align:center;
+  border-radius:16px;
+  padding:4px 9px;
+  color:#fff;
+  font-family:"Platypi",serif;
+  font-size:10px;
+  font-weight:600;
+}
+
+.status.published{background:var(--published)}
+.status.draft{background:var(--draft)}
+
+.actions{
+  display:flex;
+  gap:7px;
+}
+
+.action-btn{
+  border-radius:4px;
+  padding:5px 10px;
+  font-family:"Jost",sans-serif;
+  font-size:10px;
+  cursor:pointer;
+  background:#fff;
+}
+
+.edit{
+  border:1px solid #F3D2D0;
+  background:#F5D8D6;
+  color:var(--primary-hover);
+}
+
+.delete{
+  border:1px solid #F0C8C5;
+  color:#D56A73;
+}
+
+.edit:hover,.delete:hover{
+  filter:brightness(.97);
+}
+
+/* Modal */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(56,35,37,.25);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:50;
+}
+
+.modal-backdrop.show{display:flex}
+
+.modal{
+  width:min(500px,100%);
+  background:#fff;
+  border:1px solid var(--soft-border);
+  border-radius:12px;
+  padding:24px;
+  box-shadow:0 15px 40px rgba(56,35,37,.18);
+}
+
+.modal h3{
+  margin:0;
+  font-family:"Playfair Display",serif;
+  color:var(--deep);
+  font-size:27px;
+}
+
+.modal p{
+  color:#806C67;
+  font-size:13px;
+  margin:5px 0 18px;
+}
+
+.field{
+  margin-bottom:13px;
+}
+
+.field label{
+  display:block;
+  color:#6D5853;
+  font-size:11px;
+  margin-bottom:5px;
+}
+
+.field input,.field select{
+  width:100%;
+  height:38px;
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:0 10px;
+  font-family:"Jost",sans-serif;
+  font-size:12px;
+  color:var(--text);
+  outline:none;
+}
+
+.field input:focus,.field select:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(210,118,133,.12);
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:8px;
+  margin-top:20px;
+}
+
+.cancel-btn{
+  border:1px solid var(--border);
+  background:#fff;
+  color:#665552;
+  border-radius:4px;
+  padding:7px 18px;
+  font-family:"Platypi",serif;
+  font-size:11px;
+  cursor:pointer;
+}
+
+/* Toast */
+.toast{
+  position:fixed;
+  right:24px;
+  bottom:24px;
+  background:#382325;
+  color:#fff;
+  border-radius:8px;
+  padding:10px 15px;
+  font-size:12px;
+  opacity:0;
+  transform:translateY(10px);
+  pointer-events:none;
+  transition:.2s;
+  z-index:70;
+}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  .stats{gap:15px}
+  .table-head,.table-row{
+    grid-template-columns:1.7fr .9fr .9fr .9fr .9fr 1.1fr;
+  }
+  .table-head{font-size:13px}
+  .page-head h1{font-size:32px}
+}
+
+@media(max-width:720px){
+  .topbar{padding:0 18px;height:76px}
+  .brand-logo{width:46px;height:46px}
+  .brand-name strong{font-size:16px}
+  .owner-name{display:none}
+  .owner-avatar{width:46px;height:46px}
+  .sidebar{width:130px}
+  main{padding:22px 15px 30px}
+  .stats{grid-template-columns:1fr;gap:10px;margin-bottom:25px}
+  .page-head{gap:15px}
+  .page-head h1{font-size:28px}
+  .page-head p{font-size:14px}
+  .primary-btn{padding:7px 13px}
+  .gallery-card{overflow-x:auto}
+  .table{min-width:760px}
+}
+
+@media(max-width:520px){
+  .app{width:100%;min-height:100vh;margin:0;border-radius:0}
+  .topbar{gap:10px}
+  .brand{gap:9px}
+  .brand-name{gap:7px}
+  .admin-pill{padding:3px 8px}
+  .content-shell{display:block}
+  .sidebar{
+    width:100%;
+    border-right:0;
+    border-bottom:1px solid var(--soft-border);
+    padding:10px;
+    display:flex;
+    gap:5px;
+    overflow-x:auto;
+  }
+  .side-heading{display:none}
+  .side-link{white-space:nowrap;width:auto}
+  main{padding:18px 12px}
+  .page-head{align-items:center}
+}
+
+/* Admin profile dropdown — Design System scale */
+.profile-menu{
+  position:fixed;
+  top:88px;
+  right:max(28px,calc((100vw - 1200px)/2 + 28px));
+  width:260px;
+  background:var(--card);
+  border:1px solid var(--soft-border);
+  border-radius:var(--radius-lg,12px);
+  padding:12px;
+  box-shadow:0 14px 32px rgba(0,0,0,.12);
+  display:none;
+  z-index:100;
+}
+.profile-menu.show{display:block}
+
+.profile-menu-item{
+  width:100%;
+  min-height:48px;
+  border:0;
+  border-radius:var(--radius-md,8px);
+  background:transparent;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 12px;
+  color:var(--deep);
+  font-family:"Jost",sans-serif;
+  font-size:1rem;
+  font-weight:500;
+  text-align:left;
+  cursor:pointer;
+  transition:background .15s ease;
+}
+
+.profile-menu-item.settings{
+  background:transparent;
+  margin-bottom:4px;
+}
+
+.profile-menu-item:hover{
+  background:var(--bg);
+}
+
+.profile-menu-item:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(210,118,133,.15);
+}
+
+.profile-menu-icon{
+  width:24px;
+  height:24px;
+  flex:none;
+  display:grid;
+  place-items:center;
+  font-size:24px;
+  line-height:1;
+  color:var(--deep);
+}
+
+@media(max-width:720px){
+  .profile-menu{
+    top:82px;
+    right:16px;
+    width:240px;
+  }
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo">🧁</div>
+      <div class="brand-name">
+        <strong>R&amp;R Sweet Bites</strong>
+        <span class="admin-pill">Admin</span>
+      </div>
+    </div>
+
+    <div class="owner">
+      <span class="owner-name">Riena Anne Macutob</span>
+      <button class="owner-avatar" type="button" aria-label="Admin profile">RA</button>
+    </div>
+  </header>
+
+  
+<div class="profile-menu" id="profileMenu" aria-hidden="true">
+  <button class="profile-menu-item settings" type="button" id="settingsMenuItem">
+    <span class="profile-menu-icon">⚙</span>
+    <span>Settings</span>
+  </button>
+  <button class="profile-menu-item" type="button" id="logoutMenuItem">
+    <span class="profile-menu-icon">↪</span>
+    <span>Log Out</span>
+  </button>
+</div>
+
+  <div class="content-shell">
+    <aside class="sidebar">
+      <div class="side-heading">COMMUNICATION</div>
+      <button class="side-link" type="button">Messages</button>
+      <button class="side-link" type="button">Notifications</button>
+
+      <div class="side-heading">ORDER MANAGEMENT</div>
+      <button class="side-link active" type="button">Design Gallery</button>
+      <button class="side-link" type="button">Order Request</button>
+      <button class="side-link" type="button">Week Availability</button>
+      <button class="side-link" type="button">Payment Verification</button>
+      <button class="side-link" type="button">Cancellation Requests</button>
+
+      <div class="side-heading">STORE MANAGEMENT</div>
+      <button class="side-link" type="button">Sales &amp; Performance</button>
+    </aside>
+
+    <main>
+      <section class="page-head">
+        <div>
+          <h1>Gallery Management</h1>
+          <p>Add, update, or remove cake design images and descriptions.</p>
+        </div>
+        <button class="primary-btn" id="addDesignBtn" type="button">Add Design</button>
+      </section>
+
+      <section class="stats">
+        <article class="stat-card">
+          <div class="stat-label">Total Designs</div>
+          <div class="stat-value" id="totalDesigns">100</div>
+          <div class="stat-note">Published Gallery Entries</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Cake</div>
+          <div class="stat-value">58</div>
+          <div class="stat-note">Custom Cake Design</div>
+        </article>
+        <article class="stat-card">
+          <div class="stat-label">Cupcake/Others</div>
+          <div class="stat-value">42</div>
+          <div class="stat-note">Other Design References</div>
+        </article>
+      </section>
+
+      <section class="gallery-card">
+        <div class="gallery-head">
+          <h2>Gallery Entries</h2>
+          <p>Manage the designs customers see in their inspiration gallery.</p>
+        </div>
+
+        <div class="table">
+          <div class="table-head">
+            <div>DESIGN</div>
+            <div>CATEGORY</div>
+            <div>OCCASION</div>
+            <div>STATUS</div>
+            <div>UPDATED</div>
+            <div>ACTIONS</div>
+          </div>
+
+          <div class="table-row" data-design="FLORAL CAKE">
+            <div class="design-name">FLORAL CAKE<span class="design-details">Details</span></div>
+            <div>Cake</div>
+            <div>Birthday</div>
+            <div><span class="status published">Published</span></div>
+            <div>Sept. 10, 2026</div>
+            <div class="actions">
+              <button class="action-btn edit" type="button">Edit</button>
+              <button class="action-btn delete" type="button">Delete</button>
+            </div>
+          </div>
+
+          <div class="table-row" data-design="CREAM CAKE">
+            <div class="design-name">CREAM CAKE<span class="design-details">Details</span></div>
+            <div>Cake</div>
+            <div>Wedding</div>
+            <div><span class="status published">Published</span></div>
+            <div>Sept. 08, 2026</div>
+            <div class="actions">
+              <button class="action-btn edit" type="button">Edit</button>
+              <button class="action-btn delete" type="button">Delete</button>
+            </div>
+          </div>
+
+          <div class="table-row" data-design="MILESTONE CAKE">
+            <div class="design-name">MILESTONE CAKE<span class="design-details">Details</span></div>
+            <div>Cake</div>
+            <div>Birthday</div>
+            <div><span class="status published">Published</span></div>
+            <div>Sept. 05, 2026</div>
+            <div class="actions">
+              <button class="action-btn edit" type="button">Edit</button>
+              <button class="action-btn delete" type="button">Delete</button>
+            </div>
+          </div>
+
+          <div class="table-row" data-design="CUPCAKE SET">
+            <div class="design-name">CUPCAKE SET<span class="design-details">Details</span></div>
+            <div>Cupcake</div>
+            <div>Others</div>
+            <div><span class="status draft">Draft</span></div>
+            <div>Sept. 01, 2026</div>
+            <div class="actions">
+              <button class="action-btn edit" type="button">Edit</button>
+              <button class="action-btn delete" type="button">Delete</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <h3 id="modalTitle">Add Design</h3>
+    <p id="modalDescription">Add a new cake design to the inspiration gallery.</p>
+
+    <div class="field">
+      <label for="designInput">Design Name</label>
+      <input id="designInput" type="text" placeholder="e.g. Floral Cake">
+    </div>
+
+    <div class="field">
+      <label for="categoryInput">Category</label>
+      <select id="categoryInput">
+        <option>Cake</option>
+        <option>Cupcake</option>
+        <option>Others</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="occasionInput">Occasion</label>
+      <input id="occasionInput" type="text" placeholder="e.g. Birthday">
+    </div>
+
+    <div class="modal-actions">
+      <button class="cancel-btn" id="cancelBtn" type="button">Cancel</button>
+      <button class="primary-btn" id="saveBtn" type="button">Save Design</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const modalBackdrop = document.getElementById("modalBackdrop");
+const addDesignBtn = document.getElementById("addDesignBtn");
+const cancelBtn = document.getElementById("cancelBtn");
+const saveBtn = document.getElementById("saveBtn");
+const modalTitle = document.getElementById("modalTitle");
+const modalDescription = document.getElementById("modalDescription");
+const designInput = document.getElementById("designInput");
+const categoryInput = document.getElementById("categoryInput");
+const occasionInput = document.getElementById("occasionInput");
+const toast = document.getElementById("toast");
+const totalDesigns = document.getElementById("totalDesigns");
+
+let editingRow = null;
+
+function openModal(row = null){
+  editingRow = row;
+  modalBackdrop.classList.add("show");
+
+  if(row){
+    modalTitle.textContent = "Edit Design";
+    modalDescription.textContent = "Update the selected gallery design.";
+    designInput.value = row.dataset.design;
+    categoryInput.value = row.children[1].textContent.trim();
+    occasionInput.value = row.children[2].textContent.trim();
+    saveBtn.textContent = "Save Changes";
+  }else{
+    modalTitle.textContent = "Add Design";
+    modalDescription.textContent = "Add a new cake design to the inspiration gallery.";
+    designInput.value = "";
+    categoryInput.value = "Cake";
+    occasionInput.value = "";
+    saveBtn.textContent = "Save Design";
+  }
+
+  setTimeout(()=>designInput.focus(),50);
+}
+
+function closeModal(){
+  modalBackdrop.classList.remove("show");
+  editingRow = null;
+}
+
+function showToast(message){
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(()=>toast.classList.remove("show"),2200);
+}
+
+addDesignBtn.addEventListener("click",()=>openModal());
+cancelBtn.addEventListener("click",closeModal);
+
+modalBackdrop.addEventListener("click",(e)=>{
+  if(e.target === modalBackdrop) closeModal();
+});
+
+document.addEventListener("keydown",(e)=>{
+  if(e.key === "Escape") closeModal();
+});
+
+saveBtn.addEventListener("click",()=>{
+  const name = designInput.value.trim();
+  const category = categoryInput.value;
+  const occasion = occasionInput.value.trim() || "Others";
+
+  if(!name){
+    designInput.focus();
+    showToast("Please enter a design name.");
+    return;
+  }
+
+  if(editingRow){
+    editingRow.dataset.design = name;
+    editingRow.children[0].innerHTML = "";
+    editingRow.children[0].append(document.createTextNode(name));
+    const details = document.createElement("span");
+    details.className = "design-details";
+    details.textContent = "Details";
+    editingRow.children[0].append(details);
+    editingRow.children[1].textContent = category;
+    editingRow.children[2].textContent = occasion;
+    showToast("Gallery design updated.");
+  }else{
+    const table = document.querySelector(".table");
+    const row = document.createElement("div");
+    row.className = "table-row";
+    row.dataset.design = name;
+    row.innerHTML = `
+      <div class="design-name"></div>
+      <div>${category}</div>
+      <div>${occasion}</div>
+      <div><span class="status draft">Draft</span></div>
+      <div>Oct. 05, 2026</div>
+      <div class="actions">
+        <button class="action-btn edit" type="button">Edit</button>
+        <button class="action-btn delete" type="button">Delete</button>
+      </div>`;
+    const nameCell = row.children[0];
+    nameCell.append(document.createTextNode(name));
+    const details = document.createElement("span");
+    details.className = "design-details";
+    details.textContent = "Details";
+    nameCell.append(details);
+
+    table.appendChild(row);
+    totalDesigns.textContent = Number(totalDesigns.textContent) + 1;
+    attachRowActions(row);
+    showToast("New gallery design added.");
+  }
+
+  closeModal();
+});
+
+function attachRowActions(row){
+  row.querySelector(".edit").addEventListener("click",()=>openModal(row));
+
+  row.querySelector(".delete").addEventListener("click",()=>{
+    const name = row.dataset.design;
+    if(confirm(`Delete "${name}" from the gallery?`)){
+      row.remove();
+      totalDesigns.textContent = Math.max(0,Number(totalDesigns.textContent)-1);
+      showToast("Gallery design deleted.");
+    }
+  });
+}
+
+document.querySelectorAll(".table-row").forEach(attachRowActions);
+
+document.querySelectorAll(".side-link").forEach(link=>{
+  link.addEventListener("click",()=>{
+    document.querySelectorAll(".side-link").forEach(x=>x.classList.remove("active"));
+    link.classList.add("active");
+    if(link.textContent.trim() !== "Design Gallery"){
+      showToast(link.textContent.trim() + " selected.");
+    }
+  });
+});
+
+const profileButton = document.querySelector(".owner-avatar");
+const profileMenu = document.getElementById("profileMenu");
+const settingsMenuItem = document.getElementById("settingsMenuItem");
+const logoutMenuItem = document.getElementById("logoutMenuItem");
+
+profileButton.addEventListener("click", function(e){
+  e.stopPropagation();
+  const open = profileMenu.classList.toggle("show");
+  profileMenu.setAttribute("aria-hidden", String(!open));
+});
+
+profileMenu.addEventListener("click", function(e){
+  e.stopPropagation();
+});
+
+settingsMenuItem.addEventListener("click", function(){
+  showToast("Settings selected.");
+});
+
+logoutMenuItem.addEventListener("click", function(){
+  showToast("Log Out selected.");
+});
+
+document.addEventListener("click", function(){
+  if(profileMenu.classList.contains("show")){
+    profileMenu.classList.remove("show");
+    profileMenu.setAttribute("aria-hidden","true");
+  }
+});
+
+</script>
+</body>
+</html>

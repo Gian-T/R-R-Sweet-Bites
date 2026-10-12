@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>R&amp;R Sweet Bites - Fulfillment &amp; Delivery Method</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Platypi:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --font-nav:'Jost',sans-serif;--font-brand:'Platypi',serif;--font-header:'Playfair Display',serif;
+  --font-button:'Platypi',serif;--font-text:'Jost',sans-serif;
+  --bg-main:#FAF0E6;--bg-card:#FFF8F3;--bg-input:#FFFFFF;
+  --color-primary:#D27685;--color-primary-hover:#BE5B6C;--color-primary-light:#FDF5F6;
+  --color-text-dark:#382325;--color-text-muted:#88787A;--color-border:#EAD3D0;--color-border-pink:#D97D8A;
+  --line:#E58A97;--soft-line:#EFC9CE;--err:#B3362F;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;height:100%}
+body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-text-dark);line-height:1.5;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;overflow-x:hidden}
+[hidden]{display:none!important}
+
+.wrap{max-width:1180px;margin:0 auto;padding:1.1rem 2.5% 3rem;width:100%;flex:1 0 auto}
+.back-btn{display:inline-block;margin-bottom:12px;padding:5px 14px;border-radius:8px;background:#DB7F8E;color:#fff;font:600 .72rem 'Platypi',Georgia,serif;text-decoration:none;transition:background .2s,transform .2s}
+.back-btn:hover{background:#cf6c7d;transform:translateX(-2px)}
+h1{font-family:var(--font-header);font-size:1.85rem;font-weight:700;color:var(--color-text-dark);margin:0 0 1rem;line-height:1.25}
+
+.card{background:var(--bg-card);border:1px solid var(--line);border-radius:10px;padding:1.05rem 1.3rem}
+.card-title{font-family:var(--font-header);font-size:1.15rem;font-weight:700;color:var(--color-text-dark);line-height:1.3}
+.card-desc{font-size:.72rem;color:var(--color-text-muted);margin-top:.15rem}
+
+/* --- order strip --- */
+.order-strip{display:flex;align-items:center;gap:.9rem;padding:.7rem 1rem;margin-bottom:1.1rem}
+.cake-thumb{width:48px;height:48px;border-radius:8px;border:1px solid var(--soft-line);background:#F6D9DC;object-fit:cover;flex:none}
+.order-title{font-family:var(--font-header);font-weight:600;font-size:1.05rem;color:var(--color-text-dark);line-height:1.3}
+.order-sub{font-size:.72rem;color:var(--color-text-muted);margin-top:2px}
+.order-sub .dot{margin:0 .45rem}
+
+/* --- layout --- */
+.layout{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(270px,1fr);gap:1.1rem;align-items:start}
+.col{display:flex;flex-direction:column;gap:1.1rem;min-width:0}
+
+/* --- radio cards --- */
+.opts{display:flex;flex-direction:column;gap:.6rem;margin-top:.7rem}
+.opt{display:flex;align-items:flex-start;gap:.7rem;padding:.7rem .8rem;border:1px solid var(--soft-line);border-radius:8px;background:var(--bg-card);cursor:pointer;transition:border-color .15s,background .15s}
+.opt:hover{border-color:var(--line)}
+.opt.selected{border-color:var(--line);background:#FFF1F0}
+.opt input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.opt:focus-within{outline:2px solid rgba(210,118,133,.45);outline-offset:1px}
+.radio{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--soft-line);background:#fff;flex:none;margin-top:3px;display:grid;place-items:center}
+.opt.selected .radio{border-color:var(--color-primary)}
+.opt.selected .radio::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--color-primary)}
+.opt-title{display:block;font-weight:600;font-size:.82rem;color:var(--color-text-dark);line-height:1.35}
+.opt-desc{display:block;font-size:.66rem;color:var(--color-text-muted);margin-top:2px;line-height:1.4}
+.group.disabled{opacity:.7}
+.group.disabled .opt{cursor:not-allowed}
+.group-title{font-family:var(--font-header);font-size:1.1rem;font-weight:700;color:var(--color-text-dark)}
+.group .opts{margin-top:.55rem;gap:.5rem}
+
+/* --- delivery form --- */
+.d-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.chev{width:26px;height:26px;border:0;background:transparent;color:#6f625d;cursor:pointer;border-radius:6px;font-size:.9rem;line-height:1;transition:transform .2s}
+.chev[aria-expanded="false"]{transform:rotate(-90deg)}
+.chev:hover{background:#F8EBE3}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:.85rem 1rem;margin-top:.9rem}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field.full{grid-column:1/-1}
+label.lbl,.lbl{font-size:.62rem;font-weight:500;color:var(--color-text-dark);text-transform:uppercase;letter-spacing:.3px}
+.lbl i{color:var(--color-primary);font-style:normal}
+input.in,select.in,textarea.in{width:100%;border:1px solid var(--line);border-radius:4px;padding:.55rem .65rem;background:var(--bg-card);font:400 .75rem var(--font-text);color:var(--color-text-dark);outline:none;transition:border-color .15s,box-shadow .15s}
+input.in::placeholder,textarea.in::placeholder{color:#B9A9AB}
+select.in{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#9a8a8c 50%),linear-gradient(135deg,#9a8a8c 50%,transparent 50%);background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px;background-repeat:no-repeat;padding-right:1.8rem}
+select.in:invalid{color:#B9A9AB}
+select.in option{color:var(--color-text-dark)}
+.in:focus{border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(210,118,133,.15)}
+.in[aria-invalid="true"]{border-color:var(--err);background:#FFF6F5}
+textarea.in{height:70px;resize:vertical}
+.phone-row{display:flex;gap:.5rem}
+.phone-prefix{flex:0 0 36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:4px;font-size:.75rem;color:var(--color-text-dark);background:var(--bg-card)}
+.phone-row .in{flex:1;min-width:0}
+.err{min-height:0;font-size:.66rem;color:var(--err);line-height:1.3}
+.err:empty{display:none}
+.addr.off .fields-addr{opacity:.5}
+.fields-addr input:disabled,.fields-addr select:disabled,.fields-addr textarea:disabled{cursor:not-allowed;background:#F5EFEB}
+.note-off{font-size:.68rem;color:var(--color-text-muted);margin-top:.6rem;padding:.45rem .7rem;border:1px dashed var(--soft-line);border-radius:6px}
+
+.win-label{margin-top:1rem}
+.wins{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-top:.4rem}
+.wins .opt{padding:.5rem .7rem;align-items:center}
+.wins .radio{margin-top:0}
+
+/* --- right column --- */
+.proceed{display:block;width:100%;height:52px;border:0;border-radius:10px;background:#DB7F8E;color:#fff;font:700 1.05rem var(--font-button);cursor:pointer;box-shadow:0 4px 10px rgba(210,118,133,.2);transition:background .2s,transform .15s}
+.proceed:hover{background:#cf6c7d}
+.proceed:active{transform:translateY(1px)}
+.proceed:disabled{opacity:.7;cursor:wait}
+.proceed-err{font-size:.72rem;color:var(--err);text-align:center;margin-top:-.4rem}
+.proceed-err:empty{display:none}
+.help{display:flex;flex-direction:column;gap:.6rem;padding:.8rem 1rem}
+.help-row{display:flex;gap:.7rem;align-items:flex-start}
+.help-ico{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--color-primary);flex:none;margin-top:2px;position:relative}
+.help-ico::after{content:"";position:absolute;left:3px;right:3px;top:50%;height:1.5px;background:var(--color-primary)}
+.help b{display:block;font-size:.76rem;font-weight:500;color:var(--color-text-dark)}
+.help span{display:block;font-size:.66rem;color:var(--color-text-muted);line-height:1.4}
+.help a{display:block;text-align:center;padding:.4rem;border:1px solid var(--color-primary);border-radius:20px;color:var(--color-primary);font:600 .78rem var(--font-button);text-decoration:none;transition:background .2s,color .2s}
+.help a:hover{background:var(--color-primary);color:#fff}
+
+/* --- map card --- */
+.map-card{margin-top:1.1rem;padding:1rem 1.1rem;border-radius:14px}
+.map{position:relative;height:170px;border-radius:4px;overflow:hidden;background:#FFF8F3}
+.map svg.bg{position:absolute;inset:0;width:100%;height:100%}
+.m-dot{position:absolute;left:15%;top:61%;width:7px;height:7px;border-radius:50%;background:var(--color-primary)}
+.m-pin{position:absolute;left:80%;top:20%;width:15px;height:21px;margin-left:-7px}
+.m-label{position:absolute;background:#fff;border:1px solid var(--line);padding:3px 8px;font-size:.5rem;line-height:1.3;color:var(--color-text-dark);text-align:center;min-width:64px}
+.m-label b{display:block;font-size:.58rem;font-weight:600}
+.m-label.shop{left:4.5%;top:44%}
+.m-label.home{right:7%;top:56%}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:.9rem}
+.metric{border:1px solid var(--line);border-radius:3px;padding:.55rem .7rem;background:transparent}
+.metric small{display:block;font-size:.7rem;color:var(--color-text-muted)}
+.metric strong{display:block;margin-top:.35rem;font-family:var(--font-header);font-size:1.05rem;font-weight:700;color:var(--color-text-dark);line-height:1.3}
+.metric strong.text{font-family:var(--font-text);font-weight:600;font-size:1rem}
+
+.toast{position:fixed;right:20px;bottom:20px;max-width:min(360px,calc(100vw - 40px));background:#4b403c;color:#fff;padding:.7rem 1rem;border-radius:8px;font-size:.8rem;opacity:0;transform:translateY(12px);pointer-events:none;transition:.25s;z-index:2000}
+.toast.show{opacity:1;transform:none}
+
+@media(max-width:900px){
+  .layout{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .wrap{padding:1rem 16px 2.5rem}
+  h1{font-size:1.5rem}
+  .fields,.wins,.metrics{grid-template-columns:1fr}
+  .card{padding:.9rem 1rem}
+  .order-sub{font-size:.68rem}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
+/* ===== Receipt view (#receipt) ===== */
+.rc-hero{text-align:center;padding:1.2rem 0 1.4rem}
+.rc-ico{width:56px;height:56px;border-radius:50%;background:#F6D9DC;color:var(--color-primary);display:inline-grid;place-items:center}
+.rc-ico svg{width:26px;height:26px}
+.rc-hero h1{font-size:2rem;margin:.9rem 0 .5rem}
+.rc-hero p{max-width:560px;margin:0 auto;font-size:.74rem;color:var(--color-text-muted)}
+.rc-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;max-width:900px;margin:0 auto}
+.rc-card{border-radius:14px;padding:1.1rem 1.3rem 1.2rem}
+.rc-head{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-bottom:.8rem}
+.rc-badge{padding:2px 10px;border-radius:99px;background:#DDEBDA;color:#5E7F5B;font:600 .55rem var(--font-text);letter-spacing:.5px}
+.rc-rows{margin:0}
+.rc-row{display:flex;justify-content:space-between;gap:1rem;padding:.28rem 0;font-size:.68rem}
+.rc-row dt{color:var(--color-text-muted);flex:none}
+.rc-row dd{margin:0;font-weight:600;color:var(--color-text-dark);text-align:right}
+.rc-style{border-top:1.5px solid var(--color-primary);margin-top:.6rem;padding-top:.6rem}
+.rc-style small{display:block;font-size:.55rem;color:var(--color-text-muted);letter-spacing:.3px;margin-bottom:.3rem}
+.rc-style p{font-size:.7rem;font-weight:600;line-height:1.45}
+.rc-actions{text-align:center;margin-top:1.8rem}
+.rc-actions a{display:inline-block;min-width:200px;padding:.7rem 2rem;border-radius:99px;background:#DB7F8E;color:#fff;font:600 .95rem var(--font-button);text-decoration:none;transition:background .2s,transform .2s}
+.rc-actions a:hover{background:#cf6c7d;transform:translateY(-2px)}
+@media(max-width:700px){.rc-grid{grid-template-columns:1fr}}
+.demo{margin-top:2rem;text-align:center;font-size:.72rem;color:#7A6B6C}
+.demo button{margin-left:6px;border:1px dashed #E58A97;background:transparent;color:var(--color-primary);font:600 .72rem 'Jost',sans-serif;padding:4px 12px;border-radius:99px;cursor:pointer}
+.demo button:hover{background:#FBEBE4}
+</style>
+</head>
+<body>
+
+<!-- Shared header (logo, nav links, notification bell, account menu) -->
+<div id="site-header"></div>
+
+<script data-active="orders">
+/* R&R Sweet Bites - shared header + footer (same as Gallery / My Orders / Notifications) */
+(function () {
+  "use strict";
+
+  /* ===== SETTINGS ===== */
+  // true  = preview as a logged-in customer (no backend needed)
+  // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
+  const DEMO_MODE = true;
+  const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
+  const PAGE = {
+    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
+    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.html#messages", notifications: "Customer_Orders.html#notifications",
+    settings: "Weekly-Availability.html#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+  };
+  const DEMO_USER = { name: "Lia Norman" };
+  const DEMO_NOTIFS = [
+    { type: "payment", title: "Payment Verified", text: "Your final payment was approved.", unread: true },
+    { type: "quote", title: "Quotation Updated", text: "Your quotation has new details. Please review it.", unread: true },
+    { type: "order", title: "Order Confirmed", text: "Your order request was approved.", unread: false },
+    { type: "message", title: "New Message From R&R Sweet Bites", text: "You have a new message about your order.", unread: false }
+  ];
+
+  /* Demo flow: this page saves "rr_flow" when a request is submitted.
+     The notification opens the order status view of THIS page (#status). */
+  function flowNotifs() {
+  let f = null;
+  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+  if (!f) return null;
+  const ok = f.status === "confirmed";
+  const list = [];
+  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
+    list.push({
+      type: "quote",
+      title: "Quotation Ready",
+      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+      unread: !f.quoteRead,
+      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+    });
+  }
+  list.push({
+    type: "order",
+    title: ok ? "Order Confirmed" : "Order Request Submitted",
+    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+    unread: f.readStatus !== f.status,
+    href: "Custom-Cake-Request.html#status"
+  });
+  return list;
+}
+
+  const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const svg = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
+  const ICON = {
+    user: svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 18.6c1.2-2.4 3.6-3.6 6.2-3.6s5 1.2 6.2 3.6"/>'),
+    gear: svg('<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'),
+    star: svg('<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>'),
+    out: svg('<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/>'),
+    info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+    card: svg('<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.8-1.6 2.2-2.4 4-2.4s3.2.8 4 2.4"/>')
+  };
+  const initialsOf = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+
+  const RR = (window.RR = { user: null, notifs: [], esc, ICON, PAGE });
+  const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+
+  /* ===== STYLES ===== */
+  const css = `
+  #site-header{position:sticky;top:0;z-index:1000}
+  .rr-header{background:#FAF0E6;box-shadow:0 2px 10px rgba(0,0,0,.04);font-family:'Jost',system-ui,sans-serif;color:#333}
+  .rr-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:.9rem 5%}
+  .rr-brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:'Platypi',Georgia,serif;font-weight:700;font-size:1.3rem;color:#D27685;white-space:nowrap}
+  .rr-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#E8C3C3;display:block}
+  .rr-links{display:flex;align-items:center;gap:2rem}
+  .rr-links a{position:relative;text-decoration:none;color:#333;font-weight:500;white-space:nowrap;padding:4px 0;transition:color .2s}
+  .rr-links a::after{content:"";position:absolute;left:0;bottom:-3px;height:2px;width:0;background:#D27685;transition:width .25s}
+  .rr-links a:hover,.rr-links a.active{color:#D27685}
+  .rr-links a:hover::after,.rr-links a.active::after{width:100%}
+  .rr-tools{display:flex;align-items:center;gap:1.1rem}
+  .rr-menu-wrap{position:relative}
+  .rr-bell{position:relative;display:block;width:26px;height:26px;padding:0;border:0;background:transparent;cursor:pointer}
+  .rr-bell img{width:24px;height:24px;object-fit:contain;display:block}
+  .rr-bell b{position:absolute;top:-5px;right:-6px;min-width:15px;height:15px;padding:0 3px;border-radius:99px;background:#c0525a;color:#fff;font:600 .62rem 'Jost',sans-serif;display:grid;place-items:center}
+  .rr-avatar{width:40px;height:40px;border-radius:50%;border:0;background:#F6D9DC;color:#4a2a2e;font:600 .95rem 'Jost',sans-serif;cursor:pointer;transition:background .2s}
+  .rr-avatar:hover{background:#F0C6CC}
+  .rr-btn{font-family:'Platypi',Georgia,serif;font-weight:600;font-size:.95rem;padding:.55rem 1.4rem;border-radius:20px;background:#D27685;color:#fff;text-decoration:none;transition:.2s}
+  .rr-btn:hover{background:#BE5B6C}
+  .rr-pop{position:absolute;right:0;top:calc(100% + 12px);z-index:1100;background:#FFF8F3;border:1px solid #D97D8A;border-radius:10px;box-shadow:0 12px 30px rgba(74,38,46,.18);animation:rrpop .18s ease}
+  .rr-pop[hidden]{display:none}
+  @keyframes rrpop{from{opacity:0;transform:translateY(-6px)}}
+  .rr-account{width:200px;padding:8px}
+  .rr-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#4a2a2e;font:500 .95rem 'Jost',sans-serif;text-decoration:none;text-align:left;cursor:pointer;transition:background .15s}
+  a.rr-item:hover,button.rr-item:hover{background:#F8EBE3}
+  .rr-item svg{width:21px;height:21px;flex:none}
+  .rr-name{cursor:default}
+  .rr-account form{margin:0}
+  .rr-notif{width:260px;padding:14px 16px}
+  .rr-notif-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .rr-notif-head strong{font-family:'Platypi',Georgia,serif;font-size:1.05rem;color:#382325}
+  .rr-notif-head a{font-size:.72rem;color:#D27685;text-decoration:none}
+  .rr-notif-head a:hover{text-decoration:underline}
+  .rr-n{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0}
+  a.rr-n{text-decoration:none;color:inherit;border-radius:6px;margin:0 -6px;padding:7px 6px;transition:background .15s}
+  a.rr-n:hover{background:#F8EBE3}
+  .rr-n small{display:block;font-size:.62rem;color:#666;font-weight:500}
+  .rr-n span{font-size:.7rem;font-weight:600;color:#382325;letter-spacing:.2px}
+  .rr-n i{width:8px;height:8px;border-radius:50%;background:#D27685;flex:none}
+  .rr-empty{font-size:.8rem;color:#666;padding:8px 0}
+  .rr-footer{background:#ECCFCB;text-align:center;padding:1.6rem 1rem;font-family:'Jost',sans-serif;font-size:.9rem;color:#555;width:100%}
+  .rr-footer a{display:inline-flex;align-items:center;gap:6px;color:#555;text-decoration:none;font-weight:500;letter-spacing:.5px}
+  .rr-footer a:hover{color:#D27685}
+  .rr-footer svg{width:15px;height:15px}
+  .rr-footer .sep{margin:0 8px}
+  @media(max-width:820px){.rr-nav{flex-wrap:wrap;row-gap:.6rem}.rr-links{order:3;width:100%;justify-content:center;gap:1.3rem;font-size:.92rem}}
+  @media(max-width:420px){.rr-brand span{font-size:1.05rem}}`;
+
+  /* ===== RENDER ===== */
+  function render() {
+    const link = (key, label) => '<a href="' + PAGE[key] + '"' + (ACTIVE === key ? ' class="active" aria-current="page"' : "") + ">" + label + "</a>";
+    const user = RR.user;
+    const links = (user ? "" : link("home", "Home")) + link("gallery", "Gallery") + link("submit", "Submit Request") + link("orders", "My Order") + link("messages", "Messages");
+    let tools;
+    if (user) {
+      const unread = RR.notifs.filter((n) => n.unread).length;
+      const items = RR.notifs.slice(0, 3).map((n) => {
+        const inner = "<div><small>" + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "");
+        return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
+      }).join("");
+      tools =
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
+        '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
+        '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
+        '<div class="rr-item rr-name">' + ICON.user + "<span>" + esc(user.name) + "</span></div>" +
+        '<a class="rr-item" href="' + PAGE.settings + '">' + ICON.gear + "Settings</a>" +
+        '<a class="rr-item" href="' + PAGE.reviews + '">' + ICON.star + "My Reviews</a>" +
+        '<form method="post" action="' + API.logout + '"><button class="rr-item" type="submit">' + ICON.out + "Log Out</button></form></div></div>";
+    } else {
+      tools = '<a class="rr-btn" href="' + PAGE.login + '">Log in</a><a class="rr-btn" href="' + PAGE.register + '">Sign up</a>';
+    }
+
+    const host = document.getElementById("site-header");
+    if (host) {
+      host.innerHTML = '<header class="rr-header"><nav class="rr-nav" aria-label="Main"><a class="rr-brand" href="' + PAGE.home + '"><img class="rr-logo" src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></a><div class="rr-links">' + links + '</div><div class="rr-tools">' + tools + "</div></nav></header>";
+    }
+    const foot = document.getElementById("site-footer");
+    if (foot) {
+      foot.innerHTML = '<footer class="rr-footer"><div><a href="' + PAGE.home + '#about">' + ICON.info + 'ABOUT US</a><span class="sep">|</span><a href="' + PAGE.home + '#contact">' + ICON.card + "CONTACTS</a></div><p>&copy; 2019 R&amp;R Sweet Bites. All Rights Reserved.</p></footer>";
+    }
+    wireMenus();
+  }
+
+  const MENU_PAIRS = [["rrBell", "rrNotif"], ["rrAvatar", "rrAccount"]];
+  const closeAllMenus = () => MENU_PAIRS.forEach(([b, p]) => {
+    const btn = document.getElementById(b), pop = document.getElementById(p);
+    if (btn && pop) { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  });
+  let docWired = false;
+  function wireMenus() {
+    MENU_PAIRS.forEach(([b, p]) => {
+      const btn = document.getElementById(b), pop = document.getElementById(p);
+      if (!btn) return;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = pop.hidden;
+        closeAllMenus();
+        pop.hidden = !willOpen;
+        btn.setAttribute("aria-expanded", String(willOpen));
+      });
+    });
+    if (docWired) return;   // these two listeners only need adding once, even if the header is redrawn
+    docWired = true;
+    document.addEventListener("click", (e) => { if (!e.target.closest(".rr-menu-wrap") || e.target.closest(".rr-pop a")) closeAllMenus(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
+  }
+
+  // Lets the page redraw the bell after the notification changes (read / new admin update)
+  RR.refresh = () => { if (DEMO_MODE) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); } };
+
+  async function getJSON(url) {
+    const res = await fetch(url, { credentials: "same-origin" });
+    return res.json();
+  }
+
+  RR.ready = new Promise((resolve) => {
+    onReady(async () => {
+      const style = document.createElement("style");
+      style.textContent = css;
+      document.head.append(style);
+
+      if (DEMO_MODE) {
+        RR.user = { name: DEMO_USER.name };
+        RR.notifs = flowNotifs() || DEMO_NOTIFS;
+      } else {
+        try { const me = await getJSON(API.me); if (me && me.ok) RR.user = { name: me.name }; } catch (e) {}
+        if (RR.user) {
+          try { const n = await getJSON(API.notifications); RR.notifs = Array.isArray(n) ? n : (n && n.items) || []; } catch (e) {}
+        }
+      }
+      if (RR.user) { RR.user.first = RR.user.name.split(" ")[0]; RR.user.initials = initialsOf(RR.user.name); }
+      render();
+      resolve();
+    });
+  });
+})();
+</script>
+
+<main class="wrap">
+<div id="viewForm">
+  <a class="back-btn" href="Customer_Orders.html#notifications">Back to notification</a>
+  <h1>Fulfillment &amp; Delivery Method</h1>
+
+  <div class="card order-strip">
+    <img class="cake-thumb" src="../Images-Icons/R&R Logo.jpg" alt="">
+    <div>
+      <div class="order-title">Custom 2-Tier Pastel Floral Dream Cake</div>
+      <div class="order-sub">Order <span id="orderRef">RR2026025</span><span class="dot">&middot;</span>2 Tiers<span class="dot">&middot;</span>2 Layers<span class="dot">&middot;</span>Vanilla</div>
+    </div>
+  </div>
+
+  <form id="ffForm" novalidate>
+  <div class="layout">
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <div class="col">
+
+      <section class="card" aria-labelledby="fmTitle">
+        <h2 class="card-title" id="fmTitle">Choose Fulfillment Method</h2>
+        <p class="card-desc">Please choose how you would like to receive your custom cake.</p>
+        <div class="opts" role="radiogroup" aria-labelledby="fmTitle" id="methodGroup">
+          <label class="opt">
+            <input type="radio" name="method" value="shop" checked>
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Shop-Owned Delivery</span><span class="opt-desc">Delivered by R&amp;R Sweet Bites with personalized handling and handled exclusively by the R&amp;R Sweet Bites staff.</span></span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="method" value="courier">
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Third-Party Courier</span><span class="opt-desc">Booking via GrabExpress / Lalamove. Delivery fee is separate and paid directly to the courier.</span></span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="method" value="pickup">
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Self Store Pick-Up</span><span class="opt-desc">Pick up directly from R&amp;R Sweet Bites in Caloocan City. Please arrive within your selected time window.</span></span>
+          </label>
+        </div>
+        <p class="err" id="method-err" role="alert"></p>
+      </section>
+
+      <section class="card addr" id="delivery" aria-labelledby="dvTitle">
+        <div class="d-head">
+          <div>
+            <h2 class="card-title" id="dvTitle">Delivery Address &amp; Travel Estimate</h2>
+            <p class="card-desc">Enter your venue address to calculate the travel time and distance for your cake.</p>
+          </div>
+          <button class="chev" type="button" id="dvToggle" aria-expanded="true" aria-controls="dvBody" aria-label="Show or hide delivery details">&#8964;</button>
+        </div>
+
+        <div id="dvBody">
+          <p class="note-off" id="addrOff" hidden></p>
+
+          <div class="fields fields-addr" id="addrFields">
+            <div class="field">
+              <label class="lbl" for="name">Recipient / Event Contact Name <i>*</i></label>
+              <input class="in" id="name" data-f="name" type="text" placeholder="Name" maxlength="60" autocomplete="name" aria-describedby="name-err" aria-invalid="false">
+              <span class="err" id="name-err"></span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="phone">Mobile Number<i>*</i></label>
+              <div class="phone-row">
+                <span class="phone-prefix" aria-hidden="true">+63</span>
+                <input class="in" id="phone" data-f="phone" type="tel" inputmode="numeric" placeholder="09XX XXX XXXX" autocomplete="tel-national" aria-describedby="phone-err" aria-invalid="false">
+              </div>
+              <span class="err" id="phone-err"></span>
+            </div>
+            <div class="field full">
+              <label class="lbl" for="address">Street Address, House/Unit No., Venue / Landmark <i>*</i></label>
+              <input class="in" id="address" data-f="address" type="text" placeholder="Address" maxlength="120" autocomplete="street-address" aria-describedby="address-err" aria-invalid="false">
+              <span class="err" id="address-err"></span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="city">City / Municipality <i>*</i></label>
+              <select class="in" id="city" required aria-describedby="city-err" aria-invalid="false">
+                <option value="" selected disabled>Select City</option>
+                <option>Caloocan City</option>
+                <option>Las Piñas City</option>
+                <option>Makati City</option>
+                <option>Malabon City</option>
+                <option>Mandaluyong City</option>
+                <option>Manila City</option>
+                <option>Marikina City</option>
+                <option>Muntinlupa City</option>
+                <option>Navotas City</option>
+                <option>Parañaque City</option>
+                <option>Pasay City</option>
+                <option>Pasig City</option>
+                <option>Quezon City</option>
+                <option>San Juan City</option>
+                <option>Taguig City</option>
+                <option>Valenzuela City</option>
+              </select>
+              <span class="err" id="city-err"></span>
+            </div>
+            <div class="field">
+              <label class="lbl" for="barangay">Barangay / District <i>*</i></label>
+              <select class="in" id="barangay" required disabled aria-describedby="barangay-err" aria-invalid="false">
+                <option value="" selected disabled>Select City first</option>
+              </select>
+              <span class="err" id="barangay-err"></span>
+            </div>
+            <div class="field full">
+              <label class="lbl" for="notes">Special Delivery &amp; Gate Instructions</label>
+              <textarea class="in" id="notes" data-f="notes" placeholder="Write something..." maxlength="200" aria-describedby="notes-err" aria-invalid="false"></textarea>
+              <span class="err" id="notes-err"></span>
+            </div>
+          </div>
+
+          <div class="lbl win-label" id="winLabel">Select delivery arrival time window (<span id="dateLabel">Oct 24, 2026</span>):</div>
+          <div class="wins" role="radiogroup" aria-labelledby="winLabel" id="winGroup">
+            <label class="opt">
+              <input type="radio" name="window" value="Morning Window (9:00 AM - 12:00 PM)" checked>
+              <span class="radio" aria-hidden="true"></span>
+              <span><span class="opt-title">Morning Window</span><span class="opt-desc">9:00 AM &ndash; 12:00 PM</span></span>
+            </label>
+            <label class="opt">
+              <input type="radio" name="window" value="Afternoon Window (1:00 PM - 5:00 PM)">
+              <span class="radio" aria-hidden="true"></span>
+              <span><span class="opt-title">Afternoon Window</span><span class="opt-desc">1:00 PM &ndash; 5:00 PM</span></span>
+            </label>
+          </div>
+          <p class="err" id="window-err" role="alert"></p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== RIGHT COLUMN ===== -->
+    <aside class="col">
+
+      <section class="card group" id="orgCard" aria-labelledby="orgTitle">
+        <h2 class="group-title" id="orgTitle">Booking Organizer</h2>
+        <div class="opts" role="radiogroup" aria-labelledby="orgTitle">
+          <label class="opt">
+            <input type="radio" name="organizer" value="shop">
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Booked By The Shop</span><span class="opt-desc">The delivery fee will be included in the receipt provided.</span></span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="organizer" value="customer">
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Booked By The Customer</span><span class="opt-desc">Delivery fee is separate and paid directly to the courier.</span></span>
+          </label>
+        </div>
+        <p class="err" id="organizer-err" role="alert"></p>
+      </section>
+
+      <section class="card group" id="courierCard" aria-labelledby="courierTitle">
+        <h2 class="group-title" id="courierTitle">Booking Organizer</h2>
+        <div class="opts" role="radiogroup" aria-labelledby="courierTitle">
+          <label class="opt">
+            <input type="radio" name="courier" value="Grab Express">
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Grab Express</span><span class="opt-desc">Recommended: Instant Car Delivery</span></span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="courier" value="Lalamove">
+            <span class="radio" aria-hidden="true"></span>
+            <span><span class="opt-title">Lalamove</span><span class="opt-desc">Recommended: Sedan</span></span>
+          </label>
+        </div>
+        <p class="err" id="courier-err" role="alert"></p>
+      </section>
+
+      <button class="proceed" type="submit" id="proceedBtn">Proceed</button>
+      <p class="proceed-err" id="proceed-err" role="alert"></p>
+
+      <section class="card help">
+        <div class="help-row">
+          <span class="help-ico" aria-hidden="true"></span>
+          <div><b>Need assistance with your order?</b><span>Our customer support team can help with fulfillment, delivery, or payment questions.</span></div>
+        </div>
+        <a href="Weekly-Availability.html#messages" id="supportLink">Message Support</a>
+      </section>
+    </aside>
+  </div>
+  </form>
+
+  <!-- ===== MAP / TRAVEL ESTIMATE ===== -->
+  <section class="card map-card" aria-label="Travel estimate">
+    <div class="map">
+      <svg class="bg" viewBox="0 0 100 40" preserveAspectRatio="none" aria-hidden="true">
+        <line x1="22" y1="-2" x2="72" y2="42" stroke="#F4D3D4" stroke-width="22" vector-effect="non-scaling-stroke"/>
+        <line x1="96" y1="-2" x2="38" y2="42" stroke="#F4D3D4" stroke-width="22" vector-effect="non-scaling-stroke"/>
+        <line x1="-2" y1="42" x2="86" y2="-1" stroke="#E7A3AC" stroke-width="1.6" vector-effect="non-scaling-stroke"/>
+        <path d="M15 24.5 C 30 20, 36 14, 50 15 S 70 13, 80 13" fill="none" stroke="#D27685" stroke-width="1.2" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <span class="m-dot"></span>
+      <svg class="m-pin" viewBox="0 0 15 21" fill="none" stroke="#D27685" stroke-width="1.3" aria-hidden="true"><path d="M7.5 20C7.5 20 1 12.5 1 7.5a6.5 6.5 0 0 1 13 0C14 12.5 7.5 20 7.5 20z"/><circle cx="7.5" cy="7.5" r="2.3"/></svg>
+      <div class="m-label shop"><b>R&amp;R Sweet Bites</b>Caloocan City</div>
+      <div class="m-label home"><b>Your Delivery Address</b><span id="mapLocation">Barangay, City</span></div>
+    </div>
+    <div class="metrics">
+      <div class="metric"><small>Transit Distance</small><strong><span id="mDist"></span> km</strong></div>
+      <div class="metric"><small>Estimated Travel Time</small><strong><span id="mTime"></span> Mins</strong></div>
+      <div class="metric"><small>Designated Vehicle</small><strong class="text" id="mVehicle">Courier</strong></div>
+    </div>
+  </section>
+</div>
+
+  <section id="viewReceipt" hidden>
+    <div class="rc-hero">
+      <span class="rc-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg></span>
+      <h1>Order Quotation in<br>Progress</h1>
+      <p>We're preparing your order quotation based on your requested cake design and preferences.<br>We'll notify you once the quotation is ready for your review.</p>
+    </div>
+    <div class="rc-grid">
+      <section class="card rc-card" aria-labelledby="rcT1">
+        <div class="rc-head"><h2 class="card-title" id="rcT1">Order Summary</h2><span class="rc-badge">CONFIRMED</span></div>
+        <dl class="rc-rows" id="rcOrder"></dl>
+        <div class="rc-style"><small>SELECTED CAKE STYLE</small><p id="rcStyle"></p></div>
+      </section>
+      <section class="card rc-card" aria-labelledby="rcT2">
+        <div class="rc-head"><h2 class="card-title" id="rcT2">Delivery Information</h2><span class="rc-badge">CONFIRMED</span></div>
+        <dl class="rc-rows" id="rcDelivery"></dl>
+      </section>
+    </div>
+    <div class="rc-actions"><a href="Customer_Orders.html#orders">Back to My Order</a></div>
+    <p class="demo">Demo only:
+  <button type="button" id="simQuote">Simulate owner sending quotation</button>
+</p>
+  </section>
+</main>
+
+<!-- Shared footer -->
+<div id="site-footer"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== SETTINGS ===== */
+  // Page that opens after a successful Proceed. Leave "" until that page exists (a toast is shown instead).
+  const NEXT_PAGE = "";
+  const FF_KEY = "rr_fulfillment";
+  // true = this page only opens after the admin confirmed the order and the customer pressed Proceed
+  const REQUIRE_CONFIRMED = true;
+
+  /* Metro Manila barangays per city (PSA 2019 list) */
+  const BRGY = {"Las Piñas City":["Almanza Dos","Almanza Uno","B. F. International Village","Daniel Fajardo","Elias Aldana","Ilaya","Manuyo Dos","Manuyo Uno","Pamplona Dos","Pamplona Tres","Pamplona Uno","Pilar","Pulang Lupa Dos","Pulang Lupa Uno","Talon Dos","Talon Kuatro","Talon Singko","Talon Tres","Talon Uno","Zapote"],"Makati City":["Bangkal","Bel-Air","Carmona","Cembo","Comembo","Dasmariñas","East Rembo","Forbes Park","Guadalupe Nuevo","Guadalupe Viejo","Kasilawan","La Paz","Magallanes","Olympia","Palanan","Pembo","Pinagkaisahan","Pio Del Pilar","Pitogo","Poblacion","Post Proper Northside","Post Proper Southside","Rizal","San Antonio","San Isidro","San Lorenzo","Santa Cruz","Singkamas","South Cembo","Tejeros","Urdaneta","Valenzuela","West Rembo"],"Muntinlupa City":["Alabang","Bayanan","Buli","Cupang","New Alabang Village","Poblacion","Putatan","Sucat","Tunasan"],"Parañaque City":["B. F. Homes","Baclaran","Don Bosco","Don Galo","La Huerta","Marcelo Green Village","Merville","Moonwalk","San Antonio","San Dionisio","San Isidro","San Martin De Porres","Santo Niño","Sun Valley","Tambo","Vitalez"],"Pasay City":["Barangay 1","Barangay 2","Barangay 3","Barangay 4","Barangay 5","Barangay 6","Barangay 7","Barangay 8","Barangay 9","Barangay 10","Barangay 11","Barangay 12","Barangay 13","Barangay 14","Barangay 15","Barangay 16","Barangay 17","Barangay 18","Barangay 19","Barangay 20","Barangay 21","Barangay 22","Barangay 23","Barangay 24","Barangay 25","Barangay 26","Barangay 27","Barangay 28","Barangay 29","Barangay 30","Barangay 31","Barangay 32","Barangay 33","Barangay 34","Barangay 35","Barangay 36","Barangay 37","Barangay 38","Barangay 39","Barangay 40","Barangay 41","Barangay 42","Barangay 43","Barangay 44","Barangay 45","Barangay 46","Barangay 47","Barangay 48","Barangay 49","Barangay 50","Barangay 51","Barangay 52","Barangay 53","Barangay 54","Barangay 55","Barangay 56","Barangay 57","Barangay 58","Barangay 59","Barangay 60","Barangay 61","Barangay 62","Barangay 63","Barangay 64","Barangay 65","Barangay 66","Barangay 67","Barangay 68","Barangay 69","Barangay 70","Barangay 71","Barangay 72","Barangay 73","Barangay 74","Barangay 75","Barangay 76","Barangay 77","Barangay 78","Barangay 79","Barangay 80","Barangay 81","Barangay 82","Barangay 83","Barangay 84","Barangay 85","Barangay 86","Barangay 87","Barangay 88","Barangay 89","Barangay 90","Barangay 91","Barangay 92","Barangay 93","Barangay 94","Barangay 95","Barangay 96","Barangay 97","Barangay 98","Barangay 99","Barangay 100","Barangay 101","Barangay 102","Barangay 103","Barangay 104","Barangay 105","Barangay 106","Barangay 107","Barangay 108","Barangay 109","Barangay 110","Barangay 111","Barangay 112","Barangay 113","Barangay 114","Barangay 115","Barangay 116","Barangay 117","Barangay 118","Barangay 119","Barangay 120","Barangay 121","Barangay 122","Barangay 123","Barangay 124","Barangay 125","Barangay 126","Barangay 127","Barangay 128","Barangay 129","Barangay 130","Barangay 131","Barangay 132","Barangay 133","Barangay 134","Barangay 135","Barangay 136","Barangay 137","Barangay 138","Barangay 139","Barangay 140","Barangay 141","Barangay 142","Barangay 143","Barangay 144","Barangay 145","Barangay 146","Barangay 147","Barangay 148","Barangay 149","Barangay 150","Barangay 151","Barangay 152","Barangay 153","Barangay 154","Barangay 155","Barangay 156","Barangay 157","Barangay 158","Barangay 159","Barangay 160","Barangay 161","Barangay 162","Barangay 163","Barangay 164","Barangay 165","Barangay 166","Barangay 167","Barangay 168","Barangay 169","Barangay 170","Barangay 171","Barangay 172","Barangay 173","Barangay 174","Barangay 175","Barangay 176","Barangay 177","Barangay 178","Barangay 179","Barangay 180","Barangay 181","Barangay 182","Barangay 183","Barangay 184","Barangay 185","Barangay 186","Barangay 187","Barangay 188","Barangay 189","Barangay 190","Barangay 191","Barangay 192","Barangay 193","Barangay 194","Barangay 195","Barangay 196","Barangay 197","Barangay 198","Barangay 199","Barangay 200","Barangay 201"],"Manila City":["Barangay 1","Barangay 2","Barangay 3","Barangay 4","Barangay 5","Barangay 6","Barangay 7","Barangay 8","Barangay 9","Barangay 11","Barangay 12","Barangay 13","Barangay 14","Barangay 15","Barangay 16","Barangay 17","Barangay 18","Barangay 19","Barangay 20","Barangay 25","Barangay 26","Barangay 28","Barangay 29","Barangay 30","Barangay 31","Barangay 32","Barangay 33","Barangay 34","Barangay 35","Barangay 36","Barangay 37","Barangay 38","Barangay 39","Barangay 41","Barangay 42","Barangay 43","Barangay 44","Barangay 45","Barangay 46","Barangay 47","Barangay 48","Barangay 49","Barangay 50","Barangay 51","Barangay 52","Barangay 53","Barangay 54","Barangay 55","Barangay 56","Barangay 57","Barangay 58","Barangay 59","Barangay 60","Barangay 61","Barangay 62","Barangay 63","Barangay 64","Barangay 65","Barangay 66","Barangay 67","Barangay 68","Barangay 69","Barangay 70","Barangay 71","Barangay 72","Barangay 73","Barangay 74","Barangay 75","Barangay 76","Barangay 77","Barangay 78","Barangay 79","Barangay 80","Barangay 81","Barangay 82","Barangay 83","Barangay 84","Barangay 85","Barangay 86","Barangay 87","Barangay 88","Barangay 89","Barangay 90","Barangay 91","Barangay 92","Barangay 93","Barangay 94","Barangay 95","Barangay 96","Barangay 97","Barangay 98","Barangay 99","Barangay 100","Barangay 101","Barangay 102","Barangay 103","Barangay 104","Barangay 105","Barangay 106","Barangay 107","Barangay 108","Barangay 109","Barangay 110","Barangay 111","Barangay 112","Barangay 116","Barangay 117","Barangay 118","Barangay 119","Barangay 120","Barangay 121","Barangay 122","Barangay 123","Barangay 124","Barangay 125","Barangay 126","Barangay 127","Barangay 128","Barangay 129","Barangay 130","Barangay 131","Barangay 132","Barangay 133","Barangay 134","Barangay 135","Barangay 136","Barangay 137","Barangay 138","Barangay 139","Barangay 140","Barangay 141","Barangay 142","Barangay 143","Barangay 144","Barangay 145","Barangay 146","Barangay 147","Barangay 148","Barangay 149","Barangay 150","Barangay 151","Barangay 152","Barangay 153","Barangay 154","Barangay 155","Barangay 156","Barangay 157","Barangay 158","Barangay 159","Barangay 160","Barangay 161","Barangay 162","Barangay 163","Barangay 164","Barangay 165","Barangay 166","Barangay 167","Barangay 168","Barangay 169","Barangay 170","Barangay 171","Barangay 172","Barangay 173","Barangay 174","Barangay 175","Barangay 176","Barangay 177","Barangay 178","Barangay 179","Barangay 180","Barangay 181","Barangay 182","Barangay 183","Barangay 184","Barangay 185","Barangay 186","Barangay 187","Barangay 188","Barangay 189","Barangay 190","Barangay 191","Barangay 192","Barangay 193","Barangay 194","Barangay 195","Barangay 196","Barangay 197","Barangay 198","Barangay 199","Barangay 200","Barangay 201","Barangay 202","Barangay 202-A","Barangay 203","Barangay 204","Barangay 205","Barangay 206","Barangay 207","Barangay 208","Barangay 209","Barangay 210","Barangay 211","Barangay 212","Barangay 213","Barangay 214","Barangay 215","Barangay 216","Barangay 217","Barangay 218","Barangay 219","Barangay 220","Barangay 221","Barangay 222","Barangay 223","Barangay 224","Barangay 225","Barangay 226","Barangay 227","Barangay 228","Barangay 229","Barangay 230","Barangay 231","Barangay 232","Barangay 233","Barangay 234","Barangay 235","Barangay 236","Barangay 237","Barangay 238","Barangay 239","Barangay 240","Barangay 241","Barangay 242","Barangay 243","Barangay 244","Barangay 245","Barangay 246","Barangay 247","Barangay 248","Barangay 249","Barangay 250","Barangay 251","Barangay 252","Barangay 253","Barangay 254","Barangay 255","Barangay 256","Barangay 257","Barangay 258","Barangay 259","Barangay 260","Barangay 261","Barangay 262","Barangay 263","Barangay 264","Barangay 265","Barangay 266","Barangay 267","Barangay 268","Barangay 269","Barangay 270","Barangay 271","Barangay 272","Barangay 273","Barangay 274","Barangay 275","Barangay 276","Barangay 281","Barangay 282","Barangay 283","Barangay 284","Barangay 285","Barangay 286","Barangay 287","Barangay 288","Barangay 289","Barangay 290","Barangay 291","Barangay 292","Barangay 293","Barangay 294","Barangay 295","Barangay 296","Barangay 297","Barangay 298","Barangay 299","Barangay 300","Barangay 301","Barangay 302","Barangay 303","Barangay 304","Barangay 305","Barangay 306","Barangay 307","Barangay 308","Barangay 309","Barangay 310","Barangay 311","Barangay 312","Barangay 313","Barangay 314","Barangay 315","Barangay 316","Barangay 317","Barangay 318","Barangay 319","Barangay 320","Barangay 321","Barangay 322","Barangay 323","Barangay 324","Barangay 325","Barangay 326","Barangay 327","Barangay 328","Barangay 329","Barangay 330","Barangay 331","Barangay 332","Barangay 333","Barangay 334","Barangay 335","Barangay 336","Barangay 337","Barangay 338","Barangay 339","Barangay 340","Barangay 341","Barangay 342","Barangay 343","Barangay 344","Barangay 345","Barangay 346","Barangay 347","Barangay 348","Barangay 349","Barangay 350","Barangay 351","Barangay 352","Barangay 353","Barangay 354","Barangay 355","Barangay 356","Barangay 357","Barangay 358","Barangay 359","Barangay 360","Barangay 361","Barangay 362","Barangay 363","Barangay 364","Barangay 365","Barangay 366","Barangay 367","Barangay 368","Barangay 369","Barangay 370","Barangay 371","Barangay 372","Barangay 373","Barangay 374","Barangay 375","Barangay 376","Barangay 377","Barangay 378","Barangay 379","Barangay 380","Barangay 381","Barangay 382","Barangay 383","Barangay 384","Barangay 385","Barangay 386","Barangay 387","Barangay 388","Barangay 389","Barangay 390","Barangay 391","Barangay 392","Barangay 393","Barangay 394","Barangay 395","Barangay 396","Barangay 397","Barangay 398","Barangay 399","Barangay 400","Barangay 401","Barangay 402","Barangay 403","Barangay 404","Barangay 405","Barangay 406","Barangay 407","Barangay 408","Barangay 409","Barangay 410","Barangay 411","Barangay 412","Barangay 413","Barangay 414","Barangay 415","Barangay 416","Barangay 417","Barangay 418","Barangay 419","Barangay 420","Barangay 421","Barangay 422","Barangay 423","Barangay 424","Barangay 425","Barangay 426","Barangay 427","Barangay 428","Barangay 429","Barangay 430","Barangay 431","Barangay 432","Barangay 433","Barangay 434","Barangay 435","Barangay 436","Barangay 437","Barangay 438","Barangay 439","Barangay 440","Barangay 441","Barangay 442","Barangay 443","Barangay 444","Barangay 445","Barangay 446","Barangay 447","Barangay 448","Barangay 449","Barangay 450","Barangay 451","Barangay 452","Barangay 453","Barangay 454","Barangay 455","Barangay 456","Barangay 457","Barangay 458","Barangay 459","Barangay 460","Barangay 461","Barangay 462","Barangay 463","Barangay 464","Barangay 465","Barangay 466","Barangay 467","Barangay 468","Barangay 469","Barangay 470","Barangay 471","Barangay 472","Barangay 473","Barangay 474","Barangay 475","Barangay 476","Barangay 477","Barangay 478","Barangay 479","Barangay 480","Barangay 481","Barangay 482","Barangay 483","Barangay 484","Barangay 485","Barangay 486","Barangay 487","Barangay 488","Barangay 489","Barangay 490","Barangay 491","Barangay 492","Barangay 493","Barangay 494","Barangay 495","Barangay 496","Barangay 497","Barangay 498","Barangay 499","Barangay 500","Barangay 501","Barangay 502","Barangay 503","Barangay 504","Barangay 505","Barangay 506","Barangay 507","Barangay 508","Barangay 509","Barangay 510","Barangay 511","Barangay 512","Barangay 513","Barangay 514","Barangay 515","Barangay 516","Barangay 517","Barangay 518","Barangay 519","Barangay 520","Barangay 521","Barangay 522","Barangay 523","Barangay 524","Barangay 525","Barangay 526","Barangay 527","Barangay 528","Barangay 529","Barangay 530","Barangay 531","Barangay 532","Barangay 533","Barangay 534","Barangay 535","Barangay 536","Barangay 537","Barangay 538","Barangay 539","Barangay 540","Barangay 541","Barangay 542","Barangay 543","Barangay 544","Barangay 545","Barangay 546","Barangay 547","Barangay 548","Barangay 549","Barangay 550","Barangay 551","Barangay 552","Barangay 553","Barangay 554","Barangay 555","Barangay 556","Barangay 557","Barangay 558","Barangay 559","Barangay 560","Barangay 561","Barangay 562","Barangay 563","Barangay 564","Barangay 565","Barangay 566","Barangay 567","Barangay 568","Barangay 569","Barangay 570","Barangay 571","Barangay 572","Barangay 573","Barangay 574","Barangay 575","Barangay 576","Barangay 577","Barangay 578","Barangay 579","Barangay 580","Barangay 581","Barangay 582","Barangay 583","Barangay 584","Barangay 585","Barangay 586","Barangay 587","Barangay 587-A","Barangay 588","Barangay 589","Barangay 590","Barangay 591","Barangay 592","Barangay 593","Barangay 594","Barangay 595","Barangay 596","Barangay 597","Barangay 598","Barangay 599","Barangay 600","Barangay 601","Barangay 602","Barangay 603","Barangay 604","Barangay 605","Barangay 606","Barangay 607","Barangay 608","Barangay 609","Barangay 610","Barangay 611","Barangay 612","Barangay 613","Barangay 614","Barangay 615","Barangay 616","Barangay 617","Barangay 618","Barangay 619","Barangay 620","Barangay 621","Barangay 622","Barangay 623","Barangay 624","Barangay 625","Barangay 626","Barangay 627","Barangay 628","Barangay 629","Barangay 630","Barangay 631","Barangay 632","Barangay 633","Barangay 634","Barangay 635","Barangay 636","Barangay 637","Barangay 638","Barangay 639","Barangay 640","Barangay 641","Barangay 642","Barangay 643","Barangay 644","Barangay 645","Barangay 646","Barangay 647","Barangay 648","Barangay 649","Barangay 650","Barangay 651","Barangay 652","Barangay 653","Barangay 654","Barangay 655","Barangay 656","Barangay 657","Barangay 658","Barangay 659","Barangay 659-A","Barangay 660","Barangay 660-A","Barangay 661","Barangay 662","Barangay 663","Barangay 663-A","Barangay 664","Barangay 664-A","Barangay 666","Barangay 667","Barangay 668","Barangay 669","Barangay 670","Barangay 671","Barangay 672","Barangay 673","Barangay 674","Barangay 675","Barangay 676","Barangay 677","Barangay 678","Barangay 679","Barangay 680","Barangay 681","Barangay 682","Barangay 683","Barangay 684","Barangay 685","Barangay 686","Barangay 687","Barangay 688","Barangay 689","Barangay 690","Barangay 691","Barangay 692","Barangay 693","Barangay 694","Barangay 695","Barangay 696","Barangay 697","Barangay 698","Barangay 699","Barangay 700","Barangay 701","Barangay 702","Barangay 703","Barangay 704","Barangay 705","Barangay 706","Barangay 707","Barangay 708","Barangay 709","Barangay 710","Barangay 711","Barangay 712","Barangay 713","Barangay 714","Barangay 715","Barangay 716","Barangay 717","Barangay 718","Barangay 719","Barangay 720","Barangay 721","Barangay 722","Barangay 723","Barangay 724","Barangay 725","Barangay 726","Barangay 727","Barangay 728","Barangay 729","Barangay 730","Barangay 731","Barangay 732","Barangay 733","Barangay 734","Barangay 735","Barangay 736","Barangay 737","Barangay 738","Barangay 739","Barangay 740","Barangay 741","Barangay 742","Barangay 743","Barangay 744","Barangay 745","Barangay 746","Barangay 747","Barangay 748","Barangay 749","Barangay 750","Barangay 751","Barangay 752","Barangay 753","Barangay 754","Barangay 755","Barangay 756","Barangay 757","Barangay 758","Barangay 759","Barangay 760","Barangay 761","Barangay 762","Barangay 763","Barangay 764","Barangay 765","Barangay 766","Barangay 767","Barangay 768","Barangay 769","Barangay 770","Barangay 771","Barangay 772","Barangay 773","Barangay 774","Barangay 775","Barangay 776","Barangay 777","Barangay 778","Barangay 779","Barangay 780","Barangay 781","Barangay 782","Barangay 783","Barangay 784","Barangay 785","Barangay 786","Barangay 787","Barangay 788","Barangay 789","Barangay 790","Barangay 791","Barangay 792","Barangay 793","Barangay 794","Barangay 795","Barangay 796","Barangay 797","Barangay 798","Barangay 799","Barangay 800","Barangay 801","Barangay 802","Barangay 803","Barangay 804","Barangay 805","Barangay 806","Barangay 807","Barangay 808","Barangay 809","Barangay 810","Barangay 811","Barangay 812","Barangay 813","Barangay 814","Barangay 815","Barangay 816","Barangay 817","Barangay 818","Barangay 818-A","Barangay 819","Barangay 820","Barangay 821","Barangay 822","Barangay 823","Barangay 824","Barangay 825","Barangay 826","Barangay 827","Barangay 828","Barangay 829","Barangay 830","Barangay 831","Barangay 832","Barangay 833","Barangay 834","Barangay 835","Barangay 836","Barangay 837","Barangay 838","Barangay 839","Barangay 840","Barangay 841","Barangay 842","Barangay 843","Barangay 844","Barangay 845","Barangay 846","Barangay 847","Barangay 848","Barangay 849","Barangay 850","Barangay 851","Barangay 852","Barangay 853","Barangay 855","Barangay 856","Barangay 857","Barangay 858","Barangay 859","Barangay 860","Barangay 861","Barangay 862","Barangay 863","Barangay 864","Barangay 865","Barangay 866","Barangay 867","Barangay 868","Barangay 869","Barangay 870","Barangay 871","Barangay 872","Barangay 873","Barangay 874","Barangay 875","Barangay 876","Barangay 877","Barangay 878","Barangay 879","Barangay 880","Barangay 881","Barangay 882","Barangay 883","Barangay 884","Barangay 885","Barangay 886","Barangay 887","Barangay 888","Barangay 889","Barangay 890","Barangay 891","Barangay 892","Barangay 893","Barangay 894","Barangay 895","Barangay 896","Barangay 897","Barangay 898","Barangay 899","Barangay 900","Barangay 901","Barangay 902","Barangay 903","Barangay 904","Barangay 905"],"Mandaluyong City":["Addition Hills","Bagong Silang","Barangka Drive","Barangka Ibaba","Barangka Ilaya","Barangka Itaas","Buayang Bato","Burol","Daang Bakal","Hagdang Bato Itaas","Hagdang Bato Libis","Harapin Ang Bukas","Highway Hills","Hulo","Mabini-J. Rizal","Malamig","Mauway","Namayan","New Zañiga","Old Zañiga","Pag-Asa","Plainview","Pleasant Hills","Poblacion","San Jose","Vergara","Wack-Wack Greenhills"],"Marikina City":["Barangka","Calumpang","Concepcion Dos","Concepcion Uno","Fortune","Industrial Valley","Jesus De La Peña","Malanday","Marikina Heights (Concepcion)","Nangka","Parang","San Roque","Santa Elena (Pob.)","Santo Niño","Tañong","Tumana"],"Pasig City":["Bagong Ilog","Bagong Katipunan","Bambang","Buting","Caniogan","Dela Paz","Kalawaan","Kapasigan","Kapitolyo","Malinao","Manggahan","Maybunga","Oranbo","Palatiw","Pinagbuhatan","Pineda","Rosario","Sagad","San Antonio","San Joaquin","San Jose","San Miguel","San Nicolas (Pob.)","Santa Cruz","Santa Lucia","Santa Rosa","Santo Tomas","Santolan","Sumilang","Ugong"],"Quezon City":["Alicia","Amihan","Apolonio Samson","Aurora","Baesa","Bagbag","Bagong Lipunan Ng Crame","Bagong Pag-Asa","Bagong Silangan","Bagumbayan","Bagumbuhay","Bahay Toro","Balingasa","Balong Bato","Batasan Hills","Bayanihan","Blue Ridge A","Blue Ridge B","Botocan","Bungad","Camp Aguinaldo","Capri","Central","Claro","Commonwealth","Culiat","Damar","Damayan","Damayang Lagi","Del Monte","Dioquino Zobel","Don Manuel","Doña Imelda","Doña Josefa","Duyan-Duyan","E. Rodriguez","East Kamias","Escopa I","Escopa II","Escopa III","Escopa IV","Fairview","Greater Lagro","Gulod","Holy Spirit","Horseshoe","Immaculate Concepcion","Kaligayahan","Kalusugan","Kamuning","Katipunan","Kaunlaran","Kristong Hari","Krus Na Ligas","Laging Handa","Libis","Lourdes","Loyola Heights","Maharlika","Malaya","Mangga","Manresa","Mariana","Mariblo","Marilag","Masagana","Masambong","Matandang Balara","Milagrosa","N.S. Amoranto (Gintong Silahis)","Nagkaisang Nayon","Nayong Kanluran","New Era (Constitution Hills)","North Fairview","Novaliches Proper","Obrero","Old Capitol Site","Paang Bundok","Pag-Ibig Sa Nayon","Paligsahan","Paltok","Pansol","Paraiso","Pasong Putik Proper (Pasong Putik)","Pasong Tamo","Payatas","Phil-Am","Pinagkaisahan","Pinyahan","Project 6","Quirino 2-A","Quirino 2-B","Quirino 2-C","Quirino 3-A","Ramon Magsaysay","Roxas","Sacred Heart","Saint Ignatius","Saint Peter","Salvacion","San Agustin","San Antonio","San Bartolome","San Isidro","San Isidro Labrador","San Jose","San Martin De Porres","San Roque","San Vicente","Sangandaan","Santa Cruz","Santa Lucia","Santa Monica","Santa Teresita","Santo Cristo","Santo Domingo (Matalahib)","Santo Niño","Santol","Sauyo","Sienna","Sikatuna Village","Silangan","Socorro","South Triangle","Tagumpay","Talayan","Talipapa","Tandang Sora","Tatalon","Teachers Village East","Teachers Village West","U.P. Campus","U.P. Village","Ugong Norte","Unang Sigaw","Valencia","Vasra","Veterans Village","Villa Maria Clara","West Kamias","West Triangle","White Plains"],"San Juan City":["Addition Hills","Balong-Bato","Batis","Corazon De Jesus","Ermitaño","Greenhills","Halo-Halo (St. Joseph)","Isabelita","Kabayanan","Little Baguio","Maytunas","Onse","Pasadeña","Pedro Cruz","Progreso","Rivera","Salapan","San Perfecto","Santa Lucia","Tibagan","West Crame"],"Caloocan City":["Barangay 1","Barangay 2","Barangay 3","Barangay 4","Barangay 5","Barangay 6","Barangay 7","Barangay 8","Barangay 9","Barangay 10","Barangay 11","Barangay 12","Barangay 13","Barangay 14","Barangay 15","Barangay 16","Barangay 17","Barangay 18","Barangay 19","Barangay 20","Barangay 21","Barangay 22","Barangay 23","Barangay 24","Barangay 25","Barangay 26","Barangay 27","Barangay 28","Barangay 29","Barangay 30","Barangay 31","Barangay 32","Barangay 33","Barangay 34","Barangay 35","Barangay 36","Barangay 37","Barangay 38","Barangay 39","Barangay 40","Barangay 41","Barangay 42","Barangay 43","Barangay 44","Barangay 45","Barangay 46","Barangay 47","Barangay 48","Barangay 49","Barangay 50","Barangay 51","Barangay 52","Barangay 53","Barangay 54","Barangay 55","Barangay 56","Barangay 57","Barangay 58","Barangay 59","Barangay 60","Barangay 61","Barangay 62","Barangay 63","Barangay 64","Barangay 65","Barangay 66","Barangay 67","Barangay 68","Barangay 69","Barangay 70","Barangay 71","Barangay 72","Barangay 73","Barangay 74","Barangay 75","Barangay 76","Barangay 77","Barangay 78","Barangay 79","Barangay 80","Barangay 81","Barangay 82","Barangay 83","Barangay 84","Barangay 85","Barangay 86","Barangay 87","Barangay 88","Barangay 89","Barangay 90","Barangay 91","Barangay 92","Barangay 93","Barangay 94","Barangay 95","Barangay 96","Barangay 97","Barangay 98","Barangay 99","Barangay 100","Barangay 101","Barangay 102","Barangay 103","Barangay 104","Barangay 105","Barangay 106","Barangay 107","Barangay 108","Barangay 109","Barangay 110","Barangay 111","Barangay 112","Barangay 113","Barangay 114","Barangay 115","Barangay 116","Barangay 117","Barangay 118","Barangay 119","Barangay 120","Barangay 121","Barangay 122","Barangay 123","Barangay 124","Barangay 125","Barangay 126","Barangay 127","Barangay 128","Barangay 129","Barangay 130","Barangay 131","Barangay 132","Barangay 133","Barangay 134","Barangay 135","Barangay 136","Barangay 137","Barangay 138","Barangay 139","Barangay 140","Barangay 141","Barangay 142","Barangay 143","Barangay 144","Barangay 145","Barangay 146","Barangay 147","Barangay 148","Barangay 149","Barangay 150","Barangay 151","Barangay 152","Barangay 153","Barangay 154","Barangay 155","Barangay 156","Barangay 157","Barangay 158","Barangay 159","Barangay 160","Barangay 161","Barangay 162","Barangay 163","Barangay 164","Barangay 165","Barangay 166","Barangay 167","Barangay 168","Barangay 169","Barangay 170","Barangay 171","Barangay 172","Barangay 173","Barangay 174","Barangay 175","Barangay 176","Barangay 177","Barangay 178","Barangay 179","Barangay 180","Barangay 181","Barangay 182","Barangay 183","Barangay 184","Barangay 185","Barangay 186","Barangay 187","Barangay 188"],"Valenzuela City":["Arkong Bato","Bagbaguin","Balangkas","Bignay","Bisig","Canumay East","Canumay West","Coloong","Dalandanan","Hen. T. De Leon","Isla","Karuhatan","Lawang Bato","Lingunan","Mabolo","Malanday","Malinta","Mapulang Lupa","Marulas","Maysan","Palasan","Parada","Pariancillo Villa","Paso De Blas","Pasolo","Poblacion","Pulo","Punturin","Rincon","Tagalag","Ugong","Viente Reales","Wawang Pulo"],"Malabon City":["Acacia","Baritan","Bayan-Bayanan","Catmon","Concepcion","Dampalit","Flores","Hulong Duhat","Ibaba","Longos","Maysilo","Muzon","Niugan","Panghulo","Potrero","San Agustin","Santolan","Tañong (Pob.)","Tinajeros","Tonsuya","Tugatog"],"Navotas City":["Bagumbayan North","Bagumbayan South","Bangculasi","Daanghari","Navotas East","Navotas West","Nbbs Dagat-Dagatan","Nbbs Kaunlaran","Nbbs Proper","North Bay Blvd., North","San Jose (Pob.)","San Rafael Village","San Roque","Sipac-Almacen","Tangos North","Tangos South","Tanza 1","Tanza 2"],"Taguig City":["Bagumbayan","Bambang","Calzada","Central Bicutan","Central Signal Village","Fort Bonifacio","Hagonoy","Ibayo-Tipas","Katuparan","Ligid-Tipas","Lower Bicutan","Maharlika Village","Napindan","New Lower Bicutan","North Daang Hari","North Signal Village","Palingon","Pinagsama","San Miguel","Santa Ana","South Daang Hari","South Signal Village","Tanyag","Tuktukan","Upper Bicutan","Ususan","Wawa","Western Bicutan"]};
+
+  const $ = (id) => document.getElementById(id);
+  const form = $("ffForm");
+  const radios = (name) => Array.from(form.querySelectorAll('input[name="' + name + '"]'));
+  const val = (name) => { const r = radios(name).find((x) => x.checked); return r ? r.value : ""; };
+
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3000);
+  }
+
+  /* ---------- order ref + date (from the earlier steps when available) ---------- */
+  let flow = null;
+  try { flow = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+  let saved0 = null; try { saved0 = JSON.parse(localStorage.getItem(FF_KEY) || "null"); } catch (e) {}
+  if (REQUIRE_CONFIRMED && !(flow && flow.status === "confirmed") && !(location.hash === "#receipt" && saved0)) { location.replace("Customer_Orders.html#orders"); return; }
+  if (flow && flow.ref) $("orderRef").textContent = String(flow.ref).replace(/^#/, "");
+    const pad2 = (n) => String(n).padStart(2, "0");
+  const iso = (d) => d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  const qDate = new URLSearchParams(location.search).get("date") || (flow && flow.date) || "";
+  let dDate = new Date(/^\d{4}-\d{2}-\d{2}$/.test(qDate) ? qDate + "T00:00:00" : NaN);
+  if (isNaN(dDate)) dDate = new Date(2026, 10, 1);   // demo fallback: Nov. 01, 2026
+  $("dateLabel").textContent = dDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+  /* ================= VALIDATION (same rules as the Weekly-Availability / Register pages) ================= */
+  // Real Philippine mobile prefixes
+  const VALID_PREFIXES = new Set([
+    "0904","0905","0906","0907","0908","0909","0910","0911","0912","0913","0914","0915","0916","0917","0918","0919",
+    "0920","0921","0922","0923","0924","0925","0926","0927","0928","0929","0930","0931","0932","0933","0934","0935",
+    "0936","0937","0938","0939","0940","0941","0942","0943","0944","0945","0946","0947","0948","0949","0950","0951",
+    "0953","0954","0955","0956","0961","0963","0965","0966","0967","0968","0969","0970","0973","0974","0975","0976",
+    "0977","0978","0979","0981","0989","0991","0992","0993","0994","0995","0996","0997","0998","0999"
+  ]);
+  function hasRun(str, n) {
+    let up = 1, down = 1;
+    for (let i = 1; i < str.length; i++) {
+      const diff = str.charCodeAt(i) - str.charCodeAt(i - 1);
+      up = diff === 1 ? up + 1 : 1; down = diff === -1 ? down + 1 : 1;
+      if (up >= n || down >= n) return true;
+    }
+    return false;
+  }
+  function isFakeNumber(d) {
+    const rest = d.slice(2);
+    return new Set(rest).size < 3 || /(\d)\1{4,}/.test(d.slice(4)) || /^(\d{2,3})\1{2,}/.test(rest) || hasRun(d.slice(4), 6);
+  }
+  // numbers only, must start with 09, max 11 digits (pasted +63 / 63 numbers are converted to 09...)
+  function cleanPhone(raw) {
+    let d = raw.replace(/\D/g, "");
+    if (d.startsWith("63")) d = "0" + d.slice(2);
+    else if (d.length === 10 && d[0] === "9") d = "0" + d;
+    if (d.length >= 1 && d[0] !== "0") d = "";
+    if (d.length >= 2 && d[1] !== "9") d = d.slice(0, 1);
+    return d.slice(0, 11);
+  }
+  const NAME_RE = /^\p{L}+(?: \p{L}+)*$/u;
+  const ADDR_RE = /^[\p{L}\p{N} .,#\-\/'()&]+$/u;
+
+  const rules = {
+    name(v) {
+      if (!v) return "Enter the recipient's name.";
+      if (!NAME_RE.test(v)) return "Letters only. No numbers or special characters.";
+      if (v.replace(/ /g, "").length < 2) return "That is too short.";
+    },
+    phone(v) {
+      if (!v) return "Enter the mobile number.";
+      if (!/^\d+$/.test(v)) return "Use numbers only.";
+      if (!v.startsWith("09")) return "Number must start with 09.";
+      if (v.length < 11) return "Number must be 11 digits.";
+      if (!VALID_PREFIXES.has(v.slice(0, 4)) || isFakeNumber(v)) return "Enter a real mobile number.";
+    },
+    address(v) {
+      if (!v) return "Enter the street address, house/unit no. or landmark.";
+      if (!ADDR_RE.test(v)) return "Remove special characters. Use letters, numbers and . , # - / only.";
+      if (!/\p{L}/u.test(v)) return "Address needs a street, village or landmark name.";
+      if (v.length < 5) return "That address is too short.";
+    },
+    barangay(v) {
+      if (!$("city").value) return "Select a City / Municipality first.";
+      if (!v) return "Select a Barangay / District.";
+      if (!(BRGY[$("city").value] || []).includes(v)) return "Pick a barangay from the list.";
+    },
+    city(v) { if (!v) return "Select a City / Municipality."; },
+    notes(v) { if (v.length > 200) return "Keep instructions to 200 characters or less."; }
+  };
+  const getVal = (id) => {
+    const v = $(id).value;
+    return id === "city" || id === "barangay" ? v : v.trim().replace(/\s+/g, " ");
+  };
+  function check(id) {
+    const msg = rules[id](getVal(id));
+    $(id + "-err").textContent = msg || "";
+    $(id).setAttribute("aria-invalid", msg ? "true" : "false");
+    return !msg;
+  }
+
+  /* typing filters: only the right characters can be typed or pasted */
+  const FILTERS = {
+    name: (v) => v.replace(/[^\p{L} ]/gu, "").replace(/^ +/, "").replace(/ {2,}/g, " "),
+    phone: cleanPhone,
+    address: (v) => v.replace(/[^\p{L}\p{N} .,#\-\/'()&]/gu, "").replace(/^ +/, "").replace(/ {2,}/g, " "),
+    notes: (v) => v.replace(/[<>]/g, "").replace(/^\s+/, "")
+  };
+  form.querySelectorAll("[data-f]").forEach((inp) => {
+    inp.addEventListener("input", () => {
+      const c = FILTERS[inp.dataset.f](inp.value);
+      if (c !== inp.value) inp.value = c;
+      if (inp.getAttribute("aria-invalid") === "true") check(inp.id);
+    });
+    inp.addEventListener("blur", () => { if (inp.value) check(inp.id); });
+  });
+  // block non-digit keys in the mobile field (paste is handled by the filter above)
+  $("phone").addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey || e.key.length > 1) return;
+    if (!/^\d$/.test(e.key)) e.preventDefault();
+  });
+  // Barangay list fills in after the city is chosen (like the Shopee address picker)
+  function fillBarangays() {
+    const sel = $("barangay"), list = BRGY[$("city").value] || [];
+    sel.innerHTML = "";
+    const ph = document.createElement("option");
+    ph.value = ""; ph.selected = true; ph.disabled = true;
+    ph.textContent = list.length ? "Select Barangay" : "Select City first";
+    sel.appendChild(ph);
+    list.forEach((b) => { const o = document.createElement("option"); o.value = b; o.textContent = b; sel.appendChild(o); });
+    sel.disabled = $("delivery").classList.contains("off") || !list.length;
+    sel.setAttribute("aria-invalid", "false"); $("barangay-err").textContent = "";
+  }
+  $("city").addEventListener("change", () => { check("city"); fillBarangays(); updateMap(); });
+  $("barangay").addEventListener("change", () => { check("barangay"); updateMap(); });
+
+  /* ================= CARD STATE ================= */
+  const KM = {
+    "Caloocan City": 3, "Malabon City": 6, "Navotas City": 7, "Valenzuela City": 9, "Manila City": 12, "Quezon City": 14,
+    "San Juan City": 15, "Mandaluyong City": 17, "Makati City": 20, "Marikina City": 20, "Pasig City": 21, "Pasay City": 22,
+    "Taguig City": 27, "Parañaque City": 28, "Las Piñas City": 32, "Muntinlupa City": 36
+  };
+
+  function paint() {
+    form.querySelectorAll(".opt").forEach((o) => {
+      const i = o.querySelector("input");
+      o.classList.toggle("selected", i.checked);
+    });
+  }
+  function setGroup(card, name, enabled) {
+    card.classList.toggle("disabled", !enabled);
+    card.setAttribute("aria-disabled", String(!enabled));
+    radios(name).forEach((r) => { r.disabled = !enabled; if (!enabled) r.checked = false; });
+  }
+  function setAddr(on, reason) {
+    $("delivery").classList.toggle("off", !on);
+    $("addrFields").querySelectorAll("input,select,textarea").forEach((el) => {
+      el.disabled = !on || (el.id === "barangay" && !$("city").value);
+      if (!on) { el.setAttribute("aria-invalid", "false"); const e = $(el.id + "-err"); if (e) e.textContent = ""; }
+    });
+    const n = $("addrOff");
+    n.hidden = on; n.textContent = on ? "" : reason;
+  }
+
+  function sync() {
+    const method = val("method");
+    const courier = method === "courier";
+    setGroup($("orgCard"), "organizer", courier);
+    if (courier && !val("organizer")) radios("organizer")[0].checked = true;      // default: booked by the shop
+    const shopBooked = courier && val("organizer") === "shop";
+    setGroup($("courierCard"), "courier", shopBooked);
+    if (shopBooked && !val("courier")) radios("courier")[0].checked = true;       // default: Grab Express
+    $("organizer-err").textContent = ""; $("courier-err").textContent = ""; $("method-err").textContent = "";
+
+    // The shop only needs an address when the shop delivers or books the courier
+    const needAddr = method === "shop" || shopBooked;
+    if (needAddr) setAddr(true);
+    else if (method === "pickup") setAddr(false, "Self pick-up: no delivery address needed. Please arrive within your selected time window.");
+    else setAddr(false, "You will book the courier yourself, so no delivery address is needed here.");
+
+    $("winLabel").firstChild.textContent = method === "pickup" ? "Select pick-up arrival time window (" : "Select delivery arrival time window (";
+
+    // Designated vehicle
+    let v = "Courier";
+    if (method === "shop") v = "Shop's Car";
+    else if (method === "pickup") v = "No Delivery Vehicle";
+    else if (shopBooked) v = val("courier") || "Courier";
+    $("mVehicle").textContent = v;
+    paint(); updateMap();
+  }
+
+  function updateMap() {
+    const method = val("method");
+    const active = method === "shop" || (method === "courier" && val("organizer") === "shop");
+    const b = $("barangay").value.trim(), c = $("city").value;
+    $("mapLocation").textContent = (b || "Barangay") + ", " + (c || "City");
+    const km = active && c ? KM[c] : null;
+    $("mDist").textContent = km ? km.toFixed(1) : "";
+    $("mTime").textContent = km ? Math.round(km * 2.2 + 5) + " – " + Math.round(km * 3 + 10) : "";
+  }
+
+  form.addEventListener("change", (e) => { if (e.target.type === "radio") sync(); });
+  $("dvToggle").addEventListener("click", () => {
+    const open = $("dvToggle").getAttribute("aria-expanded") !== "true";
+    $("dvToggle").setAttribute("aria-expanded", String(open));
+    $("dvBody").hidden = !open;
+  });
+
+  /* ================= SUBMIT ================= */
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    $("proceed-err").textContent = "";
+    const bad = [];
+    const method = val("method");
+    if (!method) { $("method-err").textContent = "Choose a fulfillment method."; bad.push(radios("method")[0]); }
+
+    if (method === "courier") {
+      if (!val("organizer")) { $("organizer-err").textContent = "Choose who will book the courier."; bad.push(radios("organizer")[0]); }
+      else if (val("organizer") === "shop" && !val("courier")) { $("courier-err").textContent = "Choose a courier."; bad.push(radios("courier")[0]); }
+    }
+    if (!$("delivery").classList.contains("off")) {
+      ["name", "phone", "address", "city", "barangay", "notes"].forEach((id) => { if (!check(id)) bad.push($(id)); });
+    }
+    if (!val("window")) { $("window-err").textContent = "Choose an arrival time window."; bad.push(radios("window")[0]); }
+    else $("window-err").textContent = "";
+
+    if (bad.length) {
+      if ($("dvBody").hidden) $("dvToggle").click();
+      bad[0].focus({ preventScroll: true });
+      bad[0].scrollIntoView({ behavior: "smooth", block: "center" });
+      $("proceed-err").textContent = "Please fix the highlighted fields.";
+      return;
+    }
+
+    const data = {
+      method: method, organizer: val("organizer"), courier: val("courier"), window: val("window"),
+      name: getVal("name"), phone: getVal("phone"), address: getVal("address"), barangay: getVal("barangay"),
+      city: getVal("city"), notes: getVal("notes"), ref: $("orderRef").textContent
+    };
+        Object.assign(data, orderInfo());
+    try { localStorage.setItem(FF_KEY, JSON.stringify(data)); } catch (err) {}
+    saveOrder(data);               // demo: also saves it to My Orders
+    location.hash = "receipt";     // opens the receipt view
+  });
+
+  // Message Support opens the Messages page with a chat about this order
+  $("supportLink").href = "Weekly-Availability.html?support=" + encodeURIComponent($("orderRef").textContent) + "&topic=fulfillment#messages";
+
+    /* ================= RECEIPT + SAVE TO MY ORDERS (demo) ================= */
+  const ORDERS_KEY = "rr_orders";
+  const MON = ["Jan.","Feb.","Mar.","Apr.","May","June","July","Aug.","Sept.","Oct.","Nov.","Dec."];
+  const METHOD = { shop: "Shop-Owned Delivery", courier: "Third-Party Courier", pickup: "Self Store Pick-Up" };
+  const DEMO_ORDER = { title: "2-Tier Custom Birthday Cake", occasion: "Birthday", total: 15000,
+    style: 'Birthday Cake (2 Tier - 5" x 6", 3 Layers) \u2014 Chocolate Moist Cake base with Chocolate Frosting and Vanilla Filling.' };
+  const fmtDate = (s) => { const p = String(s).split("-").map(Number); return MON[p[1] - 1] + " " + pad2(p[2]) + ", " + p[0]; };
+  const fmtPhone = (p) => String(p).replace(/^(\d{4})(\d{3})(\d{4})$/, "$1 $2 $3");
+  const peso = (n) => "\u20B1" + Number(n).toLocaleString("en-PH");
+  const fromFlow = (k, d) => (flow && flow[k]) || d;
+  const userName = () => (RR.user && RR.user.name) || "Lia Norman";
+
+  function orderInfo() {
+    return { title: fromFlow("title", DEMO_ORDER.title), occasion: fromFlow("occasion", DEMO_ORDER.occasion),
+      total: Number(fromFlow("total", DEMO_ORDER.total)), style: fromFlow("style", DEMO_ORDER.style),
+      orderDate: iso(new Date()), deliveryDate: iso(dDate) };
+  }
+
+  function saveOrder(d) {   // newest order first; Customer_Orders.html reads "rr_orders"
+    const ref = String(d.ref).replace(/^#/, "");
+    const id = ref.replace(/^RR-?/i, "RR-");
+    const order = { order_id: Number(ref.replace(/\D/g, "")) || Date.now(), id: id, title: d.title, customer: userName(),
+      occasion: d.occasion, total: d.total, due: fmtDate(d.deliveryDate), status: "Quotation in Progress",
+      href: "Customer-Fulfillment.html#receipt" };
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]"); } catch (e) {}
+    list = [order].concat(list.filter((o) => o.id !== id));
+    try { localStorage.setItem(ORDERS_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  const row = (k, v) => '<div class="rc-row"><dt>' + k + "</dt><dd>" + RR.esc(v) + "</dd></div>";
+  function renderReceipt(d) {
+    const delivering = d.method === "shop" || (d.method === "courier" && d.organizer === "shop");
+    $("rcOrder").innerHTML = row("Order Number", String(d.ref).replace(/^#/, "")) + row("Order Date", fmtDate(d.orderDate)) +
+      row("Order Total", peso(d.total)) + row("Delivery Date", fmtDate(d.deliveryDate));
+    $("rcStyle").textContent = d.style;
+    const r = [];
+    r.push(row("Name", d.name || userName()));
+    r.push(row("Contact Number", d.phone ? fmtPhone(d.phone) : "\u2014"));
+    r.push(row("Address", delivering ? [d.address, d.barangay, d.city].filter(Boolean).join(", ")
+      : d.method === "pickup" ? "R&R Sweet Bites, Caloocan City (store pick-up)" : "Set by you when booking the courier"));
+    r.push(row("Delivery Method", METHOD[d.method] || ""));
+    if (d.method === "courier") {
+      r.push(row("Booking Organizer", d.organizer === "shop" ? "Booked By The Shop" : "Booked By The Customer"));
+      if (d.organizer === "shop" && d.courier) r.push(row("Courier", d.courier));
+    }
+    r.push(row("Arrival Window", d.window));
+    $("rcDelivery").innerHTML = r.join("");
+  }
+
+  function showView() {
+    let s = null; try { s = JSON.parse(localStorage.getItem(FF_KEY) || "null"); } catch (e) {}
+    const rc = location.hash === "#receipt" && s && s.orderDate;
+    $("viewForm").hidden = !!rc;
+    $("viewReceipt").hidden = !rc;
+    if (rc) renderReceipt(s);
+    document.title = (rc ? "Order Quotation in Progress" : "Fulfillment & Delivery Method") + " | R&R Sweet Bites";
+    window.scrollTo({ top: 0 });
+  }
+    /* DEMO ONLY: stands in for the owner pressing "Send Quotation". Delete once the backend does this. */
+  $("simQuote").addEventListener("click", () => {
+    let s = null, f = null, list = [];
+    try { s = JSON.parse(localStorage.getItem(FF_KEY) || "null"); } catch (e) {}
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    try { list = JSON.parse(localStorage.getItem(ORDERS_KEY) || "[]"); } catch (e) {}
+    f = f || {};
+    const ref = String((s && s.ref) || f.ref || "").replace(/^#/, "");
+    const orderId = Number(ref.replace(/\D/g, "")) || "";
+    f.quoted = true; f.quoteRead = false; f.orderId = orderId;
+    try { localStorage.setItem("rr_flow", JSON.stringify(f)); } catch (e) {}
+
+    // My Orders row becomes "Review Quotation" and opens the quotation page
+    const o = list.find((x) => String(x.order_id) === String(orderId));
+    if (o) {
+      o.status = "Quoted"; o.quotation_status = "pending";
+      o.href = "quotation-accept.html?order=" + encodeURIComponent(orderId);
+      try { localStorage.setItem(ORDERS_KEY, JSON.stringify(list)); } catch (e) {}
+    }
+    RR.refresh();
+    toast("The owner sent your quotation. Click the bell to open it.");
+  });
+  addEventListener("hashchange", showView);
+
+  sync();
+  showView();
+  RR.ready.then(showView);
+})();
+</script>
+</body>
+</html>

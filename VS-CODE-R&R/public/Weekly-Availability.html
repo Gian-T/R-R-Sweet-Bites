@@ -166,6 +166,32 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     { type: "message", title: "New Message From R&R Sweet Bites", text: "The shop replied to your message.", unread: false }
   ];
 
+    /* Demo flow: Custom-Cake-Request.html saves "rr_flow" when a request is submitted */
+  function flowNotifs() {
+  let f = null;
+  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+  if (!f) return null;
+  const ok = f.status === "confirmed";
+  const list = [];
+  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
+    list.push({
+      type: "quote",
+      title: "Quotation Ready",
+      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+      unread: !f.quoteRead,
+      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+    });
+  }
+  list.push({
+    type: "order",
+    title: ok ? "Order Confirmed" : "Order Request Submitted",
+    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+    unread: f.readStatus !== f.status,
+    href: "Custom-Cake-Request.html#status"
+  });
+  return list;
+}
+
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   if (ACTIVE === "submit") { PAGE.gallery = "Customer_Orders.html#gallery"; PAGE.orders = "Customer_Orders.html#orders"; PAGE.notifications = "Customer_Orders.html#notifications"; PAGE.submit = "#request"; PAGE.messages = "#messages"; PAGE.settings = "#account"; }   // this page also holds Messages
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -224,6 +250,8 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
   .rr-notif-head a{font-size:.72rem;color:#D27685;text-decoration:none}
   .rr-notif-head a:hover{text-decoration:underline}
   .rr-n{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0}
+  a.rr-n{text-decoration:none;color:inherit;border-radius:6px;margin:0 -6px;padding:7px 6px;transition:background .15s}
+  a.rr-n:hover{background:#F8EBE3}
   .rr-n small{display:block;font-size:.62rem;color:#666;font-weight:500}
   .rr-n span{font-size:.7rem;font-weight:600;color:#382325;letter-spacing:.2px}
   .rr-n i{width:8px;height:8px;border-radius:50%;background:#D27685;flex:none}
@@ -244,8 +272,10 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     let tools;
     if (user) {
       const unread = RR.notifs.filter((n) => n.unread).length;
-      const items = RR.notifs.slice(0, 3).map((n) =>
-        '<div class="rr-n"><div><small>' + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "") + "</div>").join("");
+        const items = RR.notifs.slice(0, 3).map((n) => {
+        const inner = "<div><small>" + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "");
+        return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
+      }).join("");
       tools =
         '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
@@ -308,7 +338,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
 
       if (DEMO_MODE) {
         RR.user = { name: DEMO_USER.name };
-        RR.notifs = DEMO_NOTIFS;
+        RR.notifs = flowNotifs() || DEMO_NOTIFS;
       } else {
         try { const me = await getJSON(API.me); if (me && me.ok) RR.user = { name: me.name }; } catch (e) {}
         if (RR.user) {
@@ -347,33 +377,6 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
         </div>
       </div>
 
-      <?php if (!empty($_SESSION['admin_id'])): ?>
-        <section class="availability-admin" aria-labelledby="availability-admin-title">
-          <h3 id="availability-admin-title">Manage Weekly Availability</h3>
-          <form id="availability-admin-form">
-            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
-            <label>
-              Week starts
-              <input type="date" id="week-start-date" name="week_start_date" value="<?= (new DateTimeImmutable('monday this week'))->format('Y-m-d') ?>" required>
-            </label>
-            <label>
-              Week ends
-              <input type="date" id="week-end-date" name="week_end_date" value="<?= (new DateTimeImmutable('monday this week'))->modify('+6 days')->format('Y-m-d') ?>" readonly required>
-            </label>
-            <label>
-              Availability
-              <select name="status" required>
-                <option value="open">Open</option>
-                <option value="closed">Closed</option>
-                <option value="fully_booked">Fully booked</option>
-              </select>
-            </label>
-            <button class="btn" type="submit">Save week</button>
-          </form>
-          <p class="availability-message" id="availability-message" role="status" aria-live="polite"></p>
-        </section>
-      <?php endif; ?>
-
       <div class="grid" id="calendar-grid"></div>
 
       <div class="cal-foot">
@@ -388,6 +391,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
 
   <!-- ===== VIEW 2: MESSAGES ===== -->
   <section id="viewMessages" hidden>
+    <a class="back-btn" id="msgBack" href="Customer_Orders.html#orders">Back</a>
     <h1 class="title">Messages</h1>
     <p class="sub">Chat with the shop about cake requests, quotations, revisions, and order concerns.</p>
     <div class="chat">
@@ -583,7 +587,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     // safety check: never continue with a missing, past or fully booked date
     if (!sel || new Date(sel.year, sel.month, sel.date) < todayStart || dayInfo(sel.year, sel.month, sel.date).status === "booked") { toast("Please pick an available date first."); return; }
     const date = sel.year + "-" + pad(sel.month + 1) + "-" + pad(sel.date);
-    window.location.href = "../public/Custom-Cake-Request.php?preferred_date=" + encodeURIComponent(date);
+    window.location.href = "Custom-Cake-Request.html?preferred_date=" + encodeURIComponent(date);
   });
 
   /* Admin "Manage Weekly Availability" form (only appears when PHP shows it) */
@@ -676,6 +680,8 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     } catch (err) { toast(err.message || "Message could not be sent."); }
     finally { $("sendBtn").disabled = false; }
   }
+  // Back: return to the page the customer came from (falls back to My Orders if there is no history)
+  $("msgBack").addEventListener("click", (e) => { if (history.length > 1) { e.preventDefault(); history.back(); } });
   $("sendBtn").addEventListener("click", () => send(null));
   $("msgInput").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); send(null); } });
   $("attachBtn").addEventListener("click", () => $("fileInput").click());
@@ -908,6 +914,19 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     convos = await loadConvos();
     activeId = convos.length ? convos[0].id : null;
     renderList(); renderThread();
+
+    // Message Support (from the Fulfillment page): ?support=RR2026025 opens a chat about that order
+    // and sends the first message automatically.
+    const sp = new URLSearchParams(location.search);
+    const supOrder = (sp.get("support") || "").replace(/[^A-Za-z0-9-]/g, "").slice(0, 30);
+    if (supOrder) {
+      let c = convos.find((x) => x.id === supOrder);
+      if (!c) { c = { id: supOrder, messages: [] }; convos.unshift(c); }
+      activeId = c.id; renderList(); renderThread();
+      history.replaceState(null, "", location.pathname + "#messages");   // so a refresh doesn't send it twice
+      $("msgInput").value = "Hi R&R Sweet Bites! I need help with my order " + supOrder + (sp.get("topic") === "fulfillment" ? " (Fulfillment & Delivery Method)." : ".");
+      await send(null);
+    }
     await loadAccount();
     await renderCalendar(year, month);
     showView();
