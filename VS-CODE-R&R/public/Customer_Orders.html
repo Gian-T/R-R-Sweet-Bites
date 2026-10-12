@@ -61,6 +61,9 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
 .nt h3{font-family:'Jost',sans-serif;font-weight:500;font-size:.95rem;color:var(--deep);margin-bottom:8px}
 .nt.unread h3{font-weight:600}
 .nt-msg{border:1px solid #EBD9D3;border-radius:5px;padding:5px 10px;font-size:.8rem;color:var(--muted);min-width:min(100%,290px)}
+a.nt{text-decoration:none;color:inherit}
+.nt.link{cursor:pointer;transition:transform .2s,box-shadow .2s}
+.nt.link:hover{transform:translateX(3px);box-shadow:0 8px 22px rgba(217,125,138,.22)}
 
 
 @media(max-width:760px){
@@ -410,6 +413,32 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
     { type: "message", title: "New Message From R&R Sweet Bites", text: "The shop replied to your message.", unread: false }
   ];
 
+    /* Demo flow: Custom-Cake-Request.html saves "rr_flow" when a request is submitted */
+  function flowNotifs() {
+  let f = null;
+  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+  if (!f) return null;
+  const ok = f.status === "confirmed";
+  const list = [];
+  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
+    list.push({
+      type: "quote",
+      title: "Quotation Ready",
+      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+      unread: !f.quoteRead,
+      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+    });
+  }
+  list.push({
+    type: "order",
+    title: ok ? "Order Confirmed" : "Order Request Submitted",
+    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+    unread: f.readStatus !== f.status,
+    href: "Custom-Cake-Request.html#status"
+  });
+  return list;
+}
+
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   if (ACTIVE === "orders") { PAGE.orders = "#orders"; PAGE.notifications = "#notifications"; PAGE.gallery = "#gallery"; }   // same page, no reload
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -468,6 +497,8 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
   .rr-notif-head a{font-size:.72rem;color:#D27685;text-decoration:none}
   .rr-notif-head a:hover{text-decoration:underline}
   .rr-n{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0}
+  a.rr-n{text-decoration:none;color:inherit;border-radius:6px;margin:0 -6px;padding:7px 6px;transition:background .15s}
+  a.rr-n:hover{background:#F8EBE3}
   .rr-n small{display:block;font-size:.62rem;color:#666;font-weight:500}
   .rr-n span{font-size:.7rem;font-weight:600;color:#382325;letter-spacing:.2px}
   .rr-n i{width:8px;height:8px;border-radius:50%;background:#D27685;flex:none}
@@ -488,8 +519,10 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
     let tools;
     if (user) {
       const unread = RR.notifs.filter((n) => n.unread).length;
-      const items = RR.notifs.slice(0, 3).map((n) =>
-        '<div class="rr-n"><div><small>' + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "") + "</div>").join("");
+        const items = RR.notifs.slice(0, 3).map((n) => {
+        const inner = "<div><small>" + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "");
+        return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
+      }).join("");
       tools =
         '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
@@ -552,7 +585,7 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
 
       if (DEMO_MODE) {
         RR.user = { name: DEMO_USER.name };
-        RR.notifs = DEMO_NOTIFS;
+        RR.notifs = flowNotifs() || DEMO_NOTIFS;
       } else {
         try { const me = await getJSON(API.me); if (me && me.ok) RR.user = { name: me.name }; } catch (e) {}
         if (RR.user) {
@@ -674,7 +707,13 @@ const pad = n => String(n).padStart(2, '0');
 let orders = [], shown = PAGE_SIZE;
 
 async function loadOrders() {
-  if (DEMO_MODE) return new URLSearchParams(location.search).has('empty') ? [] : DEMO_ORDERS;
+  if (DEMO_MODE) {
+    if (new URLSearchParams(location.search).has('empty')) return [];
+    let mine = [];
+    try { mine = JSON.parse(localStorage.getItem('rr_orders') || '[]'); } catch (e) {}
+    const ids = new Set(mine.map(o => o.id));
+    return [...mine, ...DEMO_ORDERS.filter(o => !ids.has(o.id))];   // newest order on top
+  }
   try {
     const d = await (await fetch('../api/orders.php', {credentials:'same-origin'})).json();
     if (d && d.error) { console.error('orders.php error:', d.error); return []; }
@@ -702,8 +741,8 @@ function renderList() {
 
   $('#list').innerHTML = rows.slice(0, shown).map(o => {
     const quoted = o.quotation_status === 'pending' && o.status === 'Quoted';
-    const href = quoted ? `quotation-accept.html?order=${encodeURIComponent(o.order_id)}`
-                        : `customer-orders-PaymentAndBalance.html?order=${encodeURIComponent(o.order_id)}`;
+        const href = o.href || (quoted ? `quotation-accept.html?order=${encodeURIComponent(o.order_id)}`
+                                   : `customer-orders-PaymentAndBalance.html?order=${encodeURIComponent(o.order_id)}`);
     const badge = quoted ? '<span class="badge review">Review Quotation \u203A</span>'
                          : `<span class="badge ${badgeClass(o.status)}">${esc(o.status)}</span>`;
     return `<a class="order" href="${href}">
@@ -738,8 +777,13 @@ let nShown = 4;
 function renderNotifs() {
   $('#nMore').hidden = RR.notifs.length <= nShown;
   $('#nList').innerHTML = RR.notifs.length
-    ? RR.notifs.slice(0, nShown).map(n => '<article class="nt' + (n.unread ? ' unread' : '') + '"><span class="nt-ic">' + RR.notifIcon(n.type) + '</span>' +
-        '<div class="nt-body"><h3>' + RR.esc(n.title) + '</h3><div class="nt-msg">' + RR.esc(n.text) + '</div></div></article>').join('')
+    ? RR.notifs.slice(0, nShown).map(n => {
+        const tag = n.href ? 'a' : 'article';
+        return '<' + tag + (n.href ? ' href="' + RR.esc(n.href) + '"' : '') +
+          ' class="nt' + (n.unread ? ' unread' : '') + (n.href ? ' link' : '') + '">' +
+          '<span class="nt-ic">' + RR.notifIcon(n.type) + '</span>' +
+          '<div class="nt-body"><h3>' + RR.esc(n.title) + '</h3><div class="nt-msg">' + RR.esc(n.text) + '</div></div></' + tag + '>';
+      }).join('')
     : '<p class="none">No notifications yet.</p>';
 }
 $('#nMore').addEventListener('click', () => { nShown += 4; renderNotifs(); });

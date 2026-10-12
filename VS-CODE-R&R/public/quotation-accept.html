@@ -2,521 +2,547 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Quotation – R&amp;R Sweet Bites</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotation | R&amp;R Sweet Bites</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Platypi:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Platypi:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-:root {
-  --font-brand: 'Platypi', Georgia, serif;
-  --font-nav: 'Jost', system-ui, sans-serif;
-  --font-text: 'Jost', system-ui, sans-serif;
-  --font-header: 'Platypi', Georgia, serif;
+:root{--font-header:'Playfair Display',serif;--font-button:'Platypi',serif;--font-text:'Jost',sans-serif;
+  --bg-main:#FAF0E6;--bg-card:#FFF8F3;--primary:#D27685;--primary-hover:#BE5B6C;--dark:#382325;--muted:#88787A;
+  --line:#E58A97;--soft:#EFC9CE;--tile:#F8DCDD;--err:#B3362F}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-text);background:var(--bg-main);color:var(--dark);line-height:1.5;min-height:100vh;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+svg{display:block}
+.wrap{width:100%;max-width:1100px;margin:0 auto;padding:1.1rem 1.5rem 3rem;flex:1 0 auto}
+.back-btn{display:inline-block;margin-bottom:14px;padding:5px 14px;border-radius:8px;background:#DB7F8E;color:#fff;font:600 .72rem var(--font-button);text-decoration:none;transition:background .2s,transform .2s}
+.back-btn:hover{background:#cf6c7d;transform:translateX(-2px)}
+.state-msg{padding:60px 16px;text-align:center;color:var(--muted)}
 
-  --color-primary: #D27685;
-  --color-primary-hover: #BE5B6C;
-  --bg-main: #FAF0E6;
-  --bg-card: #FFFFFF;
-  --bg-placeholder: #F2D5D5;
-  --bg-footer: #ECCFCB;
-  --brand-icon-bg: #E8C3C3;
-  --color-border: #E0E0E0;
-  --color-text-dark: #382325;
-  --color-text-alt: #555555;
-  --color-text-muted: #666666;
+.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:1.6rem;align-items:start}
+.card{background:var(--bg-card);border:1.5px solid var(--line);border-radius:14px;padding:1.4rem 1.6rem}
+.top{display:flex;justify-content:space-between;align-items:center;gap:1rem}
+.tag{padding:2px 10px;border-radius:99px;background:var(--tile);border:1px solid var(--soft);color:var(--primary-hover);font:700 .55rem var(--font-text);letter-spacing:.4px}
+.tag.ok{background:#DDEBDA;border-color:#C5DAC1;color:#5E7F5B}
+.date{font-size:.62rem;color:var(--muted)}
+h1{font:700 1.9rem var(--font-header);margin-top:.7rem;line-height:1.2}
+.ref{font-size:.72rem;font-weight:600;color:var(--primary);margin-top:.15rem}
+hr{border:0;border-top:1px solid var(--soft);margin:1.1rem 0}
+h2{font:700 .95rem var(--font-header);margin-bottom:.8rem}
+.specs{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem}
+.spec{background:var(--tile);border:1px solid var(--soft);border-radius:8px;padding:.5rem .7rem}
+.spec small{display:block;font-size:.5rem;font-weight:600;letter-spacing:.4px;color:var(--muted);text-transform:uppercase}
+.spec b{display:block;font-size:.7rem;margin-top:.15rem}
+.table-wrap{border:1px solid var(--soft);border-radius:6px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:.68rem}
+th{background:var(--tile);font-size:.55rem;letter-spacing:.4px;text-align:right;padding:.5rem .8rem}
+td{padding:.5rem .8rem;border-top:1px solid var(--soft);text-align:right}
+th:first-child,td:first-child{text-align:left}
+tbody td:first-child{font-weight:600}
+tfoot td{background:var(--tile);font-weight:700;font-size:.78rem}
+.note{display:flex;gap:.5rem;align-items:center;font-size:.62rem;color:var(--muted);margin-top:.7rem}
+.note svg{width:14px;height:14px;color:var(--primary);flex:none}
+.rev label{display:block;font:700 .95rem var(--font-header);margin-bottom:.7rem}
+textarea{display:block;width:100%;min-height:90px;border:1.5px solid var(--line);border-radius:6px;padding:.6rem .8rem;background:#fff;font:400 .72rem var(--font-text);color:var(--dark);resize:vertical;outline:none}
+textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(210,118,133,.15)}
+textarea:disabled{background:#F5EFEB;cursor:not-allowed}
+.ferr{color:var(--err);font-size:.66rem;margin-top:.3rem}
+.acts{display:flex;justify-content:flex-end;gap:.7rem;margin-top:.9rem;flex-wrap:wrap}
+.btn{font:600 .75rem var(--font-button);padding:.55rem 1.5rem;border-radius:99px;cursor:pointer;border:1px solid var(--primary);transition:background .2s,color .2s}
+.btn.out{background:transparent;color:var(--primary)}
+.btn.out:hover:not(:disabled){background:var(--primary);color:#fff}
+.btn.fill{background:var(--primary);color:#fff}
+.btn.fill:hover:not(:disabled){background:var(--primary-hover)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
 
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-md: 1.1rem;
-  --text-lg: 1.35rem;
-  --text-xl: 1.6rem;
-  --text-2xl: 2rem;
-  --text-3xl: 2.5rem;
+aside{display:flex;flex-direction:column;gap:1rem}
+.side{background:var(--bg-card);border:1.5px solid var(--line);border-radius:14px;padding:1.1rem 1.3rem}
+.side h3{font:700 .95rem var(--font-header)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.3rem 0;font-size:.62rem;color:var(--muted)}
+.row b{color:var(--dark);font-weight:600}
+.pill{padding:1px 10px;border-radius:99px;background:var(--tile);border:1px solid var(--soft);font-size:.55rem;color:var(--primary-hover);font-weight:600}
+.expiry{display:flex;align-items:center;gap:.4rem;margin-top:.5rem;padding-top:.6rem;border-top:1px solid var(--soft);font-size:.6rem;color:var(--muted)}
+.expiry svg{width:13px;height:13px;color:var(--primary)}
+.who{display:flex;align-items:center;gap:.6rem}
+.ab{width:30px;height:30px;border-radius:50%;background:var(--tile);color:var(--primary);display:grid;place-items:center;flex:none}
+.ab svg{width:18px;height:18px}
+.side p{font-size:.64rem;color:var(--muted);margin-top:.6rem;line-height:1.45}
 
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 1rem;
-  --space-4: 1.2rem;
-  --space-5: 2rem;
-
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-pill: 20px;
-  --radius-full: 50%;
-
-  --shadow-sm: 0 2px 10px rgba(0,0,0,0.03);
-  --shadow-md: 0 4px 18px rgba(0,0,0,0.03);
-  --shadow-brand: 0 4px 10px rgba(210,118,133,0.2);
-  --shadow-brand-hover: 0 6px 15px rgba(210,118,133,0.35);
-  --shadow-focus: 0 0 0 3px rgba(210,118,133,0.15);
-
-  --status-error: #C65F62;
-  --status-pending: #D6A85F;
-  --status-ok: #829B7A;
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: var(--font-text);
-  color: var(--color-text-dark);
-  background: var(--bg-main);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  font-size: var(--text-base);
-}
-
-a { color: inherit; text-decoration: none; }
-
-.frame { width: 100%; max-width: 1100px; margin: 0 auto; }
-
-/* Navbar */
-.navbar {
-  position: sticky; top: 0; z-index: 1000;
-  background-color: var(--bg-main);
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 5%;
-  box-shadow: var(--shadow-sm);
-}
-.nav-brand { display: flex; align-items: center; gap: 12px; }
-.brand-icon { width: 40px; height: 40px; border-radius: var(--radius-full); background-color: var(--brand-icon-bg); object-fit: cover; }
-.brand-name { font-family: var(--font-brand); font-weight: 700; font-size: 1.35rem; color: var(--color-primary); letter-spacing: -0.2px; }
-.nav-links { display: flex; list-style: none; align-items: center; gap: 2rem; font-family: var(--font-nav); }
-.nav-links a { color: var(--color-text-dark); font-weight: 500; font-size: 1rem; transition: color .3s ease; padding-bottom: 4px; }
-.nav-links a:hover, .nav-links a.active { color: var(--color-primary); }
-.nav-links a.active { border-bottom: 2.5px solid var(--color-primary); font-weight: 600; }
-.nav-actions { display: flex; align-items: center; gap: 1.25rem; }
-.notification-wrapper { position: relative; cursor: pointer; display: flex; align-items: center; }
-.notification-icon { width: 24px; height: 24px; object-fit: contain; }
-.notification-badge { position: absolute; top: -5px; right: -6px; background: var(--color-primary); color: white; font-size: .65rem; font-weight: 700; width: 16px; height: 16px; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; }
-.user-avatar { width: 38px; height: 38px; border-radius: var(--radius-full); background: #E8CFCD; color: var(--color-text-dark); font-family: var(--font-nav); font-weight: 600; font-size: .9rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.menu-toggle { display: none; flex-direction: column; gap: 5px; padding: 5px; border: 0; background: transparent; cursor: pointer; }
-.menu-toggle span { width: 25px; height: 3px; background: var(--color-primary); border-radius: 2px; }
-
-/* Main */
-main { flex: 1; }
-main .frame { padding: 1.5rem var(--space-3) var(--space-5); }
-.breadcrumbs { margin-bottom: 1.25rem; color: var(--color-primary); font-size: var(--text-sm); font-weight: 500; }
-.breadcrumbs span { color: var(--color-text-muted); }
-
-.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-5); align-items: start; }
-@media (min-width: 900px) { .layout { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
-
-/* Card */
-.card { background: #FAF5F0; border-radius: 20px; padding: 2.25rem; border: 1px solid #EFE4DC; box-shadow: var(--shadow-sm); }
-.top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
-.tag { background: #FBF0E0; color: #D6A85F; font-size: 11px; font-weight: 700; letter-spacing: .05em; padding: .25rem .6rem; border-radius: var(--radius-pill); text-transform: uppercase; }
-.tag.ok { background: #E9EFE5; color: #5c8f63; }
-.tag.bad { background: #FBE9E9; color: #C65F62; }
-.date { font-size: var(--text-xs); color: var(--color-text-muted); font-weight: 500; }
-h1 { font-family: var(--font-header); font-size: var(--text-3xl); font-weight: 700; color: var(--color-text-dark); line-height: 1.2; }
-.ref { font-size: var(--text-sm); font-weight: 600; color: var(--color-primary); margin-top: .25rem; }
-hr { border: 0; border-top: 1px solid #EAE0D8; margin: 1.75rem 0; }
-h2 { font-family: var(--font-header); font-size: var(--text-md); font-weight: 600; color: var(--color-text-dark); margin-bottom: 1.25rem; }
-
-.specs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; }
-.spec { background: #FAF0E6; border-radius: var(--radius-md); padding: .75rem 1rem; }
-.spec small { display: block; font-size: 10px; font-weight: 700; letter-spacing: .06em; color: var(--color-text-muted); text-transform: uppercase; }
-.spec span { display: block; font-size: var(--text-sm); font-weight: 600; color: var(--color-text-dark); margin-top: .2rem; }
-
-.table-wrap { width: 100%; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-th { background: #F5E8E2; font-size: 11px; font-weight: 700; letter-spacing: .05em; color: var(--color-text-dark); text-transform: uppercase; text-align: right; padding: .6rem .75rem; }
-td { font-size: var(--text-sm); font-weight: 500; text-align: right; padding: .85rem .75rem; border-bottom: 1px solid #EAE0D8; }
-th:first-child, td:first-child { text-align: left; }
-
-.total { display: flex; justify-content: flex-end; align-items: center; gap: 3rem; margin-top: 1.25rem; padding-right: .75rem; }
-.total strong { font-size: var(--text-base); font-weight: 700; color: var(--color-text-dark); }
-.total span { font-family: var(--font-header); font-size: var(--text-xl); font-weight: 700; color: var(--color-primary); }
-
-.rev label { display: block; font-size: var(--text-sm); font-weight: 600; margin-bottom: .5rem; color: var(--color-text-dark); }
-textarea { display: block; width: 100%; min-height: 110px; border: 1px solid #E5D5CE; border-radius: var(--radius-md); padding: .85rem; font-family: var(--font-text); font-size: var(--text-sm); color: var(--color-text-dark); background: #FFFFFF; resize: vertical; }
-textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: var(--shadow-focus); }
-textarea:disabled { background: #F5F0EC; color: #999; }
-
-.rev-actions { display: flex; flex-direction: column; gap: var(--space-3); margin-top: 1rem; }
-@media (min-width: 600px) { .rev-actions { flex-direction: row; justify-content: space-between; align-items: center; } }
-.rev-actions p { font-size: 11px; color: var(--color-text-muted); }
-.btns { display: flex; gap: .75rem; }
-
-.btn { font-family: var(--font-brand); font-weight: 600; font-size: var(--text-sm); padding: .6rem 1.4rem; border-radius: var(--radius-pill); cursor: pointer; transition: all .15s ease-in-out; display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; }
-.btn.out { background: transparent; border-color: var(--color-primary); color: var(--color-primary); }
-.btn.out:hover:not(:disabled) { background: var(--bg-main); border-color: var(--color-primary-hover); color: var(--color-primary-hover); }
-.btn.fill { background: var(--color-primary); color: #FFFFFF; box-shadow: var(--shadow-brand); }
-.btn.fill:hover:not(:disabled) { background: var(--color-primary-hover); box-shadow: var(--shadow-brand-hover); }
-.btn:disabled { opacity: .55; cursor: not-allowed; }
-
-/* Sidebar */
-aside { display: flex; flex-direction: column; gap: 1rem; }
-.status { background: #FAF5F0; border: 1px solid #EFE4DC; border-radius: 16px; padding: 1.25rem 1.5rem; }
-.status h3 { font-family: var(--font-header); font-size: var(--text-md); font-weight: 700; color: var(--color-text-dark); }
-.status dl { margin-top: 1rem; }
-.row { display: flex; justify-content: space-between; align-items: center; padding: .35rem 0; font-size: var(--text-xs); color: var(--color-text-alt); }
-.row b { color: var(--color-text-dark); font-weight: 600; }
-.pill-badge { background: #F3E3D3; color: #A37233; font-size: 10px; font-weight: 600; padding: 2px 10px; border-radius: var(--radius-pill); }
-.expiry { display: flex; align-items: center; gap: .4rem; font-size: 11px; color: var(--color-text-alt); }
-.expiry .star { color: var(--color-primary); font-size: 12px; }
-.side { background: #FFFFFF; border: 1px solid #EFE4DC; border-radius: 16px; padding: 1.25rem 1.5rem; }
-.who { display: flex; align-items: center; gap: .75rem; }
-.ab { width: 2rem; height: 2rem; border-radius: var(--radius-full); background: #F2D5D5; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--color-text-dark); }
-.who h3 { font-size: var(--text-sm); font-family: var(--font-header); font-weight: 700; }
-.notes p { font-size: var(--text-xs); line-height: 1.4; color: var(--color-text-alt); margin-top: .75rem; }
-.terms summary { list-style: none; display: flex; justify-content: space-between; align-items: center; font-size: var(--text-xs); font-weight: 700; cursor: pointer; color: var(--color-text-dark); }
-.terms summary::-webkit-details-marker { display: none; }
-.terms summary::after { content: ""; width: 6px; height: 6px; border-right: 2px solid var(--color-primary); border-bottom: 2px solid var(--color-primary); transform: rotate(45deg); transition: transform .2s; }
-.terms[open] summary::after { transform: rotate(-135deg); }
-.terms p { font-size: 11px; line-height: 1.4; color: var(--color-text-muted); margin-top: .6rem; }
-
-/* Footer */
-footer { background: var(--bg-footer); text-align: center; padding: 1.5rem var(--space-3); margin-top: 3rem; }
-.flinks { display: flex; justify-content: center; align-items: center; gap: .75rem; font-size: 11px; font-weight: 600; color: var(--color-text-dark); }
-.flinks a { display: flex; align-items: center; gap: .3rem; }
-.flinks svg { width: 14px; height: 14px; }
-.flinks i { width: 1px; height: 12px; background: var(--color-text-dark); }
-.copy { margin-top: .4rem; font-size: 11px; color: var(--color-text-alt); }
-
-/* States */
-.state-msg { padding: 60px 16px; text-align: center; color: var(--color-text-muted); font-size: var(--text-base); }
-.ferr { color: var(--status-error); font-size: 12px; margin-top: 6px; }
-.ferr[hidden] { display: none; }
-
-@media (max-width: 768px) {
-  .menu-toggle { display: flex; }
-  .nav-links { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; gap: 1rem; padding: 1.25rem; background: var(--bg-main); box-shadow: var(--shadow-md); }
-  .nav-links.active { display: flex; }
-  .specs { grid-template-columns: 1fr; }
-}
+.toast{position:fixed;right:20px;bottom:20px;max-width:min(360px,calc(100vw - 40px));background:#4b403c;color:#fff;padding:.7rem 1rem;border-radius:8px;font-size:.8rem;opacity:0;transform:translateY(12px);pointer-events:none;transition:.25s;z-index:2000}
+.toast.show{opacity:1;transform:none}
+@media(max-width:860px){.layout{grid-template-columns:1fr}}
+@media(max-width:560px){.specs{grid-template-columns:1fr 1fr}h1{font-size:1.5rem}.wrap{padding:1rem 16px 2.5rem}.card{padding:1.1rem}}
+.cf-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:3000;opacity:0;pointer-events:none;transition:opacity .25s ease;padding:1rem}
+.cf-overlay.active{opacity:1;pointer-events:auto}
+.cf-box{background:#fff;padding:2rem 2rem 1.6rem;border-radius:20px;max-width:380px;width:100%;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,.15);transform:scale(.9);transition:transform .3s cubic-bezier(.175,.885,.32,1.275)}
+.cf-overlay.active .cf-box{transform:scale(1)}
+.cf-ico{width:56px;height:56px;border-radius:50%;background:#F3DEDF;color:var(--primary);display:grid;place-items:center;margin:0 auto 1rem}
+.cf-ico svg{width:28px;height:28px}
+.cf-box h3{font:700 1.3rem var(--font-header);margin-bottom:.4rem}
+.cf-box p{font-size:.85rem;color:var(--muted);margin-bottom:1.4rem;line-height:1.5}
+.cf-btns{display:flex;gap:.7rem}
+.cf-btns button{flex:1;padding:.7rem;border-radius:10px;font:600 .9rem var(--font-button);cursor:pointer;border:1px solid var(--primary);transition:background .2s,color .2s}
+.cf-ok{background:var(--primary);color:#fff}
+.cf-ok:hover{background:var(--primary-hover)}
+.cf-cancel{background:transparent;color:var(--primary)}
+.cf-cancel:hover{background:var(--primary);color:#fff}
 </style>
 </head>
 <body>
 
-<nav class="navbar">
-  <a href="Customer_Orders.html" class="nav-brand">
-    <img src="../Images-Icons/R&R Logo.jpg" alt="R&R Sweet Bites Logo" class="brand-icon">
-    <span class="brand-name">R&amp;R Sweet Bites</span>
-  </a>
-  <button class="menu-toggle" id="mobile-menu" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-list">
-    <span></span><span></span><span></span>
-  </button>
-  <ul class="nav-links" id="nav-list">
-    <li><a href="index.html">Home</a></li>
-    <li><a href="Cake-Gallery.html">Gallery</a></li>
-    <li><a href="Weekly-Availability.html">Submit Request</a></li>
-    <li><a href="Customer_Orders.html" class="active">My Order</a></li>
-    <li><a href="#messages">Messages</a></li>
-  </ul>
-  <div class="nav-actions">
-    <div class="notification-wrapper" title="Notifications" id="notificationBtn">
-      <img src="../Images-Icons/bell-icon.png" alt="Bell Icon" class="notification-icon">
-      <span class="notification-badge">2</span>
-    </div>
-    <div class="user-avatar" title="User Profile" id="clientAvatar">—</div>
-  </div>
-</nav>
+<!-- Shared header (logo, nav links, notification bell, account menu) -->
+<div id="site-header"></div>
 
-<main>
-  <div class="frame">
-    <div class="breadcrumbs">
-      My Orders / Quotation Detail / <span id="coverRef">#—</span>
-    </div>
+<script data-active="orders">
+/* R&R Sweet Bites - shared header + footer (same as Gallery / My Orders / Notifications) */
+(function () {
+  "use strict";
 
-    <p class="state-msg" id="loading">Loading quotation…</p>
+  /* ===== SETTINGS ===== */
+  // true  = preview as a logged-in customer (no backend needed)
+  // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
+  const DEMO_MODE = true;
+  const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
+  const PAGE = {
+    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
+    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.html#messages", notifications: "Customer_Orders.html#notifications",
+    settings: "Weekly-Availability.html#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+  };
+  const DEMO_USER = { name: "Lia Norman" };
+  const DEMO_NOTIFS = [
+    { type: "payment", title: "Payment Verified", text: "Your final payment was approved.", unread: true },
+    { type: "quote", title: "Quotation Updated", text: "Your quotation has new details. Please review it.", unread: true },
+    { type: "order", title: "Order Confirmed", text: "Your order request was approved.", unread: false },
+    { type: "message", title: "New Message From R&R Sweet Bites", text: "You have a new message about your order.", unread: false }
+  ];
 
-    <div class="layout" id="content" hidden>
-      <section class="card" aria-label="Quotation Details">
-        <div class="top-row">
-          <span class="tag" id="statusTag">—</span>
-          <span class="date">Date Issued: <span id="issuedAt">—</span></span>
-        </div>
-        <h1>Your Custom Cake Quotation</h1>
-        <div class="ref">Reference No: <span id="refNo">#—</span></div>
-        <hr>
-        <h2>Design Specifications Summary</h2>
-        <div class="specs">
-          <div>
-            <div class="spec" style="margin-bottom: 1rem;">
-              <small>Cake Type</small>
-              <span id="cakeType">—</span>
-            </div>
-            <div class="spec">
-              <small>Complexity</small>
-              <span id="complexity">—</span>
-            </div>
-          </div>
-          <div>
-            <div class="spec" style="margin-bottom: 1rem;">
-              <small>Preferred Delivery Date</small>
-              <span id="deliveryDate">—</span>
-            </div>
-            <div class="spec">
-              <small>Version</small>
-              <span id="versionNumber">—</span>
-            </div>
-          </div>
-        </div>
-        <hr>
-        <h2>Design Notes</h2>
-        <p id="designNotes" style="font-size: var(--text-sm); line-height: 1.6; color: var(--color-text-alt);">—</p>
-        <hr>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Description</th>
-                <th>Amount</th>
-              </tr>
-            </thead>
-            <tbody id="items">
-              <tr><td>Quoted total for your custom cake order</td><td id="lineTotal">₱0.00</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="total">
-          <strong>Total Amount</strong>
-          <span id="total">₱0.00</span>
-        </div>
-        <hr>
-        <form class="rev" id="revForm" novalidate>
-          <label for="rev" id="revLabel">Need adjustments? Request a Revision</label>
-          <textarea id="rev" name="message" maxlength="1000" placeholder='Ex: "Could we change the frosting to... "' aria-describedby="err-message"></textarea>
-          <p class="ferr" id="err-message" role="alert" hidden></p>
-          <div class="rev-actions">
-            <p>* Revisions usually re-estimate within 1 business day.</p>
-            <div class="btns">
-              <button class="btn out" type="button" id="btnRevision">Request Revision</button>
-              <button class="btn fill" type="button" id="btnAccept">Accept Quotation</button>
-            </div>
-          </div>
-        </form>
-      </section>
+  function flowNotifs() {
+  let f = null;
+  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+  if (!f) return null;
+  const ok = f.status === "confirmed";
+  const list = [];
+  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
+    list.push({
+      type: "quote",
+      title: "Quotation Ready",
+      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+      unread: !f.quoteRead,
+      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+    });
+  }
+  list.push({
+    type: "order",
+    title: ok ? "Order Confirmed" : "Order Request Submitted",
+    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+    unread: f.readStatus !== f.status,
+    href: "Custom-Cake-Request.html#status"
+  });
+  return list;
+}
 
-      <aside>
-        <div class="status">
-          <h3>Quotation Status</h3>
-          <dl>
-            <div class="row"><span>Reference ID</span><b id="referenceId">—</b></div>
-            <div class="row"><span>Client</span><b id="clientInitials">—</b></div>
-            <div class="row"><span>Status</span><span class="pill-badge" id="statusBadge">—</span></div>
-            <div class="row"><span>Requested Date</span><b id="requestedDate">—</b></div>
-          </dl>
-        </div>
+  const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const svg = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
+  const ICON = {
+    user: svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 18.6c1.2-2.4 3.6-3.6 6.2-3.6s5 1.2 6.2 3.6"/>'),
+    gear: svg('<circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>'),
+    star: svg('<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/>'),
+    out: svg('<path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/>'),
+    info: svg('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+    card: svg('<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="10" r="2.5"/><path d="M8 17c.8-1.6 2.2-2.4 4-2.4s3.2.8 4 2.4"/>')
+  };
+  const initialsOf = (n) => n.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
 
-        <div class="side notes">
-          <div class="who">
-            <div class="ab" id="adminAb">RR</div>
-            <h3>Notes from R&amp;R Sweet Bites</h3>
-          </div>
-          <p id="adminNotes">No notes yet.</p>
-        </div>
+  const RR = (window.RR = { user: null, notifs: [], esc, ICON, PAGE });
+  const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
 
-        <details class="side terms">
-          <summary>Terms &amp; Booking Conditions</summary>
-          <p>20% upfront payment secures your slot. Outstanding balances must be cleared 24h prior to selected delivery slot.</p>
-        </details>
-      </aside>
-    </div>
+  /* ===== STYLES ===== */
+  const css = `
+  #site-header{position:sticky;top:0;z-index:1000}
+  .rr-header{background:#FAF0E6;box-shadow:0 2px 10px rgba(0,0,0,.04);font-family:'Jost',system-ui,sans-serif;color:#333}
+  .rr-nav{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:.9rem 5%}
+  .rr-brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-family:'Platypi',Georgia,serif;font-weight:700;font-size:1.3rem;color:#D27685;white-space:nowrap}
+  .rr-logo{width:40px;height:40px;border-radius:50%;object-fit:cover;background:#E8C3C3;display:block}
+  .rr-links{display:flex;align-items:center;gap:2rem}
+  .rr-links a{position:relative;text-decoration:none;color:#333;font-weight:500;white-space:nowrap;padding:4px 0;transition:color .2s}
+  .rr-links a::after{content:"";position:absolute;left:0;bottom:-3px;height:2px;width:0;background:#D27685;transition:width .25s}
+  .rr-links a:hover,.rr-links a.active{color:#D27685}
+  .rr-links a:hover::after,.rr-links a.active::after{width:100%}
+  .rr-tools{display:flex;align-items:center;gap:1.1rem}
+  .rr-menu-wrap{position:relative}
+  .rr-bell{position:relative;display:block;width:26px;height:26px;padding:0;border:0;background:transparent;cursor:pointer}
+  .rr-bell img{width:24px;height:24px;object-fit:contain;display:block}
+  .rr-bell b{position:absolute;top:-5px;right:-6px;min-width:15px;height:15px;padding:0 3px;border-radius:99px;background:#c0525a;color:#fff;font:600 .62rem 'Jost',sans-serif;display:grid;place-items:center}
+  .rr-avatar{width:40px;height:40px;border-radius:50%;border:0;background:#F6D9DC;color:#4a2a2e;font:600 .95rem 'Jost',sans-serif;cursor:pointer;transition:background .2s}
+  .rr-avatar:hover{background:#F0C6CC}
+  .rr-btn{font-family:'Platypi',Georgia,serif;font-weight:600;font-size:.95rem;padding:.55rem 1.4rem;border-radius:20px;background:#D27685;color:#fff;text-decoration:none;transition:.2s}
+  .rr-btn:hover{background:#BE5B6C}
+  .rr-pop{position:absolute;right:0;top:calc(100% + 12px);z-index:1100;background:#FFF8F3;border:1px solid #D97D8A;border-radius:10px;box-shadow:0 12px 30px rgba(74,38,46,.18);animation:rrpop .18s ease}
+  .rr-pop[hidden]{display:none}
+  @keyframes rrpop{from{opacity:0;transform:translateY(-6px)}}
+  .rr-account{width:200px;padding:8px}
+  .rr-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 12px;border:0;border-radius:8px;background:transparent;color:#4a2a2e;font:500 .95rem 'Jost',sans-serif;text-decoration:none;text-align:left;cursor:pointer;transition:background .15s}
+  a.rr-item:hover,button.rr-item:hover{background:#F8EBE3}
+  .rr-item svg{width:21px;height:21px;flex:none}
+  .rr-name{cursor:default}
+  .rr-account form{margin:0}
+  .rr-notif{width:260px;padding:14px 16px}
+  .rr-notif-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+  .rr-notif-head strong{font-family:'Platypi',Georgia,serif;font-size:1.05rem;color:#382325}
+  .rr-notif-head a{font-size:.72rem;color:#D27685;text-decoration:none}
+  .rr-notif-head a:hover{text-decoration:underline}
+  .rr-n{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0}
+  a.rr-n{text-decoration:none;color:inherit;border-radius:6px;margin:0 -6px;padding:7px 6px;transition:background .15s}
+  a.rr-n:hover{background:#F8EBE3}
+  .rr-n small{display:block;font-size:.62rem;color:#666;font-weight:500}
+  .rr-n span{font-size:.7rem;font-weight:600;color:#382325;letter-spacing:.2px}
+  .rr-n i{width:8px;height:8px;border-radius:50%;background:#D27685;flex:none}
+  .rr-empty{font-size:.8rem;color:#666;padding:8px 0}
+  .rr-footer{background:#ECCFCB;text-align:center;padding:1.6rem 1rem;font-family:'Jost',sans-serif;font-size:.9rem;color:#555;width:100%}
+  .rr-footer a{display:inline-flex;align-items:center;gap:6px;color:#555;text-decoration:none;font-weight:500;letter-spacing:.5px}
+  .rr-footer a:hover{color:#D27685}
+  .rr-footer svg{width:15px;height:15px}
+  .rr-footer .sep{margin:0 8px}
+  @media(max-width:820px){.rr-nav{flex-wrap:wrap;row-gap:.6rem}.rr-links{order:3;width:100%;justify-content:center;gap:1.3rem;font-size:.92rem}}
+  @media(max-width:420px){.rr-brand span{font-size:1.05rem}}`;
+
+  /* ===== RENDER ===== */
+  function render() {
+    const link = (key, label) => '<a href="' + PAGE[key] + '"' + (ACTIVE === key ? ' class="active" aria-current="page"' : "") + ">" + label + "</a>";
+    const user = RR.user;
+    const links = (user ? "" : link("home", "Home")) + link("gallery", "Gallery") + link("submit", "Submit Request") + link("orders", "My Order") + link("messages", "Messages");
+    let tools;
+    if (user) {
+      const unread = RR.notifs.filter((n) => n.unread).length;
+      const items = RR.notifs.slice(0, 3).map((n) => {
+        const inner = "<div><small>" + (n.type === "message" ? "MESSAGE" : "ORDER UPDATE") + "</small><span>" + esc(n.title) + "</span></div>" + (n.unread ? "<i></i>" : "");
+        return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
+      }).join("");
+      tools =
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
+        '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
+        '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
+        '<div class="rr-item rr-name">' + ICON.user + "<span>" + esc(user.name) + "</span></div>" +
+        '<a class="rr-item" href="' + PAGE.settings + '">' + ICON.gear + "Settings</a>" +
+        '<a class="rr-item" href="' + PAGE.reviews + '">' + ICON.star + "My Reviews</a>" +
+        '<form method="post" action="' + API.logout + '"><button class="rr-item" type="submit">' + ICON.out + "Log Out</button></form></div></div>";
+    } else {
+      tools = '<a class="rr-btn" href="' + PAGE.login + '">Log in</a><a class="rr-btn" href="' + PAGE.register + '">Sign up</a>';
+    }
+
+    const host = document.getElementById("site-header");
+    if (host) {
+      host.innerHTML = '<header class="rr-header"><nav class="rr-nav" aria-label="Main"><a class="rr-brand" href="' + PAGE.home + '"><img class="rr-logo" src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></a><div class="rr-links">' + links + '</div><div class="rr-tools">' + tools + "</div></nav></header>";
+    }
+    const foot = document.getElementById("site-footer");
+    if (foot) {
+      foot.innerHTML = '<footer class="rr-footer"><div><a href="' + PAGE.home + '#about">' + ICON.info + 'ABOUT US</a><span class="sep">|</span><a href="' + PAGE.home + '#contact">' + ICON.card + "CONTACTS</a></div><p>&copy; 2019 R&amp;R Sweet Bites. All Rights Reserved.</p></footer>";
+    }
+    wireMenus();
+  }
+
+  const MENU_PAIRS = [["rrBell", "rrNotif"], ["rrAvatar", "rrAccount"]];
+  const closeAllMenus = () => MENU_PAIRS.forEach(([b, p]) => {
+    const btn = document.getElementById(b), pop = document.getElementById(p);
+    if (btn && pop) { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); }
+  });
+  let docWired = false;
+  function wireMenus() {
+    MENU_PAIRS.forEach(([b, p]) => {
+      const btn = document.getElementById(b), pop = document.getElementById(p);
+      if (!btn) return;
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const willOpen = pop.hidden;
+        closeAllMenus();
+        pop.hidden = !willOpen;
+        btn.setAttribute("aria-expanded", String(willOpen));
+      });
+    });
+    if (docWired) return;
+    docWired = true;
+    document.addEventListener("click", (e) => { if (!e.target.closest(".rr-menu-wrap") || e.target.closest(".rr-pop a")) closeAllMenus(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
+  }
+
+  async function getJSON(url) {
+    const res = await fetch(url, { credentials: "same-origin" });
+    return res.json();
+  }
+
+  RR.ready = new Promise((resolve) => {
+    onReady(async () => {
+      const style = document.createElement("style");
+      style.textContent = css;
+      document.head.append(style);
+
+      if (DEMO_MODE) {
+        RR.user = { name: DEMO_USER.name };
+        RR.notifs = flowNotifs() || DEMO_NOTIFS;
+      } else {
+        try { const me = await getJSON(API.me); if (me && me.ok) RR.user = { name: me.name }; } catch (e) {}
+        if (RR.user) {
+          try { const n = await getJSON(API.notifications); RR.notifs = Array.isArray(n) ? n : (n && n.items) || []; } catch (e) {}
+        }
+      }
+      if (RR.user) { RR.user.first = RR.user.name.split(" ")[0]; RR.user.initials = initialsOf(RR.user.name); }
+      render();
+      resolve();
+    });
+  });
+})();
+</script>
+
+<main class="wrap">
+  <a class="back-btn" href="Customer_Orders.html#orders">Back to My Orders</a>
+
+  <p class="state-msg" id="loading">Loading quotation…</p>
+
+  <div class="layout" id="content" hidden>
+    <section class="card" aria-label="Quotation details">
+      <div class="top">
+        <span class="tag" id="statusTag">QUOTATION ISSUED</span>
+        <span class="date">Date Issued: <span id="issuedAt">—</span></span>
+      </div>
+      <h1>Your Custom Cake Quotation</h1>
+      <div class="ref">Order No: <span id="refNo">—</span></div>
+      <hr>
+
+      <h2>Design Specifications Summary</h2>
+      <div class="specs">
+        <div class="spec"><small>Cake Type</small><b id="cakeType">—</b></div>
+        <div class="spec"><small>Cake Size</small><b id="cakeSize">—</b></div>
+        <div class="spec"><small>Event Date</small><b id="eventDate">—</b></div>
+        <div class="spec"><small>Layers and Tiers</small><b id="tiers">—</b></div>
+        <div class="spec"><small>Flavors</small><b id="flavors">—</b></div>
+      </div>
+      <hr>
+
+      <h2>Price Summary</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>DESCRIPTION</th><th>AMOUNT</th></tr></thead>
+          <tbody id="items"></tbody>
+          <tfoot><tr><td>TOTAL QUOTATION</td><td id="total">₱0.00</td></tr></tfoot>
+        </table>
+      </div>
+      <p class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Final pricing covers the agreed cake design and requested specification.</p>
+      <hr>
+
+      <form class="rev" id="revForm" novalidate>
+        <label for="rev" id="revLabel">Need adjustments? Request a Revision</label>
+        <textarea id="rev" maxlength="1000" placeholder="Describe any changes you'd like to request..." aria-describedby="err-message"></textarea>
+        <p class="ferr" id="err-message" role="alert" hidden></p>
+        <p class="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Revision request may affect the final price.</p>
+        <div class="acts">
+          <button class="btn out" type="button" id="btnRevision">Request Revision</button>
+          <button class="btn fill" type="button" id="btnAccept">Accept Quotation</button>
+        </div>
+      </form>
+    </section>
+
+    <aside>
+      <div class="side">
+        <h3>Quotation Status</h3>
+        <div style="margin-top:.7rem">
+          <div class="row"><span>Order ID</span><b id="orderId">—</b></div>
+          <div class="row"><span>Client</span><b id="client">—</b></div>
+          <div class="row"><span>Complexity Score</span><span class="pill" id="complexity">—</span></div>
+          <div class="row"><span>Quote Validity</span><b id="validity">—</b></div>
+        </div>
+        <div class="expiry" id="expiryRow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Quotation expires on <span id="expiresAt">—</span></span></div>
+      </div>
+
+      <div class="side">
+        <div class="who">
+          <span class="ab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1-3.5 3.7-5 7-5s6 1.5 7 5"/></svg></span>
+          <h3>Notes from R&amp;R Sweet Bites</h3>
+        </div>
+        <p id="adminNotes">Please review the final price of your order.</p>
+      </div>
+
+      <div class="side">
+        <h3>Terms &amp; Booking Conditions</h3>
+        <p>20% down payment is required to reserved your slot. Remaining balance must be paid 24 hours before delivery date.</p>
+      </div>
+    </aside>
   </div>
 </main>
 
-<footer>
-  <div class="flinks">
-    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>ABOUT US</a>
-    <i></i>
-    <a href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>CONTACTS</a>
+<!-- Shared footer -->
+<div id="site-footer"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="cf-overlay" id="confirmModal">
+  <div class="cf-box" role="dialog" aria-modal="true" aria-labelledby="cfTitle">
+    <div class="cf-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.0 12.5l4.5 4.5L19 7.5"/></svg></div>
+    <h3 id="cfTitle">Accept Quotation</h3>
+    <p>Accept this quotation and proceed to downpayment?</p>
+    <div class="cf-btns">
+      <button type="button" class="cf-cancel" id="cfCancel">Cancel</button>
+      <button type="button" class="cf-ok" id="cfOk">Okay</button>
+    </div>
   </div>
-  <p class="copy">© 2019 R&amp;R Sweet Bites. All Rights Reserved.</p>
-</footer>
+</div>
 
 <script>
 (function () {
   "use strict";
+    try { const f = JSON.parse(localStorage.getItem("rr_flow") || "null"); if (f && f.quoted) { f.quoteRead = true; localStorage.setItem("rr_flow", JSON.stringify(f)); } } catch (e) {}
 
-  var API   = '../api/quotation.php';
-  var orderId = new URLSearchParams(location.search).get('order') || '';
-  var csrf  = '';
-  var canAct = false;
+  /* ===== SETTINGS ===== */
+  // true  = preview: the quotation is built from the order saved by the fulfillment page (no backend needed)
+  // false = real mode: loads and saves through ../api/quotation.php
+  const DEMO_MODE = true;
+  const API = "../api/quotation.php";
+  const ORDERS_KEY = "rr_orders";
+  const DELIVERY_FEE = 350, RUSH_FEE = 350;     // demo prices (total = order price + these)
 
-  var $ = function (id) { return document.getElementById(id); };
+  const $ = (id) => document.getElementById(id);
+  const orderId = new URLSearchParams(location.search).get("order") || "";
+  let csrf = "", canAct = false, view = null;
 
-  /* Mobile menu */
-  var menuToggle = $('mobile-menu'), navList = $('nav-list');
-  if (menuToggle && navList) {
-    menuToggle.addEventListener('click', function () {
-      var open = navList.classList.toggle('active');
-      menuToggle.setAttribute('aria-expanded', String(open));
-    });
+  const read = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || "null") || d; } catch (e) { return d; } };
+  const peso = (n) => "\u20B1" + Number(n || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmt = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const toDate = (s) => { const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(s || "") ? s + "T00:00:00" : NaN); return isNaN(d) ? null : d; };
+  function toast(msg) {
+    const t = $("toast");
+    t.textContent = msg; t.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3000);
   }
 
-  if (!orderId) {
-    $('loading').textContent = 'No order selected. Redirecting…';
-    setTimeout(function () { location.href = 'Customer_Orders.html'; }, 1200);
+  if (!orderId && !DEMO_MODE) {
+    $("loading").textContent = "No order selected. Redirecting…";
+    setTimeout(() => { location.href = "Customer_Orders.html#orders"; }, 1200);
     return;
   }
 
-  function peso(n) {
-    return '₱' + Number(n || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  /* ---------- build what the page shows ---------- */
+  function demoView() {
+    const list = read(ORDERS_KEY, []);
+    const o = list.find((x) => String(x.order_id) === String(orderId)) || list[0] ||
+      { order_id: orderId, id: "RR-2026030", customer: "Lia Norman", total: 15000, status: "Quotation in Progress" };
+    const ff = read("rr_fulfillment", {});
+    const issued = toDate(ff.orderDate) || new Date();
+    const expires = new Date(issued); expires.setDate(expires.getDate() + 7);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const left = Math.max(0, Math.ceil((expires - today) / 864e5));
+    const accepted = o.status === "Awaiting Down Payment", revised = o.status === "Revision Requested";
+    return {
+      key: o.order_id, ref: String(o.id).replace("-", ""), client: o.customer || "Lia Norman",
+      tag: accepted ? "QUOTATION ACCEPTED" : revised ? "REVISION REQUESTED" : "QUOTATION ISSUED", ok: accepted,
+      issued: fmt(issued), expires: fmt(expires), validity: left + (left === 1 ? " Day" : " Days") + " Remaining",
+      cakeType: "Moist Cake", size: '8" x 6"', event: fmt(toDate(ff.deliveryDate) || new Date(2026, 10, 1)),
+      tiers: "4 + 2", flavors: "Chocolate + Vanilla", complexity: "Moderate",
+      items: [["Custom Order Price", Number(o.total) || 15000], ["Delivery Fee", DELIVERY_FEE], ["Rush Fee", RUSH_FEE]],
+      notes: "Please review the final price of your order.",
+      canAct: !accepted && !revised,
+      lock: accepted ? "Quotation accepted. Thank you!" : revised ? "Revision requested. We'll be in touch." : ""
+    };
   }
 
-  function fmtDate(iso) {
-    if (!iso) return '—';
-    var d = new Date(iso + 'T00:00:00');
-    if (isNaN(d)) return iso;
-    return d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' });
+  function apiView(d) {
+    const o = d.order, latest = (d.revisions || [])[0] || null, st = latest ? latest.status : "";
+    csrf = d.csrf || "";
+    return {
+      key: o.order_id, ref: "RQ-" + String(o.order_id).padStart(4, "0"), client: o.client_name || o.initials || "—",
+      tag: (latest ? latest.status_label : "No Quotation Yet").toUpperCase(), ok: st === "accepted",
+      issued: latest ? latest.created_at : "—", expires: "", validity: "—",
+      cakeType: o.cake_type_label || o.cake_type || "—", size: "—",
+      event: toDate(o.preferred_date) ? fmt(toDate(o.preferred_date)) : "—", tiers: "—", flavors: "—",
+      complexity: o.difficulty_label || "—",
+      items: [["Quoted total for your custom cake order", latest ? latest.quoted_price : 0]],
+      notes: latest && latest.remarks ? latest.remarks : "No notes yet.",
+      canAct: st === "pending",
+      lock: st === "accepted" ? "Quotation accepted. Thank you!" : st === "revision_requested" ? "Revision requested. We'll be in touch." : st === "revised" ? "A newer version is available." : ""
+    };
   }
 
-  function render(d) {
-    var o = d.order;
-    var revs = d.revisions || [];
-    var latest = revs[0] || null;
-    csrf = d.csrf || '';
+  function show(v) {
+    view = v; canAct = v.canAct;
+    const set = (id, t) => { $(id).textContent = t; };
+    document.title = "Quotation " + v.ref + " | R&R Sweet Bites";
+    set("statusTag", v.tag); $("statusTag").className = "tag" + (v.ok ? " ok" : "");
+    set("issuedAt", v.issued); set("refNo", v.ref); set("orderId", v.ref); set("client", v.client);
+    set("cakeType", v.cakeType); set("cakeSize", v.size); set("eventDate", v.event);
+    set("tiers", v.tiers); set("flavors", v.flavors); set("complexity", v.complexity || "—");
+    set("validity", v.validity); set("expiresAt", v.expires); $("expiryRow").hidden = !v.expires;
+    set("adminNotes", v.notes);
+    $("items").innerHTML = v.items.map((i) => "<tr><td>" + RR.esc(i[0]) + "</td><td>" + peso(i[1]) + "</td></tr>").join("");
+    set("total", peso(v.items.reduce((s, i) => s + Number(i[1]), 0)));
+    $("rev").disabled = $("btnRevision").disabled = $("btnAccept").disabled = !canAct;
+    set("revLabel", v.lock || "Need adjustments? Request a Revision");
+    $("loading").hidden = true; $("content").hidden = false;
+  }
 
-    document.title = 'Quotation · RQ-' + String(o.order_id).padStart(4, '0') + ' – R&R Sweet Bites';
-    $('clientAvatar').textContent = o.initials || '—';
-    $('coverRef').textContent = '#RQ-' + String(o.order_id).padStart(4, '0');
-
-    var statusLabel = latest ? latest.status_label : 'No Quotation Yet';
-    var tagClass = 'tag';
-    if (latest) {
-      if (latest.status === 'accepted') tagClass += ' ok';
-      else if (latest.status === 'rejected') tagClass += ' bad';
+    function setStatus(status) {      // demo only: keeps My Orders in sync
+    const list = read(ORDERS_KEY, []), o = list.find((x) => String(x.order_id) === String(view.key));
+    if (o) {
+      o.status = status;
+      if (status === "Awaiting Down Payment") o.href = "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(o.order_id);
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(list));
     }
-    $('statusTag').textContent = statusLabel.toUpperCase();
-    $('statusTag').className = tagClass;
-    $('statusBadge').textContent = statusLabel;
+  }
+  function post(fields) {
+    const fd = new FormData();
+    Object.keys(fields).forEach((k) => fd.append(k, fields[k]));
+    fd.append("order_id", orderId); fd.append("csrf", csrf);
+    return fetch(API, { method: "POST", body: fd, credentials: "same-origin" })
+      .then((r) => r.json().then((j) => ({ ok: r.ok && j.ok, body: j })));
+  }
+  const goPay = () => { location.href = "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(orderId || view.key); };
 
-    $('issuedAt').textContent = latest ? latest.created_at : '—';
-    $('refNo').textContent = '#RQ-' + String(o.order_id).padStart(4, '0');
-    $('referenceId').textContent = 'RQ-' + String(o.order_id).padStart(4, '0');
-    $('clientInitials').textContent = o.initials || '—';
-    $('cakeType').textContent = o.cake_type_label || o.cake_type || '—';
-    $('complexity').textContent = o.difficulty_label || '—';
-    $('deliveryDate').textContent = fmtDate(o.preferred_date);
-    $('requestedDate').textContent = fmtDate(o.preferred_date);
-    $('versionNumber').textContent = latest ? ('v' + latest.version_number) : '—';
-    $('designNotes').textContent = o.design_description || '—';
-
-    var amount = latest ? latest.quoted_price : 0;
-    $('lineTotal').textContent = peso(amount);
-    $('total').textContent = peso(amount);
-
-    $('adminNotes').textContent = (latest && latest.remarks) ? '“' + latest.remarks + '”' : 'No notes yet.';
-
-    // Buttons only work while pending
-    canAct = !!(latest && latest.status === 'pending');
-    $('rev').disabled = !canAct;
-    $('btnRevision').disabled = !canAct;
-    $('btnAccept').disabled = !canAct;
-
-    // If not pending, we can still show but let the user know
-    if (!canAct && latest) {
-      if (latest.status === 'accepted') {
-        $('revLabel').textContent = 'Quotation accepted — thank you!';
-        $('rev').placeholder = 'You already accepted this quotation.';
-      } else if (latest.status === 'revision_requested') {
-        $('revLabel').textContent = 'Revision requested — we\'ll be in touch.';
-        $('rev').placeholder = 'Your revision request was sent.';
-      } else if (latest.status === 'revised') {
-        $('revLabel').textContent = 'A newer version is available.';
-        $('rev').placeholder = 'Please refresh or contact us.';
-      }
-    }
-
-    // Grab CSRF by hitting the endpoint — it embeds csrf in JSON? No: we call csrf-debug style
-    // Simpler: fetch csrf separately from a tiny helper if you have one; otherwise embed from form.
-    // We'll rely on the accept POST using the same session cookie.
-    // If your server requires csrf on POST, embed it below.
+  /* ---------- actions ---------- */
+    function doAccept() {
+    if (DEMO_MODE) { setStatus("Awaiting Down Payment"); goPay(); return; }
+    post({ action: "accept" }).then((res) => {
+      if (res.ok) goPay();
+      else toast((res.body && res.body.message) || "Could not accept the quotation.");
+    }).catch(() => toast("Could not reach the server. Please try again."));
   }
 
-  function load() {
-    return fetch(API + '?action=load&order_id=' + encodeURIComponent(orderId), {
-      credentials: 'same-origin',
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
-      .then(function (res) {
-        if (!res.ok || !res.body.ok) {
-          if (res.body && /not your order|login/i.test(res.body.message || '')) {
-            location.href = 'Customer_Orders.html';
-            return;
-          }
-          throw new Error((res.body && res.body.message) || 'Could not load the quotation.');
-        }
-        $('loading').hidden = true;
-        $('content').hidden = false;
-        render(res.body);
-      })
-      .catch(function (e) {
-        $('loading').textContent = e.message || 'Could not load the quotation.';
-      });
-  }
-
-  /* Accept */
-  $('btnAccept').addEventListener('click', function () {
+  const cfModal = $("confirmModal");
+  const closeConfirm = () => cfModal.classList.remove("active");
+  $("btnAccept").addEventListener("click", () => {
     if (!canAct) return;
-    if (!confirm('Accept this quotation and proceed to downpayment?')) return;
-
-    var fd = new FormData();
-    fd.append('action', 'accept');
-    fd.append('order_id', orderId);
-    fd.append('csrf', csrf); 
-
-    fetch(API, { method: 'POST', body: fd, credentials: 'same-origin' })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
-      .then(function (res) {
-        if (res.ok && res.body.ok) {
-          alert(res.body.message || 'Quotation accepted. Thank you!');
-          location.href = 'customer-orders-PaymentAndBalance.html?order=' + encodeURIComponent(orderId);
-        } else {
-          alert((res.body && res.body.message) || 'Could not accept the quotation.');
-        }
-      })
-      .catch(function () {
-        alert('Could not reach the server. Please try again.');
-      });
+    cfModal.classList.add("active");
+    $("cfOk").focus();
   });
+  $("cfCancel").addEventListener("click", closeConfirm);
+  $("cfOk").addEventListener("click", () => { closeConfirm(); doAccept(); });
+  cfModal.addEventListener("click", (e) => { if (e.target === cfModal) closeConfirm(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeConfirm(); });
 
-  /* Revision */
-  $('btnRevision').addEventListener('click', function () {
+  $("btnRevision").addEventListener("click", () => {
     if (!canAct) return;
-    var msg = $('rev').value.trim();
-    var err = $('err-message');
-
+    const msg = $("rev").value.trim(), err = $("err-message");
     if (msg.length < 5) {
-      err.textContent = 'Please describe the change you want (min 5 characters).';
-      err.hidden = false;
-      $('rev').focus();
-      return;
+      err.textContent = "Please describe the change you want (min 5 characters).";
+      err.hidden = false; $("rev").focus(); return;
     }
     err.hidden = true;
-
-    var fd = new FormData();
-    fd.append('action', 'revision');
-    fd.append('order_id', orderId);
-    fd.append('message', msg);
-    fd.append('csrf', csrf); 
-
-    fetch(API, { method: 'POST', body: fd, credentials: 'same-origin' })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, body: j }; }); })
-      .then(function (res) {
-        if (res.ok && res.body.ok) {
-          alert(res.body.message || 'Revision requested.');
-          location.reload();
-        } else {
-          err.textContent = (res.body && res.body.message) || 'Could not send your revision request.';
-          err.hidden = false;
-        }
-      })
-      .catch(function () {
-        err.textContent = 'Could not reach the server. Please try again.';
-        err.hidden = false;
-      });
+    if (DEMO_MODE) { setStatus("Revision Requested"); toast("Revision request sent."); show(demoView()); return; }
+    post({ action: "revision", message: msg }).then((res) => {
+      if (res.ok) { alert(res.body.message || "Revision requested."); location.reload(); }
+      else { err.textContent = (res.body && res.body.message) || "Could not send your revision request."; err.hidden = false; }
+    }).catch(() => { err.textContent = "Could not reach the server. Please try again."; err.hidden = false; });
   });
 
-  load();
+  /* ---------- start ---------- */
+  if (DEMO_MODE) { show(demoView()); return; }
+  fetch(API + "?action=load&order_id=" + encodeURIComponent(orderId), { credentials: "same-origin", headers: { Accept: "application/json" } })
+    .then((r) => r.json().then((j) => ({ ok: r.ok, body: j })))
+    .then((res) => {
+      if (!res.ok || !res.body.ok) {
+        if (res.body && /not your order|login/i.test(res.body.message || "")) { location.href = "Customer_Orders.html#orders"; return; }
+        throw new Error((res.body && res.body.message) || "Could not load the quotation.");
+      }
+      show(apiView(res.body));
+    })
+    .catch((e) => { $("loading").textContent = e.message || "Could not load the quotation."; });
 })();
 </script>
 </body>
