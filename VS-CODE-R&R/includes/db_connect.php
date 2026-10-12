@@ -10,15 +10,44 @@ declare(strict_types=1);
  * If your MySQL runs on port 3307 or uses a different user, change the
  * defaults here or set the env vars.
  */
-define('DB_HOST', getenv('RR_DB_HOST') ?: '127.0.0.1');
-define('DB_PORT', (int) (getenv('RR_DB_PORT') ?: 3307));
-define('DB_NAME', getenv('RR_DB_NAME') ?: 'r&r sweet bites');
-define('DB_USER', getenv('RR_DB_USER') ?: 'GianAdmin');
-define('DB_PASS', getenv('RR_DB_PASSWORD') ?: 'password');
+require_once __DIR__ . '/env.php';
+load_env();   // so RR_DB_* / RR_TRUSTED_PROXIES can live in .env too
+
+/*
+ * XAMPP defaults are used ONLY when the site is opened on localhost.
+ * On a real host you must set RR_DB_HOST / RR_DB_PORT / RR_DB_NAME / RR_DB_USER /
+ * RR_DB_PASSWORD, so no password lives in the source code.
+ */
+$rrIsLocal = PHP_SAPI === 'cli'
+    || in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1'], true);
+
+define('DB_HOST', getenv('RR_DB_HOST') ?: ($rrIsLocal ? '127.0.0.1' : 'localhost'));
+define('DB_PORT', (int) (getenv('RR_DB_PORT') ?: ($rrIsLocal ? 3307 : 3306)));
+define('DB_NAME', getenv('RR_DB_NAME') ?: ($rrIsLocal ? 'r&r sweet bites' : ''));
+define('DB_USER', getenv('RR_DB_USER') ?: ($rrIsLocal ? 'GianAdmin' : ''));
+define('DB_PASS', getenv('RR_DB_PASSWORD') ?: ($rrIsLocal ? 'password' : ''));
+
+if (!$rrIsLocal && (DB_NAME === '' || DB_USER === '' || DB_PASS === '')) {
+    error_log('db_connect.php: RR_DB_NAME / RR_DB_USER / RR_DB_PASSWORD are not set on this server.');
+    http_response_code(500);
+    exit('Server is not configured.');
+}
 
 date_default_timezone_set('Asia/Manila');
 
+require_once __DIR__ . '/helpers.php';
+
 if (session_status() === PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', (string) (30 * 86400));
+    ini_set('session.use_strict_mode', '1');   // reject session IDs the server didn't issue
+    ini_set('session.use_only_cookies', '1');
+    session_set_cookie_params([
+        'lifetime' => 0,                        // "Remember me" extends this in complete_login()
+        'path'     => '/',
+        'httponly' => true,                     // JavaScript can't read the cookie
+        'samesite' => 'Lax',
+        'secure'   => request_is_https(),
+    ]);
     session_start();
 }
 
@@ -120,12 +149,20 @@ function json_fail(string $msg, int $code = 400): void
     exit;
 }
 
+/** Returns the logged-in customer's id, or stops with 401 if nobody is logged in. */
+// function require_customer(): int
+// {
+//     $id = (int) ($_SESSION['customer_id'] ?? 0);
+//     if ($id <= 0) {
+//         json_fail('Please log in first.', 401);
+//     }
+//     return $id;
+// }
+
 // "RQ-2039" <-> 2039
 function fmt_id($n): string   { return 'RQ-' . str_pad((string) $n, 4, '0', STR_PAD_LEFT); }
 function parse_id(string $s): int { return preg_match('/^RQ-(\d+)$/', $s, $m) ? (int) $m[1] : 0; }
 
-// temporary: no login yet, so we act as customer #1 (Alexahe)
-const CUSTOMER_ID = 1;
 
 // database value -> text shown on your pages
 const STATUS_LABEL = [

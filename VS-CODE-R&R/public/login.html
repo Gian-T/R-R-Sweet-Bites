@@ -310,6 +310,23 @@
     </div>
   </div>
 
+  <!-- Log in: enter the code we emailed -->
+  <div class="overlay" id="loginCodeOverlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lcTitle">
+      <h3 id="lcTitle">Check Your Email</h3>
+      <p id="lcText">We sent a 6-digit code to your email. Enter it to finish logging in.</p>
+      <div class="code-wrap">
+        <div class="code-view" id="lcView" aria-hidden="true"></div>
+        <input id="lcCode" type="text" inputmode="numeric" autocomplete="one-time-code" aria-label="6-digit login code">
+      </div>
+      <span class="error" id="lcError" role="alert"></span>
+      <span class="info" id="lcInfo" role="status"></span>
+      <button type="button" class="pill" id="lcOk">Log In</button>
+      <button type="button" class="small" id="lcResend">Resend Code</button>
+      <button type="button" class="small" id="lcBack">Back to log in</button>
+    </div>
+  </div>
+
   <script>
   (function () {
     "use strict";
@@ -317,9 +334,12 @@
     /* ===== SETTINGS ===== */
     // true  = preview mode, no backend needed (the reset code is 123456)
     // false = real mode: calls the ../api/*.php files listed below
-    const DEMO_MODE = true;
+    const DEMO_MODE = true;   // still preview for the "Forgot password" flow (its PHP files don't exist yet)
+    const LOGIN_DEMO = false; // false = the log-in form + emailed code use the real server
     const API = {
       login: "../api/login.php",
+      loginVerify: "../api/login-verify.php",      // checks the emailed login code
+      loginResend: "../api/login-resend.php",      // sends a new login code
       forgot: "../api/forgot-password.php",        // sends the code to the email
       verify: "../api/verify-reset-code.php",      // checks the code
       reset: "../api/reset-password.php"           // saves the new password
@@ -427,19 +447,107 @@
       const email = val("email"), remember = $("remember").checked;
       btn.disabled = true;
       try {
-        if (DEMO_MODE) { saveRemember(email, remember); return showMessage(box, "Preview mode: log in is not connected to the server yet.", "success"); }
+        if (LOGIN_DEMO) { saveRemember(email, remember); return showMessage(box, "Preview mode: log in is not connected to the server yet.", "success"); }
         const { ok, data } = await post(API.login, { email, password: $("password").value, remember, website: form.website.value });
         if (!ok) { $("password").value = ""; return showMessage(box, data.message || "Invalid email or password.", "fail"); }
-        saveRemember(email, remember);
-        showMessage(box, "Welcome back, " + data.firstName + "!", "success");
-        setTimeout(() => { window.location.href = data.redirect; }, 800);
+        loginEmail = email; loginRemember = remember;
+        if (data.requires_code) {
+          const failed = data.email_sent === false;
+          $("lcText").textContent = "We sent a 6-digit code to " + (data.email || "your email") + ". Enter it to finish logging in.";
+          return openLoginCode(failed ? "We couldn't send the email. Tap Resend Code to try again." : "", failed ? 0 : (data.cooldown || 60));
+        }
+        finishLogin(data);
       } catch (err) {
         showMessage(box, "Can't reach the server. Please try again.", "fail");
       } finally { btn.disabled = false; }
     });
 
+    /* ===== LOGIN CODE (step 2 of log in) ===== */
+    let loginEmail = "", loginRemember = false, lcTimer = null;
+    const lcInput = $("lcCode");
+
+    function finishLogin(data) {
+      saveRemember(loginEmail, loginRemember);
+      openModal(null);
+      showMessage($("message"), "Welcome back, " + data.firstName + "!", "success");
+      setTimeout(() => { window.location.href = data.redirect; }, 800);
+    }
+
+    // Code box shows XXXXXX; each digit typed replaces one X
+    function lcGet() { return lcInput.value.replace(/\D/g, "").slice(0, 6); }
+    function lcRender() {
+      const d = lcGet();
+      lcInput.value = d + "XXXXXX".slice(d.length);
+      $("lcView").innerHTML = d + '<span class="ph">' + "XXXXXX".slice(d.length) + "</span>";
+      try { lcInput.setSelectionRange(d.length, d.length); } catch (e) {}
+    }
+    const lcKeepCaret = () => setTimeout(() => { const n = lcGet().length; try { lcInput.setSelectionRange(n, n); } catch (e) {} }, 0);
+    ["click", "focus", "select", "keyup"].forEach((ev) => lcInput.addEventListener(ev, lcKeepCaret));
+    lcInput.addEventListener("input", () => { lcRender(); $("lcError").textContent = ""; });
+    lcInput.addEventListener("keydown", (e) => { if (e.key === "Enter") $("lcOk").click(); });
+    lcRender();
+
+    function lcStartCooldown(seconds) {
+      clearInterval(lcTimer);
+      const btn = $("lcResend");
+      let left = seconds;
+      const tick = () => {
+        if (left <= 0) { clearInterval(lcTimer); btn.disabled = false; btn.textContent = "Resend Code"; return; }
+        btn.disabled = true; btn.textContent = "Resend Code (" + left + "s)"; left--;
+      };
+      tick();
+      lcTimer = setInterval(tick, 1000);
+    }
+
+    function openLoginCode(note, cooldown) {
+      lcInput.value = ""; lcRender();
+      $("lcError").textContent = ""; $("lcInfo").textContent = note || "";
+      lcStartCooldown(cooldown === undefined ? 60 : cooldown);
+      openModal("loginCodeOverlay", "lcCode");
+    }
+
+    function restartLogin(msg) {
+      clearInterval(lcTimer);
+      openModal(null);
+      $("password").value = "";
+      showMessage($("message"), msg || "Please log in again.", "fail");
+    }
+
+    $("lcOk").addEventListener("click", async () => {
+      const code = lcGet();
+      if (code.length !== 6) { $("lcError").textContent = "Enter the 6-digit code from your email."; return; }
+      const btn = $("lcOk"); btn.disabled = true;
+      try {
+        const { ok, data } = await post(API.loginVerify, { code });
+        if (ok) return finishLogin(data);
+        if (data.restart) return restartLogin(data.message);
+        $("lcError").textContent = data.message || "Incorrect code. Please try again.";
+      } catch (err) {
+        $("lcError").textContent = "Can't reach the server. Please try again.";
+      } finally { btn.disabled = false; }
+    });
+
+    $("lcResend").addEventListener("click", async () => {
+      const btn = $("lcResend");
+      if (btn.disabled) return;
+      $("lcError").textContent = ""; $("lcInfo").textContent = "";
+      btn.disabled = true;
+      try {
+        const { ok, data } = await post(API.loginResend, {});
+        if (ok) { $("lcInfo").textContent = data.message || "A new code was sent to your email."; lcStartCooldown(data.cooldown || 60); return; }
+        if (data.restart) return restartLogin(data.message);
+        $("lcError").textContent = data.message || "Couldn't resend the code. Please try again.";
+        if (data.retry_after) lcStartCooldown(data.retry_after); else btn.disabled = false;
+      } catch (err) {
+        $("lcError").textContent = "Can't reach the server. Please try again.";
+        btn.disabled = false;
+      }
+    });
+
+    $("lcBack").addEventListener("click", () => { clearInterval(lcTimer); openModal(null); $("password").value = ""; $("password").focus(); });
+
     /* ===== FORGOT PASSWORD FLOW ===== */
-    const overlays = ["forgotOverlay", "sentOverlay", "codeOverlay", "doneOverlay"];
+    const overlays = ["forgotOverlay", "sentOverlay", "codeOverlay", "doneOverlay", "loginCodeOverlay"];
     function openModal(id, focusId) {
       overlays.forEach((o) => $(o).classList.remove("open"));
       if (id) { $(id).classList.add("open"); if (focusId) setTimeout(() => $(focusId).focus(), 50); }

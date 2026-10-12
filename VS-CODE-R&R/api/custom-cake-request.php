@@ -20,26 +20,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     respond(405, ['success' => false, 'error' => 'Method not allowed']);
 }
 
+require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php'; 
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
-require_once __DIR__ . '/../includes/db_connect.php'; 
 
-$customerId = filter_var($_SESSION['customer_id'] ?? CUSTOMER_ID, FILTER_VALIDATE_INT);
-
-$customerId = filter_var($_SESSION['customer_id'] ?? null, FILTER_VALIDATE_INT);
+$customerId = ($_SESSION['role'] ?? '') === 'customer'
+    ? filter_var($_SESSION['uid'] ?? null, FILTER_VALIDATE_INT)
+    : false;
 if (!$customerId) {
     respond(401, ['success' => false, 'error' => 'Please log in before submitting a cake request.']);
 }
 
-$sessionToken = $_SESSION['csrf_token'] ?? '';
-$submittedToken = $_POST['csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
 if (!csrf_ok()) {
     respond(403, ['success' => false, 'error' => 'Your session expired. Refresh the page and try again.']);
 }
 
 try {
-    require_once __DIR__ . '/../includes/db_connect.php';
     $pdo = db();
 
     $customerStatement = $pdo->prepare( //error

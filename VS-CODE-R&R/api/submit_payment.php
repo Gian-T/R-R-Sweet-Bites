@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
 json_header();
 $db  = db_mysqli();
-$cid = CUSTOMER_ID;   // bind_param needs a variable, not a constant
+$cid = require_customer();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_fail('POST only.', 405);
 if (!csrf_ok()) json_fail('Invalid or missing CSRF token.', 403);
@@ -12,7 +13,7 @@ $oid    = parse_id($_POST['order_id'] ?? '');
 $method = ['GCash' => 'gcash', 'Bank Transfer' => 'bank_transfer', 'Cash' => 'cash'][$_POST['method'] ?? ''] ?? null;
 $ref    = strtoupper(trim($_POST['reference'] ?? ''));
 if (!$method) json_fail('Invalid payment method.');
-if (!preg_match('/^\d{4,40}$/', $ref)) json_fail('Reference must be 4-40 digits.');
+// if (!preg_match('/^\d{4,40}$/', $ref)) json_fail('Reference must be 4-40 digits.');
 try{
   $st = $db->prepare("SELECT o.status, " . PRICE_SQL . " AS total,
   (SELECT COALESCE(SUM(p.amount),0) FROM payment p WHERE p.order_id = o.order_id AND p.status = 'verified') AS verified,

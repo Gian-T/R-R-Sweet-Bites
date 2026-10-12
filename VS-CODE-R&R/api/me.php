@@ -1,0 +1,31 @@
+<?php
+// api/me.php - tells the shared site header who is logged in.
+// Success: {"ok":true,"name":"Maria Santos"}
+// Not logged in: require_customer() answers with its usual 401 JSON (no "ok"),
+// which the header treats as "logged out" and shows Log in / Sign up.
+declare(strict_types=1);
+
+require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
+
+json_header();
+header('Cache-Control: no-store');
+
+$cid = require_customer();
+
+try {
+    $db = db_mysqli();
+    $st = $db->prepare('SELECT full_name FROM customer WHERE customer_id = ?');
+    $st->bind_param('i', $cid);
+    $st->execute();
+    $row = $st->get_result()->fetch_assoc();
+
+    if (!$row || trim((string) $row['full_name']) === '') {
+        json_fail('Not logged in.', 401);
+    }
+
+    echo json_encode(['ok' => true, 'name' => trim((string) $row['full_name'])], JSON_UNESCAPED_UNICODE);
+} catch (Throwable $e) {
+    error_log('me.php failed: ' . $e->getMessage());
+    json_fail('Could not load account.', 500);
+}
