@@ -391,7 +391,7 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
   /* ===== SETTINGS ===== */
   // true  = preview as the logged-in customer "Lia Norman" (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
     home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
@@ -654,7 +654,7 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
 /* ===== SETTINGS ===== */
 // true  = preview with sample orders (add ?empty to the address to preview the "NO ORDER" page)
 // false = real mode: loads the customer's orders from ../api/orders.php
-const DEMO_MODE = true;
+const DEMO_MODE = false;
 const PAGE_SIZE = 6;
 
 const DEMO_ORDERS = [
@@ -665,7 +665,6 @@ const DEMO_ORDERS = [
   {order_id:15, id:'RR-2026015', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 10, 2026', status:'Order Request Under Review'},
   {order_id:3,  id:'RR-2026003', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Sept. 29, 2026', status:'Completed'},
   {order_id:2,  id:'RR-2026002', title:'Cupcake Box (24 pcs)', customer:'Lia Norman', occasion:'Anniversary', total:3600, due:'Sept. 05, 2026', status:'Completed'},
-  {order_id:1,  id:'RR-2026001', title:'Number 7 Shaped Cake', customer:'Lia Norman', occasion:'Birthday', total:2800, due:'Aug. 12, 2026', status:'Completed'}
 ];
 
 const $ = s => document.querySelector(s);

@@ -14,8 +14,8 @@ declare(strict_types=1);
  *   notification(notification_id, order_id, recipient_type, recipient_id, message, is_read, created_at)
  */
  
-require_once __DIR__ . '../includes/db_connect.php';
-require_once __DIR__ . '../includes/helpers.php';
+require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
  
 header('Cache-Control: no-store');   // so the Back button never shows a stale logged-in/out page
  

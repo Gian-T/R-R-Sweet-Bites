@@ -2,18 +2,12 @@
 declare(strict_types=1);
 
 /**
- * R&R Sweet Bites — Log in (SRS FR-2)
+ * R&R Sweet Bites — Log in, step 1 of 2 (SRS FR-2)
  *
- * Works with the project's existing schema:
- *   customer(customer_id, full_name, email, contact_number, password_hash, ...)
- *   admin(admin_id, full_name, email, password_hash, ...)
- *   login_attempts(id, email, ip, attempted_at)
- *
- * Sets session keys on success so every other API in the project keeps working:
- *   $_SESSION['uid']          → the user's row ID
- *   $_SESSION['role']         → 'customer' | 'admin'
- *   $_SESSION['customer_id']  → the customer's ID (only when role = customer)
- *   $_SESSION['admin_id']     → the admin's ID    (only when role = admin)
+ * Step 1 (this file):  email + password → a 6-digit code is emailed. NOT signed in yet.
+ * Step 2:              api/login-verify.php  → code OK → session keys are set:
+ *   $_SESSION['uid'], ['role'], ['customer_id'] or ['admin_id']
+ * Resend:              api/login-resend.php
  *
  * Helpers (json_input, json_out, client_ip, v_email, current_user) come from
  * includes/helpers.php — do NOT redefine them here.
@@ -21,18 +15,19 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../includes/db_connect.php';
 require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../includes/login_code.php';
 
 /* ---------- Constants specific to login ---------- */
 const MAX_LOGIN_ATTEMPTS = 5;
-const LOGIN_LOCK_SECONDS = 0;   // 5 minutes
-const REMEMBER_DAYS      = 30;
+const LOGIN_LOCK_SECONDS = 300;   // 5 minutes
 
-/* ---------- Login-specific helper ---------- */
-
-/** Look up an account across both tables. Returns null if neither table has it. */
+/**
+ * Look up an account across both tables. Returns null if neither table has it.
+ *
+ * @return array{id:int, role:string, full_name:string, password_hash:string}|null
+ */
 function find_user(string $email): ?array
 {
-    // Try admin first — admins have their own table.
     $st = db()->prepare('SELECT admin_id AS id, "admin" AS role, full_name, password_hash FROM admin WHERE email = ?');
     $st->execute([$email]);
     if ($row = $st->fetch()) return $row;
@@ -46,106 +41,98 @@ function find_user(string $email): ?array
 
 /* ---------- Already signed in? Skip the form ---------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && ($me = current_user())) {
-    header('Location: ' . ($me['role'] === 'admin' ? '../public/Weekly-Availability.html' : '../public/Customer_Orders.html'));
+    header('Location: ' . redirect_path_for_role($me['role']));
     exit;
 }
 
-/* ---------- POST: verify credentials ---------- */
+/* ---------- POST: check the password, then email a code ---------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
-    $in       = json_input();
-    $email    = strtolower(trim((string)($in['email'] ?? '')));
-    $password = (string)($in['password'] ?? '');
-    $remember = !empty($in['remember']);
-    $ip       = client_ip();
-    $generic  = 'Invalid email or password.';   // never reveal which was wrong
+    try {
+        $pdo      = db();
+        $in       = json_input();
+        $email    = strtolower(trim((string)($in['email'] ?? '')));
+        $password = (string)($in['password'] ?? '');
+        $remember = !empty($in['remember']);
+        $ip       = client_ip();
+        $fail     = fn(int $code = 401, string $msg = 'Invalid email or password.') =>
+                        json_out(['ok' => false, 'message' => $msg], $code);
 
-    // Bot trap: this field is hidden from humans; bots fill it in.
-    if (!empty($in['website'])) {
-        json_out(['ok' => false, 'message' => $generic], 401);
-    }
-    if (v_email($email) !== null || $password === '' || strlen($password) > 64) {
-        json_out(['ok' => false, 'message' => $generic], 401);
-    }
+        // Honeypot + basic validation
+        if (!empty($in['website']) || v_email($email) !== null
+            || $password === '' || strlen($password) > 64) {
+            $fail();
+        }
 
-    // Lock-out after too many failures
-    $st = db()->prepare(
-        'SELECT COUNT(*) AS c,
-                ? - (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(MAX(attempted_at))) AS wait
-           FROM login_attempts
-          WHERE email = ? AND ip = ?
-            AND attempted_at > (NOW() - INTERVAL 15 MINUTE)'
-    );
-    $st->execute([LOGIN_LOCK_SECONDS, $email, $ip]);
-    $row = $st->fetch();
-    if ((int)$row['c'] >= MAX_LOGIN_ATTEMPTS && (int)$row['wait'] > 0) {
-        json_out(['ok' => false, 'message' => 'Too many attempts. Try again in ' . (int)$row['wait'] . ' seconds.'], 429);
-    }
+        // Lock-out after too many failures
+        $st = $pdo->prepare(
+            'SELECT COUNT(*) AS c,
+                    ? - (UNIX_TIMESTAMP() - UNIX_TIMESTAMP(MAX(attempted_at))) AS wait
+               FROM login_attempts
+              WHERE email = ? AND ip = ?
+                AND attempted_at > (NOW() - INTERVAL 15 MINUTE)'
+        );
+        $st->execute([LOGIN_LOCK_SECONDS, $email, $ip]);
+        $row = $st->fetch();
+        if ((int)$row['c'] >= MAX_LOGIN_ATTEMPTS && (int)$row['wait'] > 0) {
+            $fail(429, 'Too many attempts. Try again in ' . (int)$row['wait'] . ' seconds.');
+        }
 
-    // Look up the account, verify the password
-    $user = find_user($email);
-    if ($user) {
-        $ok = password_verify($password, $user['password_hash']);
-    } else {
-        // Spend a similar amount of CPU so timing doesn't reveal whether the email exists
-        password_hash($password, PASSWORD_DEFAULT);
-        $ok = false;
-    }
+        // Verify password (dummy hash keeps timing similar when the email is unknown)
+        $user = find_user($email);
+        $ok   = $user
+            ? password_verify($password, $user['password_hash'])
+            : (password_hash($password, PASSWORD_DEFAULT) && false);
 
-    if (!$ok) {
-        db()->prepare('INSERT INTO login_attempts (email, ip) VALUES (?, ?)')->execute([$email, $ip]);
-        $isLocal = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true);
+        if (!$ok) {
+            $pdo->prepare('INSERT INTO login_attempts (email, ip) VALUES (?, ?)')->execute([$email, $ip]);
+            $fail();
+        }
+
+        $pdo->prepare('DELETE FROM login_attempts WHERE email = ?')->execute([$email]);
+
+        if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
+            $table = $user['role'] === 'admin' ? 'admin' : 'customer';
+            $pk    = $user['role'] === 'admin' ? 'admin_id' : 'customer_id';
+            $pdo->prepare("UPDATE `{$table}` SET password_hash = ? WHERE {$pk} = ?")
+                ->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
+        }
+
+        // Park the login until the emailed code is entered
+        session_regenerate_id(true);
+        unset($_SESSION['uid'], $_SESSION['role'], $_SESSION['customer_id'], $_SESSION['admin_id']);
+        $_SESSION['pending_login'] = [
+            'id' => (int)$user['id'], 'role' => $user['role'], 'email' => $email,
+            'name' => $user['full_name'], 'remember' => $remember,
+            'expires' => time() + LOGIN_PENDING_TTL_SECONDS,
+        ];
+
+        $status = login_code_status($pdo, $user['role'], (int)$user['id']);
+
+        if ($status['age'] !== null && $status['age'] < VERIFY_RESEND_COOLDOWN_SECONDS) {
+            $sent     = true;   // a code just went out (double-click): don't spam
+            $cooldown = VERIFY_RESEND_COOLDOWN_SECONDS - $status['age'];
+        } elseif ($status['recent'] >= VERIFY_RESEND_MAX_PER_HOUR) {
+            unset($_SESSION['pending_login']);
+            $fail(429, 'Too many login codes requested. Please try again in an hour.');
+        } else {
+            $sent     = issue_login_code($pdo, $user['role'], (int)$user['id'], $email, (string)$user['full_name']);
+            $cooldown = VERIFY_RESEND_COOLDOWN_SECONDS;
+        }
+
         json_out([
-            'ok'      => false,
-            'message' => $generic,
-            'debug'   => $isLocal ? [
-                'email_received'  => $email,
-                'email_valid'     => v_email($email),
-                'password_len'    => strlen($password),
-                'website_filled'  => !empty($in['website']),
-                'user_found'      => $user ? true : false,
-                'user_id'         => $user['id'] ?? null,
-                'user_role'       => $user['role'] ?? null,
-                'hash_prefix'     => $user ? substr($user['password_hash'], 0, 7) : null,
-                'hash_length'     => $user ? strlen($user['password_hash']) : null,
-                'verify_result'   => $ok,
-            ] : null,
-        ], 401);
-    }
-
-    // Success
-    db()->prepare('DELETE FROM login_attempts WHERE email = ?')->execute([$email]);
-
-    if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
-        $table = $user['role'] === 'admin' ? 'admin' : 'customer';
-        $pk    = $user['role'] === 'admin' ? 'admin_id' : 'customer_id';
-        db()->prepare("UPDATE `{$table}` SET password_hash = ? WHERE {$pk} = ?")
-            ->execute([password_hash($password, PASSWORD_DEFAULT), $user['id']]);
-    }
-
-    session_regenerate_id(true);   // stop session fixation
-    $_SESSION['uid']  = (int)$user['id'];
-    $_SESSION['role'] = $user['role'];
-    if ($user['role'] === 'admin') {
-        $_SESSION['admin_id'] = (int)$user['id'];
-    } else {
-        $_SESSION['customer_id'] = (int)$user['id'];
-    }
-
-    if ($remember) {
-        setcookie(session_name(), session_id(), [
-            'expires'  => time() + REMEMBER_DAYS * 86400,
-            'path'     => '/',
-            'httponly' => true,
-            'samesite' => 'Lax',
-            'secure'   => !empty($_SERVER['HTTPS']),
+            'ok' => true, 'requires_code' => true,
+            'email' => mask_email($email), 'email_sent' => $sent, 'cooldown' => $cooldown,
         ]);
-    }
 
-    json_out([
-        'ok'        => true,
-        'firstName' => explode(' ', $user['full_name'])[0],
-        'role'      => $user['role'],
-        'redirect'  => $user['role'] === 'admin' ? '../public/Weekly-Availability.html' : '../public/Customer_Orders.html',
-    ]);
+    } catch (Throwable $e) {
+        error_log('login.php error: ' . $e->getMessage());
+        json_out(['ok' => false, 'message' => 'Something went wrong. Please try again.'], 500);
+    }
 }
-?>
+
+
+// Any other method → 405
+http_response_code(405);
+header('Allow: POST');
+header('Content-Type: application/json; charset=utf-8');
+echo json_encode(['ok' => false, 'message' => 'Method not allowed.']);

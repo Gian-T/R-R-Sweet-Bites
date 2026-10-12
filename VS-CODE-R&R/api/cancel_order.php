@@ -1,9 +1,10 @@
 <?php
 require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/helpers.php';
 
 json_header();
 $db  = db_mysqli();
-$cid = CUSTOMER_ID;   // bind_param needs a variable, not a constant
+$cid = require_customer();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') json_fail('POST only.', 405);
 

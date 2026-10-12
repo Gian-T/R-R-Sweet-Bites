@@ -153,6 +153,13 @@
       font: 400 1.1rem var(--font-text); letter-spacing: .35em; color: var(--text); pointer-events: none;
     }
     .code-view .ph { color: #cdb3b8; }
+    .modal .resend-row { margin: 12px 0 2px; }
+    .link-btn {
+      background: none; border: 0; padding: 0; font: inherit; font-weight: 700;
+      color: var(--button); text-decoration: underline; cursor: pointer;
+    }
+    .link-btn:disabled { opacity: .55; cursor: not-allowed; text-decoration: none; }
+    .modal .note { display: block; min-height: 1em; font-size: .78rem; color: #4a7c59; }
     .pill {
       display: inline-block; min-width: 130px; margin-top: 8px; padding: 10px 22px;
       border: 0; border-radius: 999px; background: var(--button); color: #fff;
@@ -262,6 +269,8 @@
       </div>
       <span class="error" id="code-error" role="alert"></span>
       <button type="button" class="pill" id="verifyBtn">Enter</button>
+      <p class="resend-row">Didn't get the code? <button type="button" class="link-btn" id="resendBtn">Resend code</button></p>
+      <span class="note" id="resend-note" role="status" aria-live="polite"></span>
     </div>
   </div>
 
@@ -281,7 +290,7 @@
     /* ===== SETTINGS ===== */
     // true  = preview mode, no backend needed (the verification code is 123456)
     // false = real mode: calls ../api/register.php and ../api/verify-email.php
-    const DEMO_MODE = true;
+    const DEMO_MODE = false;
 
     const $ = (id) => document.getElementById(id);
     const form = $("registerForm");
@@ -472,10 +481,12 @@
     const codeError = $("code-error");
     const verifyBtn = $("verifyBtn");
 
-    function openVerify() {
+    function openVerify(note, cooldown) {
       codeInput.value = "";
       renderCode();
       codeError.textContent = "";
+      resendNote.textContent = note || "";
+      startCooldown(cooldown === undefined ? 60 : cooldown);
       verifyOverlay.classList.add("open");
       setTimeout(() => codeInput.focus(), 50);
     }
@@ -500,7 +511,7 @@
 
       verifyBtn.disabled = true;
       try {
-        let ok;
+        let ok, msg;
         if (DEMO_MODE) {
           ok = code === "123456";
         } else {
@@ -512,8 +523,9 @@
           });
           const data = await res.json().catch(() => ({}));
           ok = res.ok && data.ok;
+          msg = data.message;
         }
-        if (!ok) { codeError.textContent = "Incorrect code. Please try again."; return; }
+        if (!ok) { codeError.textContent = msg || "Incorrect code. Please try again."; return; }
 
         verifyOverlay.classList.remove("open");
         successOverlay.classList.add("open");
@@ -522,6 +534,56 @@
         codeError.textContent = "Can't reach the server. Please try again.";
       } finally {
         verifyBtn.disabled = false;
+      }
+    });
+
+    /* ===== RESEND CODE ===== */
+    const resendBtn = $("resendBtn");
+    const resendNote = $("resend-note");
+    let cooldownTimer = null;
+
+    function startCooldown(seconds) {
+      clearInterval(cooldownTimer);
+      let left = seconds;
+      const tick = () => {
+        if (left <= 0) {
+          clearInterval(cooldownTimer);
+          resendBtn.disabled = false;
+          resendBtn.textContent = "Resend code";
+          return;
+        }
+        resendBtn.disabled = true;
+        resendBtn.textContent = "Resend in " + left + "s";
+        left--;
+      };
+      tick();
+      cooldownTimer = setInterval(tick, 1000);
+    }
+
+    resendBtn.addEventListener("click", async () => {
+      resendNote.textContent = "";
+      codeError.textContent = "";
+      if (DEMO_MODE) { resendNote.textContent = "Demo mode: the code is 123456."; startCooldown(30); return; }
+
+      resendBtn.disabled = true;
+      try {
+        const res = await fetch("../api/resend-code.php", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: registeredEmail })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          resendNote.textContent = data.message || "A new code has been sent.";
+          startCooldown(data.cooldown || 60);
+        } else {
+          codeError.textContent = data.message || "Could not resend the code. Please try again.";
+          if (data.retry_after) startCooldown(data.retry_after); else resendBtn.disabled = false;
+        }
+      } catch (err) {
+        codeError.textContent = "Can't reach the server. Please try again.";
+        resendBtn.disabled = false;
       }
     });
 
@@ -543,6 +605,7 @@
       const v = getValues();
       submitBtn.disabled = true;
       try {
+        let note = "";
         if (!DEMO_MODE) {
           const res = await fetch("../api/register.php", {
             method: "POST",
@@ -561,14 +624,20 @@
           });
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.ok) {
+            if (data.unverified) {
+              registeredEmail = v.email;
+              openVerify("This email is registered but not verified yet. Tap Resend code to get a new one.", 0);
+              return;
+            }
             Object.keys(data.errors || {}).forEach((id) => { if ($(id)) showError(id, data.errors[id]); });
             const bad = document.querySelector('[aria-invalid="true"]');
             if (bad) bad.focus();
             throw new Error(data.message || "Something went wrong. Please try again.");
           }
+          if (data.email_sent === false) note = "We couldn't send the email. Tap Resend code to try again.";
         }
         registeredEmail = v.email;
-        openVerify();
+        openVerify(note, note ? 0 : 60);
       } catch (err) {
         showMessage(err instanceof TypeError ? "Can't reach the server. Please try again." : err.message);
       } finally {

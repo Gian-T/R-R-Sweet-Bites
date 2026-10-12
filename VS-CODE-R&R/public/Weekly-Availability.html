@@ -1,5 +1,8 @@
 <?php
 declare(strict_types=1);
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 if (!isset($_SESSION['csrf_token'])) {
   $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -144,7 +147,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
   /* ===== SETTINGS ===== */
   // true  = preview as the logged-in customer "Lia Norman" (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
     home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
@@ -471,7 +474,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
   /* ===== SETTINGS ===== */
   // true  = preview with sample calendar days and a sample chat (no backend needed)
   // false = real mode: ../api/weekly-availability.php (calendar) and ../api/messages.php (chat)
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
 
   const $ = (id) => document.getElementById(id);
   const pad = (n) => String(n).padStart(2, "0");
