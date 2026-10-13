@@ -394,7 +394,7 @@ a.nt{text-decoration:none;color:inherit}
   /* ===== SETTINGS ===== */
   // true  = preview as the logged-in customer "Lia Norman" (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = false;
+  const DEMO_MODE = true;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
     home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
@@ -414,30 +414,50 @@ a.nt{text-decoration:none;color:inherit}
   ];
 
     /* Demo flow: Custom-Cake-Request.html saves "rr_flow" when a request is submitted */
-  function flowNotifs() {
-  let f = null;
-  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
-  if (!f) return null;
-  const ok = f.status === "confirmed";
-  const list = [];
-  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
-    list.push({
-      type: "quote",
-      title: "Quotation Ready",
-      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
-      unread: !f.quoteRead,
-      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
-    });
+    function flowNotifs() {
+    let f = null;
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    if (!f) return null;
+    const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
+    if (f.quoted) {
+      list.push({
+        type: "quote", title: "Quotation Ready",
+        text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+        unread: !f.quoteRead,
+        href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+      });
+    }
+    if (f.status) {
+      const ok = f.status === "confirmed";
+      list.push({
+        type: "order",
+        title: ok ? "Order Confirmed" : "Order Request Submitted",
+        text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+        unread: f.readStatus !== f.status,
+        href: "Custom-Cake-Request.html#status"
+      });
+    }
+    return list.length ? list : null;
   }
-  list.push({
-    type: "order",
-    title: ok ? "Order Confirmed" : "Order Request Submitted",
-    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-    unread: f.readStatus !== f.status,
-    href: "Custom-Cake-Request.html#status"
-  });
-  return list;
-}
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   if (ACTIVE === "orders") { PAGE.orders = "#orders"; PAGE.notifications = "#notifications"; PAGE.gallery = "#gallery"; }   // same page, no reload
@@ -460,6 +480,10 @@ a.nt{text-decoration:none;color:inherit}
 
   const RR = (window.RR = { user: null, notifs: [], esc, ICON, notifIcon, PAGE });
   const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+
+  RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   /* ===== STYLES ===== */
   const css = `
@@ -524,7 +548,7 @@ a.nt{text-decoration:none;color:inherit}
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -687,17 +711,11 @@ a.nt{text-decoration:none;color:inherit}
 /* ===== SETTINGS ===== */
 // true  = preview with sample orders (add ?empty to the address to preview the "NO ORDER" page)
 // false = real mode: loads the customer's orders from ../api/orders.php
-const DEMO_MODE = false;
+const DEMO_MODE = true;
 const PAGE_SIZE = 6;
 
 const DEMO_ORDERS = [
   {order_id:30, id:'RR-2026030', title:'2-Tier Custom Birthday Cake', customer:'Lia Norman', occasion:'Birthday', total:10000, due:'Nov 01, 2026', status:'Payment Under Review'},
-  {order_id:25, id:'RR-2026025', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 29, 2026', status:'Awaiting Down Payment'},
-  {order_id:19, id:'RR-2026019', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 20, 2026', status:'Pending Balance'},
-  {order_id:18, id:'RR-2026018', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 14, 2026', status:'Pending Cancellation'},
-  {order_id:15, id:'RR-2026015', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 10, 2026', status:'Order Request Under Review'},
-  {order_id:3,  id:'RR-2026003', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Sept. 29, 2026', status:'Completed'},
-  {order_id:2,  id:'RR-2026002', title:'Cupcake Box (24 pcs)', customer:'Lia Norman', occasion:'Anniversary', total:3600, due:'Sept. 05, 2026', status:'Completed'},
 ];
 
 const $ = s => document.querySelector(s);
@@ -786,6 +804,7 @@ function renderNotifs() {
     : '<p class="none">No notifications yet.</p>';
 }
 $('#nMore').addEventListener('click', () => { nShown += 4; renderNotifs(); });
+window.onNotifsChanged = renderNotifs;
 addEventListener('hashchange', showView);
 
 (async () => {

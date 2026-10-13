@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+
+
 /**
  * R&R Sweet Bites — Log in, step 1 of 2 (SRS FR-2)
  *
