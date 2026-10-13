@@ -22,10 +22,10 @@ $rrIsLocal = PHP_SAPI === 'cli'
     || in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost', '127.0.0.1', '::1'], true);
 
 define('DB_HOST', getenv('RR_DB_HOST') ?: ($rrIsLocal ? '127.0.0.1' : 'localhost'));
-define('DB_PORT', (int) (getenv('RR_DB_PORT') ?: ($rrIsLocal ? 3307 : 3306)));
+define('DB_PORT', (int) (getenv('RR_DB_PORT') ?: ($rrIsLocal ? 3306 : 3306)));
 define('DB_NAME', getenv('RR_DB_NAME') ?: ($rrIsLocal ? 'r&r sweet bites' : ''));
-define('DB_USER', getenv('RR_DB_USER') ?: ($rrIsLocal ? 'GianAdmin' : ''));
-define('DB_PASS', getenv('RR_DB_PASSWORD') ?: ($rrIsLocal ? 'password' : ''));
+define('DB_USER', getenv('RR_DB_USER') ?: ($rrIsLocal ? 'root' : ''));
+define('DB_PASS', getenv('RR_DB_PASSWORD') ?: ($rrIsLocal ? '' : ''));
 
 if (!$rrIsLocal && (DB_NAME === '' || DB_USER === '' || DB_PASS === '')) {
     error_log('db_connect.php: RR_DB_NAME / RR_DB_USER / RR_DB_PASSWORD are not set on this server.');

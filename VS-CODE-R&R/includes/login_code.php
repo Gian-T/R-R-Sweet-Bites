@@ -20,7 +20,7 @@ if (!function_exists('redirect_path_for_role')) {
     {
         return $role === 'admin'
             ? '../private/order-requests.html'
-            : '../private/order-requests.html';
+            : '../public/Customer_Orders.html';
     }
 }
 
