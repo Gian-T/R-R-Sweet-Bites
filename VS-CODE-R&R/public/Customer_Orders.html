@@ -394,7 +394,7 @@ a.nt{text-decoration:none;color:inherit}
   /* ===== SETTINGS ===== */
   // true  = preview as the logged-in customer "Lia Norman" (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = false;
+  const DEMO_MODE = true;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
     home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
@@ -687,7 +687,7 @@ a.nt{text-decoration:none;color:inherit}
 /* ===== SETTINGS ===== */
 // true  = preview with sample orders (add ?empty to the address to preview the "NO ORDER" page)
 // false = real mode: loads the customer's orders from ../api/orders.php
-const DEMO_MODE = false;
+const DEMO_MODE = true;
 const PAGE_SIZE = 6;
 
 const DEMO_ORDERS = [

@@ -268,7 +268,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
 /* R&R Sweet Bites - shared header + footer */
 (function () {
   "use strict";
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
     home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
@@ -607,7 +607,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
 
   function url() { return API + (order ? '?order=' + encodeURIComponent(order) : ''); }
     /* ===== DEMO MODE (no backend needed). Set to false when ../api/customer-orders.php is ready ===== */
-  var DEMO_MODE = true;
+  var DEMO_MODE = false;
   var ORDERS_KEY = 'rr_orders', PAY_KEY = 'rr_payments';
   // [id, title, occasion, total, due, status] - same sample orders as My Orders
   var DEMO_BASE = {

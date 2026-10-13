@@ -154,7 +154,7 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
   /* ===== SETTINGS ===== */
   // true  = preview as a logged-in customer (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
     home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
@@ -340,7 +340,8 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
         RR.user = { name: DEMO_USER.name };
         RR.notifs = flowNotifs() || DEMO_NOTIFS;
       } else {
-        try { const me = await getJSON(API.me); if (me && me.ok) RR.user = { name: me.name }; } catch (e) {}
+        try { const me = await getJSON(API.me);
+          if (me && me.ok) { RR.user = { name: me.name }; RR.csrf = me.csrf; } } catch (e) {}
         if (RR.user) {
           try { const n = await getJSON(API.notifications); RR.notifs = Array.isArray(n) ? n : (n && n.items) || []; } catch (e) {}
         }
@@ -382,11 +383,7 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
     </div>
 
     <form id="cakeRequestForm" enctype="multipart/form-data" novalidate>
-      <!-- Customer details (hidden). Sample values for preview; your backend should fill these from the logged-in customer. -->
-      <input type="hidden" name="customer_name" value="Lia Norman">
-      <input type="hidden" name="email" value="lianorman@gmail.com">
-      <input type="hidden" name="phone" value="09178452316">
-      <input type="hidden" name="design_intricacy_rating" value="3">
+      <!-- Customer identity is obtained securely from the logged-in session by the backend. -->
       <input type="hidden" name="cake_type" id="cakeType" value="cake">
 
       <!-- 1. Cake Type / Occasion -->
@@ -596,7 +593,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* ===== SETTINGS ===== */
   // true  = no backend needed: the request is accepted right away and the status comes from localStorage
   // false = real mode: posts the form to ../api/custom-cake-request.php
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const AFTER_OKAY_PAGE = 'Customer_Orders.html#orders';   // where "Okay" goes (My Order page)
   const FLOW_KEY = 'rr_flow';
 
@@ -684,9 +681,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (DEMO_MODE) {
         result = { success: true, order_id: Math.floor(Date.now() / 1000) % 100000 };
       } else {
+        const fd = new FormData(cakeForm);   // also includes the date + rush inputs linked with form="cakeRequestForm"
+        fd.append('csrf', RR.csrf || '');
         const response = await fetch('../api/custom-cake-request.php', {
           method: 'POST',
-          body: new FormData(cakeForm)   // also includes the date + rush inputs linked with form="cakeRequestForm"
+          body: fd,
+          credentials: 'same-origin'
         });
         const text = await response.text();
         try {

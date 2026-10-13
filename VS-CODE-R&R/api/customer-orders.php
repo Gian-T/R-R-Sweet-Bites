@@ -38,21 +38,21 @@ function pay_mode(array $fig): string
 }
 
 $pdo = db();
+$customerId = require_customer();
 
 /* ---------- Load order (?order=1, falls back to the first order) ---------- */
 $orderId = filter_input(INPUT_GET, 'order', FILTER_VALIDATE_INT);
-
+if (!$orderId) {
+    out(['error' => 'Order not found.'], 404);
+}
 // Joins with customer and accepted quotation to compute pricing figures
 $sql = 'SELECT o.*, c.full_name, q.quoted_price 
         FROM `order` o 
         JOIN customer c ON c.customer_id = o.customer_id 
         LEFT JOIN quotation q ON q.order_id = o.order_id AND q.status = "accepted" ';
 
-if ($orderId) {$st = $pdo->prepare($sql . 'WHERE o.order_id = ?');
-    $st->execute([$orderId]);
-} else {
-    $st = $pdo->query($sql . 'ORDER BY o.order_id ASC LIMIT 1');
-}
+$st = $pdo->prepare($sql . 'WHERE o.order_id = ? AND o.customer_id = ?');
+$st->execute([$orderId, $customerId]);
 
 $order =$st->fetch();
 if (!$order) {
@@ -101,6 +101,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $fig  = order_figures($pdo, $order);
         $mode = pay_mode($fig);   // ← see helper below
+
+        if (in_array($order['status'], ['pending_review', 'quoted'], true)) {
+            $general[] = 'This order cannot accept a payment yet.';
+        }
+
 
         if ($mode === 'pending') {
             $general[] = 'You already have a payment waiting for verification.';
@@ -181,7 +186,9 @@ $fig  = order_figures($pdo, $order);
 $mode = pay_mode($fig);
 
 // Quoted state takes priority — customer must accept the quotation first
-if ($order['status'] === 'quoted') {
+if ($order['status'] === 'pending_review') {
+    $mode = 'review';
+} elseif ($order['status'] === 'quoted') {
     $mode = 'quoted';
 } elseif (!$fig['dp_paid'] && !$fig['has_pending']) {
     $mode = 'downpayment';
@@ -220,6 +227,7 @@ $nameParts = explode(' ', trim($order['full_name']));
 $initials = strtoupper(substr($nameParts[0], 0, 1) . (isset($nameParts[1]) ? substr(end($nameParts), 0, 1) : ''));
 
 $headings = [
+    'review'      => 'Request Under Review',
     'quoted'      => 'Awaiting Your Approval',
     'downpayment' => 'Downpayment',
     'balance'     => 'Balance Payment',
@@ -227,6 +235,7 @@ $headings = [
     'paid'        => 'Fully Paid',
 ];
 $labels = [
+    'review'      => "We're reviewing your request. A quotation will be sent soon.",
     'quoted'      => 'Review the quotation first',
     'downpayment' => 'Submit downpayment for verification',
     'balance'     => 'Submit balance payment',

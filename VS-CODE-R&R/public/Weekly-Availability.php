@@ -513,8 +513,9 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     if (DEMO_MODE) return demoDay(y, m, d);
     const key = y + "-" + pad(m + 1) + "-" + pad(d);
     const w = weeks.find((x) => key >= x.week_start_date && key <= x.week_end_date);
-    if (!w || w.status === "open") {
-      const n = Number(w && w.slots_left);                 // optional: the server may send slots_left
+    if (!w) return { status: "booked", label: "NOT OPEN", text: "Not open for orders yet" };   // no week row = cannot be ordered
+    if (w.status === "open") {
+      const n = Number(w.slots_left);                      // optional: the server may send slots_left
       if (Number.isFinite(n) && n > 0 && n <= 5) return { status: "limited", label: n + " SLOT", text: "Limited slots" };
       return { status: "open", label: "OPEN", text: "Open" };
     }

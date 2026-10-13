@@ -19,8 +19,8 @@ if (!function_exists('redirect_path_for_role')) {
     function redirect_path_for_role(string $role): string
     {
         return $role === 'admin'
-            ? '../private/order-requests.html'
-            : '../private/order-requests.html';
+            ? '../public/Customer_Orders.html'
+            : '../public/Customer_Orders.html';
     }
 }
 

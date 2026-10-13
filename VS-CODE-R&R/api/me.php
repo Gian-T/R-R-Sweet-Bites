@@ -24,7 +24,7 @@ try {
         json_fail('Not logged in.', 401);
     }
 
-    echo json_encode(['ok' => true, 'name' => trim((string) $row['full_name'])], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['ok' => true, 'name' => trim((string) $row['full_name']), 'csrf' => csrf_token()], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
     error_log('me.php failed: ' . $e->getMessage());
     json_fail('Could not load account.', 500);
