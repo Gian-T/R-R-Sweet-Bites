@@ -193,30 +193,50 @@ textarea.in{height:70px;resize:vertical}
 
   /* Demo flow: this page saves "rr_flow" when a request is submitted.
      The notification opens the order status view of THIS page (#status). */
-  function flowNotifs() {
-  let f = null;
-  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
-  if (!f) return null;
-  const ok = f.status === "confirmed";
-  const list = [];
-  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
-    list.push({
-      type: "quote",
-      title: "Quotation Ready",
-      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
-      unread: !f.quoteRead,
-      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
-    });
+    function flowNotifs() {
+    let f = null;
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    if (!f) return null;
+    const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
+    if (f.quoted) {
+      list.push({
+        type: "quote", title: "Quotation Ready",
+        text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+        unread: !f.quoteRead,
+        href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+      });
+    }
+    if (f.status) {
+      const ok = f.status === "confirmed";
+      list.push({
+        type: "order",
+        title: ok ? "Order Confirmed" : "Order Request Submitted",
+        text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+        unread: f.readStatus !== f.status,
+        href: "Custom-Cake-Request.html#status"
+      });
+    }
+    return list.length ? list : null;
   }
-  list.push({
-    type: "order",
-    title: ok ? "Order Confirmed" : "Order Request Submitted",
-    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-    unread: f.readStatus !== f.status,
-    href: "Custom-Cake-Request.html#status"
-  });
-  return list;
-}
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -297,7 +317,7 @@ textarea.in{height:70px;resize:vertical}
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -311,7 +331,7 @@ textarea.in{height:70px;resize:vertical}
 
     const host = document.getElementById("site-header");
     if (host) {
-      host.innerHTML = '<header class="rr-header"><nav class="rr-nav" aria-label="Main"><a class="rr-brand" href="' + PAGE.home + '"><img class="rr-logo" src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></a><div class="rr-links">' + links + '</div><div class="rr-tools">' + tools + "</div></nav></header>";
+      host.innerHTML = '<header class="rr-header"><nav class="rr-nav" aria-label="Main"><div class="rr-brand"><img class="rr-logo" src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo"><span>R&amp;R Sweet Bites</span></div><div class="rr-links">' + links + '</div><div class="rr-tools">' + tools + "</div></nav></header>";
     }
     const foot = document.getElementById("site-footer");
     if (foot) {
@@ -345,7 +365,9 @@ textarea.in{height:70px;resize:vertical}
   }
 
   // Lets the page redraw the bell after the notification changes (read / new admin update)
-  RR.refresh = () => { if (DEMO_MODE) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); } };
+    RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   async function getJSON(url) {
     const res = await fetch(url, { credentials: "same-origin" });

@@ -35,5 +35,5 @@ if (ini_get('session.use_cookies')) {
 session_destroy();
 
 // Route based on the role we captured earlier
-header('Location: ' . ($wasAdmin ? '../public/admin-login.html' : '../public/login.html'));
+header('Location: ' . ($wasAdmin ? '../private/admin-login.html' : '../public/login.html'));
 exit;

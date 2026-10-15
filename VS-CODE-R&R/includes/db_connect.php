@@ -149,6 +149,19 @@ function json_fail(string $msg, int $code = 400): void
     exit;
 }
 
+function env(string $key): string
+{
+    $v = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
+    if ($v !== false && $v !== null && $v !== '') return (string) $v;
+
+    static $file = null;
+    if ($file === null) {
+        $path = __DIR__ . '/../.env';   // use the same .env path that env.php uses
+        $file = is_file($path) ? (parse_ini_file($path, false, INI_SCANNER_RAW) ?: []) : [];
+    }
+    return trim((string) ($file[$key] ?? ''), "\"'");
+}
+
 /** Returns the logged-in customer's id, or stops with 401 if nobody is logged in. */
 // function require_customer(): int
 // {
@@ -173,7 +186,14 @@ const STATUS_LABEL = [
     'ready_for_pickup' => 'Ready for Pickup', 'completed' => 'Completed',
     'cancellation_requested' => 'Cancellation Requested', 'cancelled' => 'Cancelled',
 ];
-const PAY_STATUS = ['pending_verification' => 'Pending Verification', 'verified' => 'Verified', 'rejected' => 'Rejected'];
+const PAY_STATUS = [
+    'pending_verification' => 'Pending Verification',
+    'pending_gateway'      => 'Awaiting GCash Payment',
+    'verified'             => 'Verified',
+    'rejected'             => 'Rejected',
+    'failed'               => 'Failed',
+    'expired'              => 'Expired',
+];
 const PAY_TYPE   = ['downpayment' => '20% Downpayment', 'balance' => 'Balance'];
 const PAY_METHOD = ['gcash' => 'GCash', 'bank_transfer' => 'Bank Transfer', 'cash' => 'Cash'];
 const LEVEL      = ['low' => 'Low', 'medium' => 'Moderate', 'high' => 'Luxury'];

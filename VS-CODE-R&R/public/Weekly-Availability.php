@@ -150,7 +150,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
   const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
-    home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
+    home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.php",
     orders: "Customer_Orders.html", messages: "messages.html", notifications: "Customer_Orders.html#notifications",
     settings: "settings.html", reviews: "my-reviews.html", login: "login.html", register: "register.html"
   };
@@ -167,30 +167,50 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
   ];
 
     /* Demo flow: Custom-Cake-Request.html saves "rr_flow" when a request is submitted */
-  function flowNotifs() {
-  let f = null;
-  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
-  if (!f) return null;
-  const ok = f.status === "confirmed";
-  const list = [];
-  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
-    list.push({
-      type: "quote",
-      title: "Quotation Ready",
-      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
-      unread: !f.quoteRead,
-      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
-    });
+    function flowNotifs() {
+    let f = null;
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    if (!f) return null;
+    const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
+    if (f.quoted) {
+      list.push({
+        type: "quote", title: "Quotation Ready",
+        text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+        unread: !f.quoteRead,
+        href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+      });
+    }
+    if (f.status) {
+      const ok = f.status === "confirmed";
+      list.push({
+        type: "order",
+        title: ok ? "Order Confirmed" : "Order Request Submitted",
+        text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+        unread: f.readStatus !== f.status,
+        href: "Custom-Cake-Request.html#status"
+      });
+    }
+    return list.length ? list : null;
   }
-  list.push({
-    type: "order",
-    title: ok ? "Order Confirmed" : "Order Request Submitted",
-    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-    unread: f.readStatus !== f.status,
-    href: "Custom-Cake-Request.html#status"
-  });
-  return list;
-}
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   if (ACTIVE === "submit") { PAGE.gallery = "Customer_Orders.html#gallery"; PAGE.orders = "Customer_Orders.html#orders"; PAGE.notifications = "Customer_Orders.html#notifications"; PAGE.submit = "#request"; PAGE.messages = "#messages"; PAGE.settings = "#account"; }   // this page also holds Messages
@@ -213,6 +233,10 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
 
   const RR = (window.RR = { user: null, notifs: [], esc, ICON, notifIcon, PAGE });
   const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+
+  RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   /* ===== STYLES ===== */
   const css = `
@@ -277,7 +301,7 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -513,9 +537,15 @@ main{flex:1;width:100%;max-width:980px;margin:0 auto;padding:20px 20px 50px}
     if (DEMO_MODE) return demoDay(y, m, d);
     const key = y + "-" + pad(m + 1) + "-" + pad(d);
     const w = weeks.find((x) => key >= x.week_start_date && key <= x.week_end_date);
-    if (!w) return { status: "booked", label: "NOT OPEN", text: "Not open for orders yet" };   // no week row = cannot be ordered
+    if (!w) return { status: "booked", label: "NOT OPEN", text: "Not open for orders yet" };
+
+    // Per-day flag wins over the week status: the admin blocked this specific date.
+    if (w.days && typeof w.days[key] !== "undefined" && !w.days[key]) {
+      return { status: "booked", label: "NOT AVAILABLE", text: "Not available" };
+    }
+
     if (w.status === "open") {
-      const n = Number(w.slots_left);                      // optional: the server may send slots_left
+      const n = Number(w.slots_left);
       if (Number.isFinite(n) && n > 0 && n <= 5) return { status: "limited", label: n + " SLOT", text: "Limited slots" };
       return { status: "open", label: "OPEN", text: "Open" };
     }

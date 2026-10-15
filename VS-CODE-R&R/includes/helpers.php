@@ -24,6 +24,13 @@ function json_out(array $data, int $code = 200): never
     exit;
 }
 
+function redirect_path_for_role(string $role): string
+{
+    return $role === 'admin'
+        ? '../private/order-requests.html'   // your real admin landing page
+        : '../public/Customer_Orders.html';
+}
+
 /** True if $ip is in the comma-separated list of IPs / CIDR ranges. */
 function ip_in_list(string $ip, array $list): bool
 {

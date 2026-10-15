@@ -55,16 +55,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
         }
 
         $st = db()->query(
-            "SELECT o.order_id, o.status, o.cake_type, o.difficulty_level,
-                    o.design_description, o.preferred_date, o.is_rush, o.created_at,
-                    c.full_name, c.email
-               FROM `order` o
-               JOIN customer c ON c.customer_id = o.customer_id
-              ORDER BY FIELD(o.status,
-                             'pending_review','quoted','confirmed',
-                             'in_production','completed','cancelled'),
-                       o.preferred_date ASC,
-                       o.order_id DESC"
+             "SELECT o.order_id, o.status, o.cake_type, o.difficulty_level,
+            o.design_description, o.preferred_date, o.is_rush, o.created_at,
+            c.full_name, c.email,
+            (SELECT q.status FROM quotation q
+              WHERE q.order_id = o.order_id
+              ORDER BY q.version_number DESC LIMIT 1) AS quotation_status
+            FROM `order` o
+            JOIN customer c ON c.customer_id = o.customer_id
+            ORDER BY FIELD(o.status,
+                     'pending_review','quoted','confirmed',
+                     'in_production','completed','cancelled'),
+               o.preferred_date ASC,
+               o.order_id DESC"
         );
 
         $orders = [];
@@ -83,6 +86,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET') {
                 'initials'           => initials($row['full_name']),
                 'email'              => $row['email'],
                 'occasion'           => occasion_label($row['cake_type']),
+                'quotation_status' => $row['quotation_status'],
             ];
         }
 

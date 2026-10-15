@@ -74,13 +74,17 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
 /* Upload */
 .upload-box{border:2px dashed #E5C3C6;border-radius:10px;padding:1.6rem 1rem;text-align:center;background:#fff;display:flex;flex-direction:column;align-items:center;gap:.4rem;transition:all .3s ease;cursor:pointer}
 .upload-box:hover,.upload-box.drag-over{background:#FDF5F6;border-color:var(--color-primary)}
+.upload-box.error{border-color:#C65F62;background:#FDF5F6}
 .upload-icon-circle{width:36px;height:36px;border-radius:50%;background:#F3DEDF;color:var(--color-primary);display:flex;align-items:center;justify-content:center}
 .upload-title{font-weight:600;font-size:.85rem}
 .upload-hint{font-size:.72rem;color:var(--color-text-muted)}
 .btn-browse{font-family:var(--font-button);font-size:.8rem;font-weight:600;padding:.4rem 1.2rem;border-radius:20px;border:1px solid var(--color-primary);background:#fff;color:var(--color-primary);cursor:pointer;transition:all .3s ease}
 .btn-browse:hover{background:var(--color-primary);color:#fff}
-.image-previews{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:.9rem}
-.preview-thumb{width:70px;height:70px;border-radius:8px;object-fit:cover;border:1px solid var(--color-border)}
+.image-previews{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:.9rem}
+.preview-wrap{position:relative;display:inline-block}
+.preview-thumb{width:70px;height:70px;border-radius:8px;object-fit:cover;border:1px solid var(--color-border);display:block}
+.preview-remove{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;border:0;background:#C65F62;color:#fff;font-size:14px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:transform .15s}
+.preview-remove:hover{transform:scale(1.1);background:#a84b4e}
 
 /* Submit */
 .submit-btn-wrapper{margin-top:1.6rem}
@@ -101,7 +105,7 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
 .btn-modal-primary{width:100%;padding:.7rem;background:var(--color-primary);color:#fff;border:none;border-radius:10px;font-family:var(--font-button);font-weight:600;font-size:.95rem;cursor:pointer;transition:background .2s}
 .btn-modal-primary:hover{background:var(--color-primary-hover)}
 
-/* ===== Order status view (opens from the bell notification: #status) ===== */
+/* ===== Order status view ===== */
 .status-wrap{max-width:980px;margin:0 auto;padding:1.2rem 1.5rem 3.5rem;width:100%;flex:1 0 auto}
 .status{display:flex;flex-direction:column;align-items:center;text-align:center;padding-top:6px}
 .ico{width:56px;height:56px;border-radius:50%;background:#F6D9DC;color:var(--color-text-dark);display:grid;place-items:center;margin-bottom:22px}
@@ -152,14 +156,12 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
   "use strict";
 
   /* ===== SETTINGS ===== */
-  // true  = preview as a logged-in customer (no backend needed)
-  // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
   const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
-    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
-    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.html#messages", notifications: "Customer_Orders.html#notifications",
-    settings: "Weekly-Availability.html#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.php",
+    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.php#messages", notifications: "Customer_Orders.html#notifications",
+    settings: "Weekly-Availability.php#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
   };
   const DEMO_USER = { name: "Lia Norman" };
   const DEMO_NOTIFS = [
@@ -169,32 +171,50 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
     { type: "message", title: "New Message From R&R Sweet Bites", text: "You have a new message about your order.", unread: false }
   ];
 
-  /* Demo flow: this page saves "rr_flow" when a request is submitted.
-     The notification opens the order status view of THIS page (#status). */
   function flowNotifs() {
-  let f = null;
-  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
-  if (!f) return null;
-  const ok = f.status === "confirmed";
-  const list = [];
-  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
-    list.push({
-      type: "quote",
-      title: "Quotation Ready",
-      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
-      unread: !f.quoteRead,
-      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
-    });
+    let f = null;
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    if (!f) return null;
+    const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
+    if (f.quoted) {
+      list.push({
+        type: "quote", title: "Quotation Ready",
+        text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+        unread: !f.quoteRead,
+        href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+      });
+    }
+    if (f.status) {
+      const ok = f.status === "confirmed";
+      list.push({
+        type: "order",
+        title: ok ? "Order Confirmed" : "Order Request Submitted",
+        text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+        unread: f.readStatus !== f.status,
+        href: "Custom-Cake-Request.html#status"
+      });
+    }
+    return list.length ? list : null;
   }
-  list.push({
-    type: "order",
-    title: ok ? "Order Confirmed" : "Order Request Submitted",
-    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-    unread: f.readStatus !== f.status,
-    href: "Custom-Cake-Request.html#status"
-  });
-  return list;
-}
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -275,7 +295,7 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -316,14 +336,15 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
         btn.setAttribute("aria-expanded", String(willOpen));
       });
     });
-    if (docWired) return;   // these two listeners only need adding once, even if the header is redrawn
+    if (docWired) return;
     docWired = true;
     document.addEventListener("click", (e) => { if (!e.target.closest(".rr-menu-wrap") || e.target.closest(".rr-pop a")) closeAllMenus(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAllMenus(); });
   }
 
-  // Lets the page redraw the bell after the notification changes (read / new admin update)
-  RR.refresh = () => { if (DEMO_MODE) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); } };
+  RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   async function getJSON(url) {
     const res = await fetch(url, { credentials: "same-origin" });
@@ -356,7 +377,7 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
 
 <!-- ===== VIEW 1: CUSTOM CAKE REQUEST FORM ===== -->
 <main class="main-container" id="viewRequest">
-  <a class="back-btn" href="Weekly-Availability.html">Back to calendar</a>
+  <a class="back-btn" href="Weekly-Availability.php">Back to calendar</a>
 
   <div class="form-card">
     <div class="form-header">
@@ -383,7 +404,6 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
     </div>
 
     <form id="cakeRequestForm" enctype="multipart/form-data" novalidate>
-      <!-- Customer identity is obtained securely from the logged-in session by the backend. -->
       <input type="hidden" name="cake_type" id="cakeType" value="cake">
 
       <!-- 1. Cake Type / Occasion -->
@@ -534,9 +554,10 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
           <div class="upload-title">Upload an image</div>
           <div class="upload-hint">PNG, JPG up to 10MB (Max 3 images)</div>
           <button type="button" class="btn-browse" onclick="document.getElementById('fileInput').click()">Browse Files</button>
-          <input type="file" id="fileInput" name="reference_images[]" accept="image/jpeg,image/png,image/webp" multiple style="display:none">
+          <input type="file" id="fileInput" name="reference_images[]" accept="image/jpeg,image/png,image/webp" multiple required style="display:none">
         </div>
         <div class="image-previews" id="previewContainer"></div>
+        <p id="uploadError" role="alert" aria-live="polite" style="display:none;color:#C65F62;font-size:.8rem;margin-top:.5rem;font-weight:600">Please upload at least 1 reference image.</p>
       </div>
 
       <div class="submit-btn-wrapper">
@@ -547,7 +568,7 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
   </div>
 </main>
 
-<!-- ===== VIEW 2: ORDER STATUS (opens from the bell notification: Custom-Cake-Request.html#status) ===== -->
+<!-- ===== VIEW 2: ORDER STATUS ===== -->
 <main class="status-wrap" id="viewStatus" hidden>
   <a class="back-btn" href="Customer_Orders.html#notifications">Back to notification</a>
 
@@ -561,18 +582,16 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
       <div class="steps" id="statusSteps"></div>
     </div>
 
-    <!-- Only shown after the shop confirms the request -->
     <a class="proceed" id="proceedBtn" href="Customer-Fulfillment.html" hidden>Proceed</a>
   </section>
 
-  <!-- DEMO ONLY: stands in for the admin pressing "Confirm". Delete this block once the backend sets the status. -->
   <p class="demo" id="demoBox" hidden>Demo only:
     <button type="button" id="simConfirm">Simulate admin confirmation</button>
     <button type="button" id="simReset">Reset</button>
   </p>
 </main>
 
-<!-- Success popup: shown after the request is submitted -->
+<!-- Success popup -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <div class="success-check">
@@ -590,17 +609,13 @@ body{font-family:var(--font-text);background:var(--bg-main);color:var(--color-te
 
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
-  /* ===== SETTINGS ===== */
-  // true  = no backend needed: the request is accepted right away and the status comes from localStorage
-  // false = real mode: posts the form to ../api/custom-cake-request.php
   const DEMO_MODE = false;
-  const AFTER_OKAY_PAGE = 'Customer_Orders.html#orders';   // where "Okay" goes (My Order page)
+  const AFTER_OKAY_PAGE = 'Customer_Orders.html#orders';
   const FLOW_KEY = 'rr_flow';
 
   const $ = (id) => document.getElementById(id);
-  await RR.ready;   // wait for the header so the bell can be redrawn later
+  await RR.ready;
 
-  /* ---------- Demo flow storage ---------- */
   const readFlow = () => { try { return JSON.parse(localStorage.getItem(FLOW_KEY) || 'null'); } catch (e) { return null; } };
   const writeFlow = (f) => { try { if (f) localStorage.setItem(FLOW_KEY, JSON.stringify(f)); else localStorage.removeItem(FLOW_KEY); } catch (e) {} };
 
@@ -619,6 +634,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const dropzone = $('uploadDropzone');
   const fileInput = $('fileInput');
   const previewContainer = $('previewContainer');
+  const uploadErr = $('uploadError');
   const MAX_FILES = 3;
 
   ['dragenter', 'dragover'].forEach(ev =>
@@ -630,39 +646,100 @@ document.addEventListener('DOMContentLoaded', async () => {
   dropzone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
   fileInput.addEventListener('change', e => handleFiles(e.target.files));
 
-  function handleFiles(files) {
-    const list = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, MAX_FILES);
+  function currentFiles() {
+    return Array.from(fileInput.files || []);
+  }
+
+  function setFiles(list) {
     const dt = new DataTransfer();
     list.forEach(f => dt.items.add(f));
     fileInput.files = dt.files;
+  }
 
+  function renderPreviews() {
+    const files = currentFiles();
     previewContainer.innerHTML = '';
-    list.forEach(file => {
+
+    files.forEach((file, index) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'preview-wrap';
+
       const reader = new FileReader();
       reader.onload = ev => {
         const img = document.createElement('img');
         img.src = ev.target.result;
         img.alt = '';
         img.classList.add('preview-thumb');
-        previewContainer.appendChild(img);
+        wrap.appendChild(img);
+
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'preview-remove';
+        remove.setAttribute('aria-label', 'Remove this image');
+        remove.textContent = '×';
+        remove.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const next = currentFiles().filter((_, i) => i !== index);
+          setFiles(next);
+          renderPreviews();
+          updateUploadState();
+        });
+        wrap.appendChild(remove);
+
+        previewContainer.appendChild(wrap);
       };
       reader.readAsDataURL(file);
     });
   }
 
-  /* ---------- Selected date (comes from the Weekly Availability page) ---------- */
+  function updateUploadState() {
+    const files = currentFiles();
+    if (files.length) {
+      uploadErr.style.display = 'none';
+      dropzone.classList.remove('error');
+    } else {
+      uploadErr.style.display = 'block';
+      dropzone.classList.add('error');
+    }
+  }
+
+  function handleFiles(files) {
+    const incoming = Array.from(files).filter(f => f.type.startsWith('image/'));
+    const existing = currentFiles();
+
+    const seen = new Set();
+    const combined = [];
+    for (const f of [...existing, ...incoming]) {
+      const key = f.name + '|' + f.size + '|' + f.lastModified;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      combined.push(f);
+      if (combined.length >= MAX_FILES) break;
+    }
+
+    setFiles(combined);
+    renderPreviews();
+    updateUploadState();
+
+    if (incoming.length > 0 && combined.length < existing.length + incoming.length) {
+      // Some files were dropped because MAX_FILES is reached
+      if (combined.length === MAX_FILES && existing.length + incoming.length > MAX_FILES) {
+        // silently keep only 3; no need to alert
+      }
+    }
+  }
+
+  /* ---------- Selected date ---------- */
   const localISO = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const todayISO = localISO(new Date());   // local date, not UTC
+  const todayISO = localISO(new Date());
   const requestedDate = new URLSearchParams(window.location.search).get('preferred_date');
   const preferredDateInput = $('preferredDateInput');
   const fromCalendar = !!requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate) && requestedDate >= todayISO;
 
   preferredDateInput.min = todayISO;
   preferredDateInput.value = fromCalendar ? requestedDate : todayISO;
-  if (fromCalendar) {
-    // the customer already picked an open date on the calendar, so it is locked
-    preferredDateInput.readOnly = true;
-  }
+  if (fromCalendar) preferredDateInput.readOnly = true;
 
   /* ---------- Submit ---------- */
   const cakeForm = $('cakeRequestForm');
@@ -673,7 +750,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   cakeForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     requestStatus.textContent = '';
-    if (!cakeForm.reportValidity()) return;   // shows "Please fill out this field" on the first empty required field
+
+    // Reference image FIRST — hidden input can't show native tooltips
+    if (!fileInput.files || fileInput.files.length === 0) {
+      uploadErr.style.display = 'block';
+      dropzone.classList.add('error');
+      dropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    uploadErr.style.display = 'none';
+    dropzone.classList.remove('error');
+
+    if (!cakeForm.reportValidity()) return;
+
     submitButton.disabled = true;
 
     try {
@@ -681,7 +770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (DEMO_MODE) {
         result = { success: true, order_id: Math.floor(Date.now() / 1000) % 100000 };
       } else {
-        const fd = new FormData(cakeForm);   // also includes the date + rush inputs linked with form="cakeRequestForm"
+        const fd = new FormData(cakeForm);
         fd.append('csrf', RR.csrf || '');
         const response = await fetch('../api/custom-cake-request.php', {
           method: 'POST',
@@ -699,8 +788,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      // Demo flow: remember the new request so the bell can show it (readStatus null = unread, bell shows 1).
-      // In real mode your backend creates the notification, so this is only for the demo.
       if (DEMO_MODE) {
         writeFlow({ ref: 'ORD-' + String(result.order_id).padStart(5, '0'), status: 'pending', readStatus: null });
         RR.refresh();
@@ -716,7 +803,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
-  /* "Okay" goes to the My Order page */
   $('modalOkay').addEventListener('click', () => { window.location.href = AFTER_OKAY_PAGE; });
 
   /* ================= ORDER STATUS VIEW ================= */
@@ -756,7 +842,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toast = (m) => { const el = $('toast'); el.textContent = m; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 3500); };
     $('simConfirm').addEventListener('click', () => {
       const flow = readFlow() || { ref: 'ORD-00001' };
-      flow.status = 'confirmed'; flow.readStatus = null;   // new unread notification
+      flow.status = 'confirmed'; flow.readStatus = null;
       writeFlow(flow);
       RR.refresh(); syncNav();
       toast('Admin confirmed the request. Click the bell to open it.');
@@ -768,8 +854,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  /* ================= VIEW SWITCHING (form / #status) ================= */
-  // The header's active underline follows the view: "Submit Request" for the form, "My Order" for the status page
+  /* ================= VIEW SWITCHING ================= */
   function syncNav() {
     const on = location.hash === '#status' ? RR.PAGE.orders : RR.PAGE.submit;
     document.querySelectorAll('.rr-links a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === on));
@@ -782,7 +867,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     let title = 'Custom Cake Request';
     if (isStatus) {
       title = renderStatus();
-      // opening the notification marks it as read, so the bell number goes away
       const flow = readFlow();
       if (DEMO_MODE && flow && flow.readStatus !== flow.status) {
         flow.readStatus = flow.status;
@@ -795,7 +879,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.scrollTo({ top: 0 });
   }
   addEventListener('hashchange', showView);
-  // clicking a notification while already on #status doesn't change the address, so refresh the view ourselves
   document.addEventListener('click', (e) => { if (e.target.closest('a[href$="#status"]')) setTimeout(showView, 0); });
 
   showView();

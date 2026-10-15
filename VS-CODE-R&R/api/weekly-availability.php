@@ -32,20 +32,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
         require_once __DIR__ . '/../includes/db_connect.php';
         $pdo = db();
-        $monthStart = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-        $monthEnd = $monthStart->modify('last day of this month');
+        $monthStart = (new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month)))->format('Y-m-d');
+        $monthEnd   = (new DateTimeImmutable($monthStart))->modify('last day of this month')->format('Y-m-d');
+
         $statement = $pdo->prepare(
-            'SELECT week_start_date, week_end_date, status
-             FROM weekly_availability
-             WHERE week_start_date <= :month_end AND week_end_date >= :month_start
-             ORDER BY week_start_date'
+            'SELECT w.week_id, w.week_start_date, w.week_end_date, w.status,
+                    d.day_date, d.is_active
+               FROM weekly_availability w
+               LEFT JOIN weekly_availability_day d ON d.week_id = w.week_id
+              WHERE w.week_start_date <= :month_end
+                AND w.week_end_date   >= :month_start
+              ORDER BY w.week_start_date, d.day_date'
         );
         $statement->execute([
-            'month_start' => $monthStart->format('Y-m-d'),
-            'month_end' => $monthEnd->format('Y-m-d'),
+            'month_start' => $monthStart,
+            'month_end'   => $monthEnd,
         ]);
 
-        respond(200, ['success' => true, 'weeks' => $statement->fetchAll()]);
+        // Group the joined rows: one entry per week, with a date → is_active map.
+        $weeksById = [];
+        foreach ($statement->fetchAll() as $row) {
+            $wid = (int) $row['week_id'];
+            if (!isset($weeksById[$wid])) {
+                $weeksById[$wid] = [
+                    'week_id'         => $wid,
+                    'week_start_date' => $row['week_start_date'],
+                    'week_end_date'   => $row['week_end_date'],
+                    'status'          => $row['status'],
+                    'days'            => [],
+                ];
+            }
+            if ($row['day_date'] !== null) {
+                $weeksById[$wid]['days'][$row['day_date']] = (int) $row['is_active'];
+            }
+        }
+
+        respond(200, ['success' => true, 'weeks' => array_values($weeksById)]);
     } catch (Throwable $exception) {
         error_log('Weekly availability read error: ' . $exception->getMessage());
         respond(500, ['success' => false, 'error' => 'Unable to load weekly availability.']);
@@ -66,9 +88,14 @@ if (!$adminId) {
     respond(401, ['success' => false, 'error' => 'Admin login is required to change availability.']);
 }
 
-$sessionToken = $_SESSION['csrf_token'] ?? '';
+$sessionToken = $_SESSION['csrf'] ?? ''; // key set by csrf_token()
 $submittedToken = $_POST['csrf'] ?? ($_SERVER['HTTP_X_CSRF_TOKEN'] ?? '');
-if (!is_string($sessionToken) || !is_string($submittedToken) || !hash_equals($sessionToken, $submittedToken)) {
+if (
+    !is_string($sessionToken)
+    || $sessionToken === ''
+    || !is_string($submittedToken)
+    || !hash_equals($sessionToken, $submittedToken)
+) {
     respond(403, ['success' => false, 'error' => 'Your session expired. Refresh the page and try again.']);
 }
 

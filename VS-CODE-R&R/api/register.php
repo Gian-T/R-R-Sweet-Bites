@@ -19,13 +19,6 @@ require_once __DIR__ . '/../includes/db_connect.php';
 require_once __DIR__ . '/../includes/helpers.php';
 require_once __DIR__ . '/../includes/verification.php';
 
-function redirect_path_for_role(string $role): string
-{
-    return $role === 'admin'
-        ? '../public/Weekly-Availability.html'
-        : '../public/Customer_Orders.html';
-}
-
 /* ---------- Already signed in? Send them home ---------- */
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && ($me = current_user())) {
     header('Location: ' . redirect_path_for_role($me['role']));

@@ -102,12 +102,12 @@ aside{display:flex;flex-direction:column;gap:1rem}
   /* ===== SETTINGS ===== */
   // true  = preview as a logged-in customer (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
-    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
-    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.html#messages", notifications: "Customer_Orders.html#notifications",
-    settings: "Weekly-Availability.html#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.php",
+    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.php#messages", notifications: "Customer_Orders.html#notifications",
+    settings: "Weekly-Availability.php#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
   };
   const DEMO_USER = { name: "Lia Norman" };
   const DEMO_NOTIFS = [
@@ -117,30 +117,50 @@ aside{display:flex;flex-direction:column;gap:1rem}
     { type: "message", title: "New Message From R&R Sweet Bites", text: "You have a new message about your order.", unread: false }
   ];
 
-  function flowNotifs() {
-  let f = null;
-  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
-  if (!f) return null;
-  const ok = f.status === "confirmed";
-  const list = [];
-  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
-    list.push({
-      type: "quote",
-      title: "Quotation Ready",
-      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
-      unread: !f.quoteRead,
-      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
-    });
+    function flowNotifs() {
+    let f = null;
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    if (!f) return null;
+    const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
+    if (f.quoted) {
+      list.push({
+        type: "quote", title: "Quotation Ready",
+        text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+        unread: !f.quoteRead,
+        href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+      });
+    }
+    if (f.status) {
+      const ok = f.status === "confirmed";
+      list.push({
+        type: "order",
+        title: ok ? "Order Confirmed" : "Order Request Submitted",
+        text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+        unread: f.readStatus !== f.status,
+        href: "Custom-Cake-Request.html#status"
+      });
+    }
+    return list.length ? list : null;
   }
-  list.push({
-    type: "order",
-    title: ok ? "Order Confirmed" : "Order Request Submitted",
-    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-    unread: f.readStatus !== f.status,
-    href: "Custom-Cake-Request.html#status"
-  });
-  return list;
-}
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -157,6 +177,10 @@ aside{display:flex;flex-direction:column;gap:1rem}
 
   const RR = (window.RR = { user: null, notifs: [], esc, ICON, PAGE });
   const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+
+  RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   /* ===== STYLES ===== */
   const css = `
@@ -221,7 +245,7 @@ aside{display:flex;flex-direction:column;gap:1rem}
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -395,7 +419,7 @@ aside{display:flex;flex-direction:column;gap:1rem}
   /* ===== SETTINGS ===== */
   // true  = preview: the quotation is built from the order saved by the fulfillment page (no backend needed)
   // false = real mode: loads and saves through ../api/quotation.php
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = "../api/quotation.php";
   const ORDERS_KEY = "rr_orders";
   const DELIVERY_FEE = 350, RUSH_FEE = 350;     // demo prices (total = order price + these)
@@ -447,19 +471,43 @@ aside{display:flex;flex-direction:column;gap:1rem}
   function apiView(d) {
     const o = d.order, latest = (d.revisions || [])[0] || null, st = latest ? latest.status : "";
     csrf = d.csrf || "";
+
+    const size = (o.cake_width && o.cake_height)
+        ? (o.cake_width + " × " + o.cake_height)
+        : "—";
+
+    const tiers = (o.num_layers && o.num_tiers)
+        ? (o.num_layers + " layers / " + o.num_tiers + " tiers")
+        : "—";
+
+    const parts = [];
+    if (o.flavor)         parts.push(o.flavor_custom && o.flavor === "others" ? o.flavor_custom : o.flavor);
+    if (o.flavor_variant) parts.push(o.flavor_variant);
+    if (o.frosting)       parts.push("Frosting: " + o.frosting);
+    if (o.filling)        parts.push("Filling: " + o.filling);
+    const flavors = parts.length ? parts.join(" · ") : "—";
+
+
     return {
-      key: o.order_id, ref: "RQ-" + String(o.order_id).padStart(4, "0"), client: o.client_name || o.initials || "—",
-      tag: (latest ? latest.status_label : "No Quotation Yet").toUpperCase(), ok: st === "accepted",
-      issued: latest ? latest.created_at : "—", expires: "", validity: "—",
-      cakeType: o.cake_type_label || o.cake_type || "—", size: "—",
-      event: toDate(o.preferred_date) ? fmt(toDate(o.preferred_date)) : "—", tiers: "—", flavors: "—",
-      complexity: o.difficulty_label || "—",
-      items: [["Quoted total for your custom cake order", latest ? latest.quoted_price : 0]],
-      notes: latest && latest.remarks ? latest.remarks : "No notes yet.",
-      canAct: st === "pending",
-      lock: st === "accepted" ? "Quotation accepted. Thank you!" : st === "revision_requested" ? "Revision requested. We'll be in touch." : st === "revised" ? "A newer version is available." : ""
+        key: o.order_id, ref: "RQ-" + String(o.order_id).padStart(4, "0"),
+        client: o.client_name || o.initials || "—",
+        tag: (latest ? latest.status_label : "No Quotation Yet").toUpperCase(),
+        ok: st === "accepted",
+        issued: latest ? latest.created_at : "—",
+        expires: "", validity: "—",
+        cakeType: o.cake_type_label || o.cake_type || "—",
+        size, tiers, flavors,
+        event: toDate(o.preferred_date) ? fmt(toDate(o.preferred_date)) : "—",
+        complexity: o.difficulty_label || "—",
+        items: [["Quoted total for your custom cake order", latest ? latest.quoted_price : 0]],
+        notes: latest && latest.remarks ? latest.remarks : "No notes yet.",
+        canAct: st === "pending",
+        lock: st === "accepted" ? "Quotation accepted. Thank you!"
+            : st === "revision_requested" ? "Revision requested. We'll be in touch."
+            : st === "revised" ? "A newer version is available."
+            : ""
     };
-  }
+}
 
   function show(v) {
     view = v; canAct = v.canAct;

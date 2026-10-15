@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require __DIR__ . '/../includes/db_connect.php';
+require __DIR__ . '/../includes/payments.php';
 
 header('Content-Type: application/json; charset=utf-8');
 ini_set('display_errors', '0');
@@ -29,13 +30,13 @@ function out(array $data, int$code = 200): void
     exit;
 }
 
-function pay_mode(array $fig): string
-{
-    if ($fig['has_pending']) return 'pending';
-    if (!$fig['dp_paid'])    return 'downpayment';
-    if ($fig['remaining'] > 0) return 'balance';
-    return 'paid';
-}
+// function pay_mode(array $fig): string
+// {
+//     if ($fig['has_pending']) return 'pending';
+//     if (!$fig['dp_paid'])    return 'downpayment';
+//     if ($fig['remaining'] > 0) return 'balance';
+//     return 'paid';
+// }
 
 $pdo = db();
 $customerId = require_customer();
@@ -60,33 +61,33 @@ if (!$order) {
 }
 
 /** Money figures for an order, recomputed from payment table */
-function order_figures(PDO $pdo, array$order): array
-{
-    $st =$pdo->prepare(
-        "SELECT
-            COALESCE(SUM(CASE WHEN status = 'verified' THEN amount END), 0) AS verified,
-            SUM(status = 'verified') AS verified_count,
-            SUM(status = 'pending_verification') AS pending_count
-         FROM payment WHERE order_id = ?"
-    );
-    $st->execute([$order['order_id']]);
-    $p =$st->fetch();
+// function order_figures(PDO $pdo, array$order): array
+// {
+//     $st =$pdo->prepare(
+//         "SELECT
+//             COALESCE(SUM(CASE WHEN status = 'verified' THEN amount END), 0) AS verified,
+//             SUM(status = 'verified') AS verified_count,
+//             SUM(status = 'pending_verification') AS pending_count
+//          FROM payment WHERE order_id = ?"
+//     );
+//     $st->execute([$order['order_id']]);
+//     $p =$st->fetch();
 
-    $total = (float) ($order['quoted_price'] ?? 0.00);
-    $dpReq = round($total * 0.20, 2); // Defaulting downpayment required to 2%
-    $verified = (float)$p['verified'];
+//     $total = (float) ($order['quoted_price'] ?? 0.00);
+//     $dpReq = round($total * 0.20, 2); // Defaulting downpayment required to 2%
+//     $verified = (float)$p['verified'];
 
-    return [
-        'total'         => $total,
-        'dp_required'   => $dpReq,
-        'verified'      => $verified,
-        'remaining'     => max($total -$verified, 0),
-        'paid_pct'      => $total > 0 ? min(100, (int) round($verified / $total * 100)) : 0,         'verified_cnt'  => (int)$p['verified_count'],
-        'has_pending'   => (int) $p['pending_count'] > 0,
-        'dp_paid'       => $verified + 0.001 >=$dpReq,
-        'amount_due'    => max($dpReq - $verified, 0),         'balance_after' => max($total - max($verified,$dpReq), 0),
-    ];
-}
+//     return [
+//         'total'         => $total,
+//         'dp_required'   => $dpReq,
+//         'verified'      => $verified,
+//         'remaining'     => max($total -$verified, 0),
+//         'paid_pct'      => $total > 0 ? min(100, (int) round($verified / $total * 100)) : 0,         'verified_cnt'  => (int)$p['verified_count'],
+//         'has_pending'   => (int) $p['pending_count'] > 0,
+//         'dp_paid'       => $verified + 0.001 >=$dpReq,
+//         'amount_due'    => max($dpReq - $verified, 0),         'balance_after' => max($total - max($verified,$dpReq), 0),
+//     ];
+// }
 
 /* ---------- POST: downpayment submission ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -100,19 +101,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $general[] = 'Your session expired. Please reload the page and try again.';
     } else {
         $fig  = order_figures($pdo, $order);
-        $mode = pay_mode($fig);   // ← see helper below
+        $mode = pay_mode($fig, $order);   // ← see helper below
 
-        if (in_array($order['status'], ['pending_review', 'quoted'], true)) {
+        if (in_array($mode, ['review', 'quoted'], true)) {
             $general[] = 'This order cannot accept a payment yet.';
-        }
-
-
-        if ($mode === 'pending') {
+        } elseif ($mode === 'pending') {
             $general[] = 'You already have a payment waiting for verification.';
         } elseif ($mode === 'paid') {
             $general[] = 'This order is already fully paid.';
-        } elseif ($mode === 'none') {
-            $general[] = 'This order cannot accept a payment right now.';
         }
 
         if ($method === 'bank') $method = 'bank_transfer';
@@ -146,7 +142,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!$errors && !$general) {
             $fileName = bin2hex(random_bytes(16)) . '.' . PROOF_TYPES[$mime];
-            $saved    = __DIR__ . '/uploads/proofs/' . $fileName;
+            $dir      = dirname(__DIR__) . '/uploads/proofs';   // canonical: <project root>/uploads/proofs
+            if (!is_dir($dir)) @mkdir($dir, 0755, true);
+            $saved    = $dir . '/' . $fileName;
 
             if (!move_uploaded_file($f['tmp_name'], $saved)) {
                 $errors['proof'] = 'Could not save the uploaded file. Check that uploads/proofs is writable.';
@@ -157,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $pdo->prepare(
                         'INSERT INTO payment (order_id, payment_type, payment_method, reference_number, amount, proof_image_url, status)
                          VALUES (?, ?, ?, ?, ?, ?, "pending_verification")'
-                    )->execute([$order['order_id'], $paymentType, $method, $_POST['reference'] ?? null, $amount, $fileName]);
+                    )->execute([$order['order_id'], $paymentType, $method, $_POST['reference'] ?? null, $amount, 'uploads/proofs/' . $fileName]);
 
                     // Only a downpayment moves the order status
                     if ($paymentType === 'downpayment') {
@@ -183,22 +181,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 /* ---------- GET: data for the page ---------- */
 $fig  = order_figures($pdo, $order);
-$mode = pay_mode($fig);
+$mode = pay_mode($fig, $order);
 
 // Quoted state takes priority — customer must accept the quotation first
-if ($order['status'] === 'pending_review') {
-    $mode = 'review';
-} elseif ($order['status'] === 'quoted') {
-    $mode = 'quoted';
-} elseif (!$fig['dp_paid'] && !$fig['has_pending']) {
-    $mode = 'downpayment';
-} elseif ($fig['dp_paid'] && $fig['remaining'] > 0 && !$fig['has_pending']) {
-    $mode = 'balance';
-} elseif ($fig['has_pending']) {
-    $mode = 'pending';
-} else {
-    $mode = 'paid';
-}
+// if ($order['status'] === 'pending_review') {
+//     $mode = 'review';
+// } elseif ($order['status'] === 'quoted') {
+//     $mode = 'quoted';
+// } elseif (!$fig['dp_paid'] && !$fig['has_pending']) {
+//     $mode = 'downpayment';
+// } elseif ($fig['dp_paid'] && $fig['remaining'] > 0 && !$fig['has_pending']) {
+//     $mode = 'balance';
+// } elseif ($fig['has_pending']) {
+//     $mode = 'pending';
+// } else {
+//     $mode = 'paid';
+// }
 
 // Compute the amount due (unused for 'quoted', 'pending', 'paid')
 if ($mode === 'downpayment') {
@@ -275,4 +273,3 @@ out([
     'payment_label'   => $labels[$mode]    ?? 'Submit downpayment for verification',
     'payments'        => $payments,
 ]);
-

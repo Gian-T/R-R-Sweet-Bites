@@ -15,14 +15,7 @@ require_once __DIR__ . '/verification.php';
 const LOGIN_REMEMBER_DAYS       = 30;
 const LOGIN_PENDING_TTL_SECONDS = VERIFY_CODE_TTL_MINUTES * 60;
 
-if (!function_exists('redirect_path_for_role')) {
-    function redirect_path_for_role(string $role): string
-    {
-        return $role === 'admin'
-            ? '../public/Customer_Orders.html'
-            : '../public/Customer_Orders.html';
-    }
-}
+// redirect_path_for_role() lives in includes/helpers.php (single definition).
 
 /** j***@gmail.com */
 function mask_email(string $email): string

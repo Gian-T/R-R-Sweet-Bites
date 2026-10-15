@@ -48,11 +48,11 @@ if ($method === 'cash') {
   $mime = (new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);
   $ext  = ['image/jpeg' => 'jpg', 'image/png' => 'png'][$mime] ?? null;
   if (!$ext) json_fail('Only JPG or PNG files are allowed.');
-  $dir = __DIR__ . '/../uploads';
-  if (!is_dir($dir)) mkdir($dir, 0777, true);
-  $name = bin2hex(random_bytes(8)) . '.' . $ext;
-  move_uploaded_file($f['tmp_name'], "$dir/$name");
-  $proof = 'uploads/' . $name;
+  $dir = __DIR__ . '/../uploads/proofs';   // canonical: <project root>/uploads/proofs
+  if (!is_dir($dir)) mkdir($dir, 0755, true);
+  $name = bin2hex(random_bytes(16)) . '.' . $ext;
+  if (!move_uploaded_file($f['tmp_name'], "$dir/$name")) json_fail('Could not save the uploaded file.', 500);
+  $proof = 'uploads/proofs/' . $name;
 }
 
 $db->begin_transaction();

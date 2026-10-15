@@ -115,6 +115,8 @@ h1.order{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:
 .method strong{font-size:9px;font-weight:600;letter-spacing:.1px;}
 .method small{font-size:5.5px;margin-top:1px;font-weight:500;color:var(--muted);}
 .method.sel{border:1.5px solid var(--pink);}
+.method:disabled{opacity:.5;cursor:not-allowed;}
+.manual-only[hidden]{display:none !important;}
 .method:focus-visible,.drop:focus-visible,.submit:focus-visible,.inp:focus-visible,.nav a:focus-visible,.tabs button:focus-visible,.back:focus-visible{outline:2px solid var(--brown);outline-offset:2px;}
 
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px;}
@@ -258,6 +260,72 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
   .bank-row{font-size:12px;padding:8px 12px}.copy-btn{font-size:14px}
   .payinfo-note{font-size:11px}
 }
+
+/* Cancel order + cancel history */
+.title-row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cancel-btn{border:0;border-radius:6px;background:#DB7F8E;color:#fff;font:600 9px 'Platypi',Georgia,serif;padding:5px 12px;white-space:nowrap}
+.cancel-btn:hover{background:#cf6c7d}
+.cancel-btn[hidden]{display:none}
+@media (min-width:640px){.cancel-btn{font-size:12px;padding:7px 16px}}
+.cf-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:3000;padding:1rem}
+.cf-overlay.active{display:flex}
+.cf-box{background:#fff;border:1px solid var(--pink);border-radius:12px;max-width:420px;width:100%;padding:22px 24px;max-height:90vh;overflow:auto}
+.cf-box h3{font:700 20px 'Playfair Display',serif;margin:0 0 4px;color:var(--brown-deep)}
+.cf-box p.sm{font-size:11px;color:var(--muted);margin:0 0 14px}
+.cf-box select,.cf-box textarea{width:100%;border:1px solid var(--pink);border-radius:5px;background:#fff;padding:7px 9px;font:inherit;font-size:12px;color:var(--brown)}
+.cf-box textarea{min-height:90px;resize:vertical}
+.cf-box select.bad,.cf-box textarea.bad{border-color:var(--status-error);background:#FFF8F8}
+.cf-box label{display:block;font-size:11px;font-weight:600;margin:12px 0 5px}
+.cf-btns{display:flex;gap:10px;margin-top:18px}
+.cf-btns button{flex:1;padding:9px;border-radius:20px;font:600 12px 'Platypi',Georgia,serif;border:1px solid var(--pink)}
+.cf-keep{background:transparent;color:var(--pink)}
+.cf-go{background:var(--pink);color:#fff}
+.cf-go:disabled{opacity:.6}
+.hist .badge.approved{background:#E9EFE5;color:#5c8f63}
+.demo-note{font-size:11px;color:var(--muted);margin:12px 0 0}
+
+/* ===== Down payment status view (#status) ===== */
+#viewStatus[hidden]{display:none}
+.sv{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 8px 6px}
+.sv-ico{width:56px;height:56px;border-radius:50%;background:#F6D9DC;color:var(--brown-deep);display:grid;place-items:center;margin-bottom:22px}
+.sv-ico svg{width:26px;height:26px}
+.sv-title{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:2.2rem;line-height:1.25;color:var(--brown-deep);max-width:520px;margin:0 0 14px}
+.sv-msg{max-width:430px;font-size:.78rem;line-height:1.55;color:#7A6B6C;margin:0 0 26px}
+.sv-tracker{width:100%;max-width:540px;background:#fff;border:1px solid #E58A97;border-radius:12px;padding:14px 20px 18px}
+.sv-tracker h2{font:700 .62rem 'Jost',sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#7a5058;margin:0 0 12px}
+.sv-steps{display:flex;align-items:center;justify-content:center;gap:10px}
+.sv-sep{font-size:.6rem;color:#7a5058}
+.sv-step{display:flex;align-items:center;gap:7px;padding:7px 12px;border-radius:8px;border:1px solid #EBD9D3;background:#F8EBE3;color:#8a7a7b;font:600 .62rem 'Jost',sans-serif;white-space:nowrap}
+.sv-step i{font-style:normal;width:16px;height:16px;border-radius:50%;background:#fff;color:#8a7a7b;display:grid;place-items:center;font-size:.58rem;font-weight:700}
+.sv-step.done{background:#E8F0E6;border-color:#8FA287;color:var(--brown-deep)}
+.sv-step.done i{background:#8FA287;color:#fff}
+.sv-step.now{background:#FBF1DC;border-color:#DDA25E;color:var(--brown-deep)}
+.sv-step.now i{background:#DDA25E;color:#fff}
+.sv-step.soft{opacity:.75}
+.sv-btn{display:inline-block;margin-top:34px;min-width:240px;padding:.7rem 2rem;border-radius:99px;background:#DB7F8E;color:#fff;font:600 .9rem 'Platypi',Georgia,serif;box-shadow:0 4px 12px rgba(219,127,142,.25);transition:background .2s,transform .2s}
+.sv-btn:hover{background:#cf6c7d;transform:translateY(-2px)}
+.sv-btn[hidden]{display:none}
+.sv-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;width:100%;max-width:900px;margin:2rem auto 0;text-align:left}
+.sv-grid[hidden]{display:none}
+.sv-card{background:#FFF8F3;border:1px solid #E58A97;border-radius:14px;padding:1.1rem 1.3rem 1.2rem}
+.sv-head{display:flex;justify-content:space-between;align-items:center;gap:.8rem;margin-bottom:.8rem}
+.sv-ct{font-family:'Playfair Display',Georgia,serif;font-size:1.15rem;font-weight:700;color:var(--brown-deep);line-height:1.3;margin:0}
+.sv-badge{padding:2px 10px;border-radius:99px;background:#DDEBDA;color:#5E7F5B;font:600 .55rem 'Jost',sans-serif;letter-spacing:.5px}
+.sv-rows{margin:0}
+.sv-row{display:flex;justify-content:space-between;gap:1rem;padding:.28rem 0;font-size:.68rem}
+.sv-row dt{color:#88787A;flex:none}
+.sv-row dd{margin:0;font-weight:600;color:var(--brown-deep);text-align:right}
+.sv-style{border-top:1.5px solid var(--pink);margin-top:.6rem;padding-top:.6rem}
+.sv-style small{display:block;font-size:.55rem;color:#88787A;letter-spacing:.3px;margin-bottom:.3rem}
+.sv-style p{font-size:.7rem;font-weight:600;line-height:1.45;margin:0}
+.sv-demo{margin-top:2.2rem;text-align:center;font-size:.72rem;color:#7A6B6C}
+.sv-demo[hidden]{display:none}
+@media(max-width:700px){.sv-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .sv-title{font-size:1.8rem}
+  .sv-steps{flex-direction:column;align-items:stretch}
+  .sv-sep{display:none}
+}
 </style>
 </head>
 <body>
@@ -271,9 +339,9 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
   const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
-    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.html",
-    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.html#messages", notifications: "Customer_Orders.html#notifications",
-    settings: "Weekly-Availability.html#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+    home: "index.html", gallery: "Customer_Orders.html#gallery", submit: "Weekly-Availability.php",
+    orders: "Customer_Orders.html#orders", messages: "Weekly-Availability.php#messages", notifications: "Customer_Orders.html#notifications",
+    settings: "Weekly-Availability.php#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
   };
   const DEMO_USER = { name: "Lia Norman" };
   const DEMO_NOTIFS = [
@@ -283,29 +351,49 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     { type: "message", title: "New Message From R&R Sweet Bites", text: "You have a new message about your order.", unread: false }
   ];
 
-  function flowNotifs() {
+    function flowNotifs() {
     let f = null;
     try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
     if (!f) return null;
-    const ok = f.status === "confirmed";
     const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
     if (f.quoted) {
       list.push({
-        type: "quote",
-        title: "Quotation Ready",
+        type: "quote", title: "Quotation Ready",
         text: "R&R Sweet Bites sent your quotation. Tap to review it.",
         unread: !f.quoteRead,
         href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
       });
     }
-    list.push({
-      type: "order",
-      title: ok ? "Order Confirmed" : "Order Request Submitted",
-      text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-      unread: f.readStatus !== f.status,
-      href: "Custom-Cake-Request.html#status"
-    });
-    return list;
+    if (f.status) {
+      const ok = f.status === "confirmed";
+      list.push({
+        type: "order",
+        title: ok ? "Order Confirmed" : "Order Request Submitted",
+        text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
+        unread: f.readStatus !== f.status,
+        href: "Custom-Cake-Request.html#status"
+      });
+    }
+    return list.length ? list : null;
   }
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
@@ -323,6 +411,9 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
 
   const RR = (window.RR = { user: null, notifs: [], esc, ICON, PAGE });
   const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+  RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   const css = `
   #site-header{position:sticky;top:0;z-index:1000}
@@ -385,7 +476,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -467,7 +558,10 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     <div class="crumbs">
       <a class="back" href="Customer_Orders.html">‹&nbsp; Back to my Orders</a>
       <p class="trail">My Orders / <span>Order Detail</span></p>
-      <h1 class="order">Order #<span id="orderNo"></span></h1>
+      <div class="title-row">
+        <h1 class="order">Order #<span id="orderNo"></span></h1>
+        <button type="button" class="cancel-btn" id="cancelBtn" hidden>Cancel Order</button>
+      </div>
       <p class="sub"><span id="orderTitle"></span> · <span id="orderOccasion"></span></p>
     </div>
 
@@ -476,6 +570,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     <div class="tabs" role="tablist">
       <button type="button" class="on" role="tab" aria-selected="true" data-pane="pane-pay">Payment &amp; Balance</button>
       <button type="button" role="tab" aria-selected="false" data-pane="pane-history">Payment History</button>
+      <button type="button" role="tab" aria-selected="false" data-pane="pane-cancel">Cancel History</button>
     </div>
 
     <div id="pane-pay">
@@ -499,51 +594,52 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
         <p class="hint" id="payHint">Settle the required <span class="dpPct"></span>% downpayment to confirm your order.</p>
 
         <div class="due-box">
-  <div>
-    <div class="due-l" id="dueLabel">Required Amount to Pay</div>
-    <div class="due-sub" id="dueSub"></div>
-  </div>
-  <div class="due-r" id="sumDue"></div>
-</div>
+          <div>
+            <div class="due-l" id="dueLabel">Required Amount to Pay</div>
+            <div class="due-sub" id="dueSub"></div>
+          </div>
+          <div class="due-r" id="sumDue"></div>
+        </div>
 
         <span class="field-label" id="pm">Payment Method</span>
         <div class="methods" id="methodsBox" role="radiogroup" aria-labelledby="pm">
           <button type="button" class="method sel" role="radio" aria-checked="true" data-m="gcash"><strong>GCASH</strong></button>
-          <button type="button" class="method" role="radio" aria-checked="false" data-m="bank"><strong>Bank Transfer</strong><small>BPI/ BDO / UNIONBANK</small></button>
+          <button type="button" class="method" role="radio" aria-checked="false" aria-disabled="true" data-m="bank" disabled><strong>Bank Transfer</strong><small>COMING SOON</small></button>
         </div>
         <p class="ferr" id="err-method" role="alert" hidden></p>
-        <div class="payinfo">
-  <div class="qrbox">
-    <h3>GCash QR Code</h3>
-    <img src="../Images-Icons/gcash-qr.png" alt="GCash QR code of R&R Sweet Bites"
-         onerror="this.style.display='none';this.nextElementSibling.hidden=false">
-    <div class="qrph" hidden>Add your QR image:<br>Images-Icons/gcash-qr.png</div>
-    <small>Scan to Pay</small>
-  </div>
-  <div>
-    <h3>Bank Account Details</h3>
-    <div class="bank-row"><span>Bank Name</span><b>BDO</b><button type="button" class="copy-btn" data-copy="BDO" aria-label="Copy bank name">&#10064;</button></div>
-    <div class="bank-row"><span>Account Name</span><b>R&amp;R Sweet Bites</b><button type="button" class="copy-btn" data-copy="R&R Sweet Bites" aria-label="Copy account name">&#10064;</button></div>
-    <div class="bank-row"><span>Account Number</span><b>1234 5667 8990</b><button type="button" class="copy-btn" data-copy="123456678990" aria-label="Copy account number">&#10064;</button></div>
-  </div>
-</div>
-<p class="payinfo-note"><i>i</i><span>The QR code and bank account details above are only for payment purposes. Please enter the exact amount in the Payment Amount field and upload your proof of payment after sending.</span></p>
+        <div class="payinfo manual-only" hidden>
+          <div class="qrbox">
+            <h3>GCash QR Code</h3>
+            <img src="../Images-Icons/gcash-qr.png" alt="GCash QR code of R&R Sweet Bites"
+                 onerror="this.style.display='none';this.nextElementSibling.hidden=false">
+            <div class="qrph" hidden>Add your QR image:<br>Images-Icons/gcash-qr.png</div>
+            <small>Scan to Pay</small>
+          </div>
+          <div>
+            <h3>Bank Account Details</h3>
+            <div class="bank-row"><span>Bank Name</span><b>BDO</b><button type="button" class="copy-btn" data-copy="BDO" aria-label="Copy bank name">&#10064;</button></div>
+            <div class="bank-row"><span>Account Name</span><b>R&amp;R Sweet Bites</b><button type="button" class="copy-btn" data-copy="R&R Sweet Bites" aria-label="Copy account name">&#10064;</button></div>
+            <div class="bank-row"><span>Account Number</span><b>1234 5667 8990</b><button type="button" class="copy-btn" data-copy="123456678990" aria-label="Copy account number">&#10064;</button></div>
+          </div>
+        </div>
+        <p class="payinfo-note" id="gcashNote"><i>i</i><span>You will be taken to GCash's secure payment page. Your payment is confirmed automatically, so there is no need to upload a screenshot.</span></p>
+        <p class="payinfo-note manual-only" hidden><i>i</i><span>The QR code and bank account details above are only for payment purposes. Please enter the exact amount in the Payment Amount field and upload your proof of payment after sending.</span></p>
 
-        <div class="cols">
+        <div class="cols" id="colsRow" style="grid-template-columns:1fr">
           <div>
             <label class="field-label" for="amount">Payment Amount</label>
             <input class="inp locked" id="amount" name="amount" type="text" value="" readonly aria-readonly="true" aria-describedby="amount-note">
             <span class="lock-note" id="amount-note">Fixed to your required downpayment</span>
           </div>
-          <div>
+          <div class="manual-only" hidden>
             <label class="field-label" for="ref">Reference / Transaction No.</label>
             <input class="inp" id="ref" name="reference" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="40" required aria-describedby="err-reference">
             <p class="ferr" id="err-reference" role="alert" hidden></p>
           </div>
         </div>
 
-        <span class="field-label">Proof of Payment (Screenshot / Receipt)</span>
-        <label class="drop" id="drop" tabindex="0">
+        <span class="field-label manual-only" hidden>Proof of Payment (Screenshot / Receipt)</span>
+        <label class="drop manual-only" id="drop" tabindex="0" hidden>
           <input type="file" id="file" name="proof" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" required>
           <span class="click">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
@@ -556,9 +652,9 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
           <span class="hint-tap" id="taphint" hidden>Tap the photo to enlarge</span>
           <button type="button" class="rm" id="rm" hidden>Remove</button>
         </label>
-        <p class="ferr" id="err-proof" role="alert" hidden></p>
+        <p class="ferr manual-only" id="err-proof" role="alert" hidden></p>
 
-        <button class="submit payBtn" id="submitBtn" type="submit">Submit downpayment for verification</button>
+        <button class="submit payBtn" id="submitBtn" type="submit">Pay with GCash</button>
       </form>
 
       <section class="panel" id="notice" aria-label="Status" hidden>
@@ -575,10 +671,86 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
         <tbody id="histBody"></tbody>
       </table>
     </section>
+
+    <section id="pane-cancel" class="hist" aria-label="Cancel history" hidden>
+      <h2>Cancel History</h2>
+      <p class="empty" id="cEmpty" hidden>No cancellation requests for this order.</p>
+      <table id="cTable" hidden>
+        <thead><tr><th>Date</th><th>Reason</th><th>Details</th><th>Status</th></tr></thead>
+        <tbody id="cBody"></tbody>
+      </table>
+      <p class="demo-note" id="cDemo" hidden>Demo only:
+        <button type="button" class="demo-btn" id="simCancelOk">Simulate owner approving</button>
+        <button type="button" class="demo-btn" id="simCancelNo">Simulate owner declining</button>
+      </p>
+    </section>
   </div>
+
+  <!-- ===== DOWN PAYMENT STATUS VIEW (opens after the downpayment is submitted, or from the bell: #status) ===== -->
+  <section id="viewStatus" hidden>
+    <div class="crumbs">
+      <a class="back" href="Customer_Orders.html#orders">‹&nbsp; Back to my Orders</a>
+    </div>
+
+    <div class="sv" aria-live="polite">
+      <div class="sv-ico" id="svIcon"></div>
+      <h1 class="sv-title" id="svTitle"></h1>
+      <p class="sv-msg" id="svMsg"></p>
+
+      <div class="sv-tracker">
+        <h2>Order Journey Tracker</h2>
+        <div class="sv-steps" id="svSteps"></div>
+      </div>
+
+      <!-- Only shown after the shop verifies the down payment -->
+      <a class="sv-btn" id="svPay" href="#pay" hidden>Pay Remaining Balance</a>
+
+      <!-- Only shown while the payment is being verified -->
+      <div class="sv-grid" id="svCards" hidden>
+        <section class="sv-card" aria-labelledby="svOsT">
+          <div class="sv-head"><h2 class="sv-ct" id="svOsT">Order Summary</h2><span class="sv-badge">CONFIRMED</span></div>
+          <dl class="sv-rows" id="svOsRows"></dl>
+          <div class="sv-style"><small>SELECTED CAKE STYLE</small><p id="svStyle"></p></div>
+        </section>
+        <section class="sv-card" aria-labelledby="svDiT">
+          <div class="sv-head"><h2 class="sv-ct" id="svDiT">Delivery Information</h2><span class="sv-badge">CONFIRMED</span></div>
+          <dl class="sv-rows" id="svDiRows"></dl>
+        </section>
+      </div>
+
+      <!-- DEMO ONLY: stands in for the admin pressing "Verify payment". Delete once the backend sets the status. -->
+      <p class="sv-demo" id="svDemo" hidden>Demo only:
+        <button type="button" class="demo-btn" id="simVerifyStatus">Simulate admin verifying the payment</button>
+      </p>
+    </div>
+  </section>
 </main>
 
 <div id="site-footer"></div>
+
+<div class="cf-overlay" id="cancelModal">
+  <form class="cf-box" id="cancelForm" role="dialog" aria-modal="true" aria-labelledby="cfT" novalidate>
+    <h3 id="cfT">Cancel Order</h3>
+    <p class="sm">Tell us why you want to cancel. The shop will review your request.</p>
+    <label for="cReason">Reason</label>
+    <select id="cReason">
+      <option value="">Select a reason</option>
+      <option>Change of plans</option>
+      <option>Wrong order details</option>
+      <option>Event was cancelled or moved</option>
+      <option>Found another option</option>
+      <option>Others</option>
+    </select>
+    <p class="ferr" id="cerr-reason" hidden></p>
+    <label for="cDetails">Details</label>
+    <textarea id="cDetails" maxlength="300" placeholder="Write something..."></textarea>
+    <p class="ferr" id="cerr-details" hidden></p>
+    <div class="cf-btns">
+      <button type="button" class="cf-keep" id="cKeep">Keep Order</button>
+      <button type="submit" class="cf-go" id="cGo">Submit Cancellation</button>
+    </div>
+  </form>
+</div>
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Proof of payment, full size" hidden>
   <button type="button" class="x" id="lbClose" aria-label="Close">&times;</button>
@@ -596,6 +768,8 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
   }
 
   var csrf  = '';
+  var lastData = null;   // the last order data shown (used by the status view)
+  var curMode  = '';     // payment mode of the order: downpayment / balance / pending / paid ...
   var MAX_BYTES = 5 * 1024 * 1024;
   var OK_TYPES  = ['image/jpeg', 'image/png', 'application/pdf'];
 
@@ -665,6 +839,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     });
     var mode = 'other', can = false;
     if (st === 'Quoted') mode = 'quoted';
+    else if (/pending cancel/i.test(st)) mode = 'cancelpending';
     else if (/cancel/i.test(st)) mode = 'cancelled';
     else if (['Awaiting Down Payment', 'Pending Balance', 'Payment Under Review', 'Fully Paid', 'Completed'].indexOf(st) > -1) {
       if (ver >= total) mode = 'paid';
@@ -675,13 +850,15 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     return {
       csrf: '', max_proof_bytes: 5 * 1024 * 1024, payment_mode: mode, can_pay: can,
       payment_heading: mode === 'balance' ? 'Submit Final Payment' : 'Submit 20% Down Payment',
-      payment_label: mode === 'balance' ? 'Submit Final Payment for Verification' : 'Submit Down Payment for Verification',
+      payment_label: mode === 'balance' ? 'Submit Full Payment for Verification' : 'Submit Down Payment for Verification',
       dp_status: ver >= dp ? 'Paid' : 'Unpaid',
       order: { order_no: String(o.id).replace('-', ''), title: o.title, occasion: o.occasion, dp_percent: 20, client_initials: 'LN' },
       figures: { total: pesoFmt(total), verified: pesoFmt(ver), verified_cnt: vcnt, paid_pct: Math.round(ver / total * 100),
         remaining: pesoFmt(total - ver), dp_required: pesoFmt(dp), balance_after: pesoFmt(total - dp),
         amount_due: pesoFmt(due), amount_val: pesoFmt(due), due_raw: due },
-      payments: pays
+      payments: pays,
+      can_cancel: can || mode === 'pending',
+      cancels: readCancels()
     };
   }
 
@@ -692,12 +869,15 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     all[order] = pays; wr(PAY_KEY, all);
     setOrderStatus('Payment Under Review');
     resetForm();
-    load().then(function () { showFlash('ok', 'Payment submitted. We will verify it and notify you shortly.'); });
+    load().then(function () {
+      setPayFlow(statusOf(lastData));   // bell: "Down Payment Submitted" / "Final Payment Submitted"
+      goStatus();                       // open the "Verification in Progress" view
+    });
   }
 
   // DEMO ONLY: stands in for the owner verifying the payment
   document.addEventListener('click', function (e) {
-    if (!e.target.closest('#simVerify')) return;
+    if (!e.target.closest('#simVerify, #simVerifyStatus')) return;
     var o = findOrder(), all = rd(PAY_KEY, {}), pays = all[order] || [], ver = 0;
     pays.forEach(function (p) {
       if (p.status === 'pending_verification') { p.status = 'verified'; p.status_label = 'Verified'; }
@@ -705,6 +885,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     });
     all[order] = pays; wr(PAY_KEY, all);
     setOrderStatus(ver >= Number(o.total) ? 'Fully Paid' : 'Pending Balance');
+    setPayFlow(statusOf(demoData()));   // new unread notification: "... Payment Verified"
     load();
   });
 
@@ -743,6 +924,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     var o = d.order, f = d.figures;
     csrf = d.csrf;
     MAX_BYTES = d.max_proof_bytes;
+    lastData = d;
 
     document.querySelectorAll('.payTitle').forEach(el => el.textContent = d.payment_heading);
     document.querySelectorAll('.payBtn').forEach(el => el.textContent = d.payment_label);
@@ -764,6 +946,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     $('statBalance').textContent = f.balance_after;
 
     var mode = d.payment_mode;
+    curMode = mode;
 
     // Show/hide panels based on mode
     form.hidden = !d.can_pay;
@@ -777,7 +960,9 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
       $('dueLabel').textContent = mode === 'balance' ? 'Amount to Pay' : 'Required Amount to Pay';
       $('dueSub').textContent = mode === 'balance' ? '' : '(' + o.dp_percent + '% of ' + f.total + ')';
       $('sumDue').textContent = f.amount_due;
+      submitBtn.textContent = 'Pay ' + f.amount_due + ' with GCash';
       $('amount').value = f.amount_val;
+      $('amount-note').textContent = mode === 'balance' ? 'Fixed to your remaining balance' : 'Fixed to your required downpayment';
     } else {
       var title = '', html = '';
 
@@ -785,12 +970,16 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
         title = 'Quotation awaiting your approval';
         html = 'Your quotation is ready. Please review it and accept to continue with the ' +
                o.dp_percent + '% downpayment.<br>' +
-                              '<a class="cta" href="quotation-accept.html?order=' + encodeURIComponent(order) + '">Review Quotation</a>';
+               '<a class="cta" href="quotation-accept.html?order=' + encodeURIComponent(order) + '">Review Quotation</a>';
         notice.hidden = false;
-            } else if (mode === 'pending') {
+      } else if (mode === 'pending') {
         title = 'Payment awaiting verification';
         html = 'We received your payment and are verifying it. We\'ll let you know once it\'s approved.' +
+               '<br><a class="cta" href="#status">View Payment Status</a>' +
                (DEMO_MODE ? '<br><button type="button" id="simVerify" class="demo-btn">Demo only: simulate owner verifying payment</button>' : '');
+      } else if (mode === 'cancelpending') {
+        title = 'Cancellation under review';
+        html = 'Your cancellation request was sent. We will let you know once the shop reviews it.';
       } else if (mode === 'paid') {
         title = 'Fully paid';
         html = 'Thank you! Your order is fully paid and in production.';
@@ -830,11 +1019,13 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     $('histEmpty').hidden = payments.length > 0;
     $('histTable').hidden = payments.length === 0;
 
+    renderCancel(d);
+
     $('loading').hidden = true;
-    $('content').hidden = false;
+    showView();   // shows either the payment page or the down payment status view (#status)
   }
 
-    function load() {
+  function load() {
     if (DEMO_MODE) {
       var dd = demoData();
       if (!dd) { location.href = 'Customer_Orders.html#orders'; return Promise.resolve(); }
@@ -865,9 +1056,240 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
         console.error('load() failed:', e);
         $('loading').hidden = false;
         $('content').hidden = true;
+        $('viewStatus').hidden = true;
         $('loading').textContent = e.message || 'Could not load the order.';
       });
   }
+
+
+  /* ===== GCASH (PayMongo) ===== */
+  var GCASH_API = '../api/gcash-checkout.php';
+  var GCASH_CONFIRM_API = '../api/gcash-confirm.php';
+
+  function startGcash() {
+    hideFlash();
+    submitBtn.disabled = true;
+    var label = submitBtn.textContent;
+    submitBtn.textContent = 'Redirecting to GCash\u2026';
+    function reset(msg) {
+      showFlash('err', [msg]);
+      submitBtn.disabled = false;
+      submitBtn.textContent = label;
+    }
+    var body = new URLSearchParams();
+    body.append('order', order);
+    body.append('csrf', csrf);
+    fetch(GCASH_API, { method: 'POST', body: body })
+      .then(function (r) { return r.json().catch(function () { return { error: 'Unexpected server response.' }; }); })
+      .then(function (res) {
+        if (res.checkout_url) { location.href = res.checkout_url; return; }
+        reset(res.error || 'Could not start GCash payment. Please try again.');
+      })
+      .catch(function () { reset('Something went wrong. Please try again.'); });
+  }
+
+  // Back button from the GCash page: restore the form
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) { submitBtn.disabled = false; load(); }
+  });
+
+  // Back from GCash with ?paid=1: the webhook may arrive a moment later, so poll
+  function confirmGcash() {
+    var tries = 0, MAX = 15;   // about 45 seconds
+    var qs = new URLSearchParams(location.search);
+    qs.delete('paid');
+    history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs.toString() : '') + location.hash);
+    form.hidden = true;
+    var box = $('flash');
+    box.className = 'flash ok'; box.textContent = 'Confirming your payment\u2026 please wait.'; box.hidden = false;
+
+    (function tick() {
+      var cb = new URLSearchParams();
+      cb.append('order', order);
+      cb.append('csrf', csrf);
+      // Ask the server to check with PayMongo (works even if the webhook is late), then reload the order
+      fetch(GCASH_CONFIRM_API, { method: 'POST', body: cb })
+        .catch(function () {})
+        .then(function () { return fetch(url(), { headers: { 'Accept': 'application/json' } }); })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          var last = d.payments && d.payments[0];
+          if (last && last.status === 'verified') {
+            render(d);
+            showFlash('ok', 'Payment received. Thank you!');
+          } else if (++tries < MAX) {
+            setTimeout(tick, 3000);
+          } else {
+            load().then(function () {
+              showFlash('ok', 'We have not received the confirmation yet. This can take a few minutes. Please refresh this page shortly.');
+            });
+          }
+        })
+        .catch(function () { if (++tries < MAX) setTimeout(tick, 3000); });
+    })();
+  }
+
+  /* ===== DOWN PAYMENT STATUS VIEW (#status) ===== */
+  var MON = ['Jan.', 'Feb.', 'Mar.', 'Apr.', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
+  var METHOD = { shop: 'Shop-Owned Delivery', courier: 'Third-Party Courier', pickup: 'Self Store Pick-Up' };
+  var SAMPLE_STYLE = 'Birthday Cake (2 Tier - 8" x 6", 3 Layers) \u2014 Chocolate Moist Cake base with Chocolate Frosting and Vanilla Filling.';
+  var SAMPLE_DELIVERY = { name: 'Lia Norman', phone: '09123456789', address: '#123 Sa Jeep, Kanto Baba St., Brgy. 67, Caloocan City',
+    method: 'Third-Party Courier', organizer: 'Booked By The Shop', courier: 'Grab Express' };
+  var SV_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg>';
+  var STEPS_PENDING  = [['done', 'Payment Submitted'], ['now', 'Payment Pending'], ['soft', 'Payment Confirmed']];
+  var STEPS_VERIFIED = [['done', 'Payment Submitted'], ['done', 'Payment Pending'], ['done', 'Payment Confirmed']];
+  var SV = {
+    'dp-pending': {
+      title: 'Down Payment<br>Verification in Progress',
+      msg: 'We\'ve received your payment proof and are verifying the details. Once confirmed, we\'ll confirm your design details and reserve your date.',
+      steps: STEPS_PENDING, cards: true,
+      note: ['Down Payment Submitted', 'Your payment proof is under review.']
+    },
+    'dp-verified': {
+      title: 'Down Payment Verified!',
+      msg: 'Your down payment has been successfully verified! Your order is confirmed, and your selected date is now reserved for your custom cake.',
+      steps: STEPS_VERIFIED, cards: false, btn: 'Pay Remaining Balance', href: '#pay',
+      note: ['Down Payment Verified', 'Your down payment was approved. Tap to continue.']
+    },
+    'final-pending': {
+      title: 'Final Payment<br>Verification in Progress',
+      msg: 'Your slot is fully secured! Our team is verifying your final payment proof for the remaining balance and will update your order status shortly.',
+      steps: STEPS_PENDING, cards: true,
+      note: ['Final Payment Submitted', 'Your final payment proof is under review.']
+    },
+    'final-verified': {
+      title: 'Final Payment Verified!',
+      msg: 'Your final payment has been confirmed, and your order is now fully paid. We\'ll keep you informed as we prepare your order.',
+      steps: STEPS_VERIFIED, cards: false, btn: 'Back to My Order', href: 'Customer_Orders.html#orders',
+      note: ['Final Payment Verified', 'Your final payment was approved. Tap to continue.']
+    }
+  };
+
+  function fmtPhone(p) { return String(p || '').replace(/^(\d{4})(\d{3})(\d{4})$/, '$1 $2 $3') || '\u2014'; }
+  function fmtDate(s) {
+    var p = String(s).split('-').map(Number);
+    return (p.length === 3 && MON[p[1] - 1]) ? MON[p[1] - 1] + ' ' + ('0' + p[2]).slice(-2) + ', ' + p[0] : String(s || '\u2014');
+  }
+  function svRow(k, v) {
+    return '<div class="sv-row"><dt>' + RR.esc(k) + '</dt><dd>' + RR.esc(v == null || v === '' ? '\u2014' : v) + '</dd></div>';
+  }
+
+  // bell notification for the payment (demo only; in real mode your backend creates it)
+  // state = dp-pending / dp-verified / final-pending / final-verified
+  function setPayFlow(state) {
+    if (!DEMO_MODE || !SV[state]) return;
+    var f = rd('rr_flow', {});
+    f.pay = { state: state, title: SV[state].note[0], text: SV[state].note[1], read: false, orderId: order };
+    wr('rr_flow', f);
+    if (window.RR && RR.refresh) RR.refresh();
+  }
+  // opening the status view marks its notification as read, so the bell number goes away
+  function markPayRead(st) {
+    var f = rd('rr_flow', {});
+    if (f.pay && String(f.pay.orderId) === String(order) && f.pay.state === st && !f.pay.read) {
+      f.pay.read = true; wr('rr_flow', f);
+      if (window.RR && RR.refresh) RR.refresh();
+    }
+  }
+
+  // Which of the 4 status designs to show (or "" when nothing was submitted yet):
+  //   first payment waiting -> dp-pending, first payment verified -> dp-verified,
+  //   final payment waiting -> final-pending, order fully paid  -> final-verified
+  function statusOf(d) {
+    var pays = d.payments || [], ver = 0, pend = 0;
+    pays.forEach(function (p) {
+      if (p.status === 'verified') ver++;
+      else if (p.status === 'pending_verification') pend++;
+    });
+    var paid = d.payment_mode === 'paid' || (d.figures && d.figures.paid_pct >= 100);
+    if (paid && ver) return 'final-verified';
+    if (pend) return ver ? 'final-pending' : 'dp-pending';
+    if (ver) return 'dp-verified';
+    return '';
+  }
+
+  /* Data for the two cards.
+     Demo: read from localStorage (rr_fulfillment is saved by Customer-Fulfillment.html).
+     Real: the order API may send  d.down_payment = { order_date, delivery_date, style,
+           delivery:{ name, phone, address, method, organizer, courier } } */
+  function statusInfo(d) {
+    var pays = d.payments || [];
+    var info = { orderDate: (pays[0] && pays[0].date) || todayLabel(), deliveryDate: '\u2014', style: '\u2014', rows: [] };
+    if (DEMO_MODE) {
+      var ord = findOrder(), ff = rd('rr_fulfillment', null);
+      var mine = ff && ord && String(ff.ref || '').replace(/\D/g, '') === String(ord.id).replace(/\D/g, '') ? ff : null;   // only this order's delivery data
+      var dv = mine || SAMPLE_DELIVERY;
+      var delivering = !mine || mine.method === 'shop' || (mine.method === 'courier' && mine.organizer === 'shop');
+      if (mine && mine.orderDate) info.orderDate = fmtDate(mine.orderDate);
+      info.deliveryDate = mine && mine.deliveryDate ? fmtDate(mine.deliveryDate) : (ord && ord.due) || '\u2014';
+      info.style = (mine && mine.style) || SAMPLE_STYLE;
+      info.rows.push(['Name', dv.name || 'Lia Norman'], ['Contact Number', fmtPhone(dv.phone)]);
+      info.rows.push(['Address', !mine ? dv.address
+        : delivering ? [dv.address, dv.barangay, dv.city].filter(Boolean).join(', ')
+        : dv.method === 'pickup' ? 'R&R Sweet Bites, Caloocan City (store pick-up)' : 'Set by you when booking the courier']);
+      info.rows.push(['Delivery Method', mine ? (METHOD[dv.method] || '') : dv.method]);
+      if (!mine || dv.method === 'courier') {
+        info.rows.push(['Booking Organizer', mine ? (dv.organizer === 'shop' ? 'Booked By The Shop' : 'Booked By The Customer') : dv.organizer]);
+        if (!mine || (dv.organizer === 'shop' && dv.courier)) info.rows.push(['Courier', dv.courier]);
+      }
+    } else if (d.down_payment) {
+      var x = d.down_payment, y = x.delivery || {};
+      info.orderDate = x.order_date || info.orderDate;
+      info.deliveryDate = x.delivery_date || '\u2014';
+      info.style = x.style || '\u2014';
+      info.rows.push(['Name', y.name], ['Contact Number', fmtPhone(y.phone)], ['Address', y.address], ['Delivery Method', y.method]);
+      if (y.organizer) info.rows.push(['Booking Organizer', y.organizer]);
+      if (y.courier) info.rows.push(['Courier', y.courier]);
+    }
+    return info;
+  }
+
+  function renderStatus(d, st) {
+    var v = SV[st];
+    $('svIcon').innerHTML = SV_ICON;
+    $('svTitle').innerHTML = v.title;            // static text from SV only
+    $('svMsg').textContent = v.msg;
+    $('svSteps').innerHTML = v.steps.map(function (s, i) {
+      return (i ? '<span class="sv-sep">&gt;</span>' : '') + '<div class="sv-step ' + s[0] + '"><i>' + (i + 1) + '</i>' + s[1] + '</div>';
+    }).join('');
+
+    $('svCards').hidden = !v.cards;
+    $('svDemo').hidden = !(DEMO_MODE && v.cards);
+    var btn = $('svPay');
+    btn.hidden = !v.btn || (st === 'dp-verified' && ['paid', 'cancelled', 'cancelpending'].indexOf(d.payment_mode) > -1);
+    if (v.btn) { btn.textContent = v.btn; btn.setAttribute('href', v.href); }
+
+    if (v.cards) {
+      var info = statusInfo(d);
+      $('svOsRows').innerHTML = svRow('Order Number', d.order.order_no) + svRow('Order Date', info.orderDate) +
+        svRow('Order Total', String(d.figures.total).replace(/\.00$/, '')) + svRow('Delivery Date', info.deliveryDate);
+      $('svStyle').textContent = info.style;
+      $('svDiRows').innerHTML = info.rows.map(function (r) { return svRow(r[0], r[1]); }).join('');
+    }
+  }
+
+  // switches between the payment page and the status view, based on the address (#status)
+  function showView() {
+    if (!lastData) return;
+    var st = location.hash === '#status' ? statusOf(lastData) : '';
+    if (location.hash === '#status' && !st) {   // nothing submitted yet: stay on the payment page
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    $('content').hidden = !!st;
+    $('viewStatus').hidden = !st;
+    if (st) {
+      renderStatus(lastData, st);
+      document.title = SV[st].title.replace('<br>', ' ').replace('!', '') + ' | R&R Sweet Bites';
+      markPayRead(st);
+    } else {
+      document.title = 'R&R Sweet Bites – Order #' + lastData.order.order_no;
+    }
+    window.scrollTo({ top: 0 });
+  }
+  function goStatus() {
+    if (location.hash === '#status') showView(); else location.hash = 'status';
+  }
+  window.addEventListener('hashchange', showView);
 
   document.querySelectorAll('.method').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -877,8 +1299,18 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
       btn.classList.add('sel'); btn.setAttribute('aria-checked', 'true');
       $('method').value = btn.getAttribute('data-m');
       setErr('method', '');
+      syncMethodUI();
     });
   });
+
+  // GCash = gateway (no proof needed). Bank = manual proof upload.
+  function syncMethodUI() {
+    var manual = $('method').value !== 'gcash';
+    document.querySelectorAll('.manual-only').forEach(function (el) { el.hidden = !manual; });
+    $('gcashNote').hidden = manual;
+    $('colsRow').style.gridTemplateColumns = manual ? '' : '1fr';
+  }
+  syncMethodUI();
 
   refIn.addEventListener('input', function () {
     var v = refIn.value.replace(/\D/g, '');
@@ -957,8 +1389,10 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     clearErrs();
 
     if (['gcash', 'bank'].indexOf($('method').value) === -1) fail('method', 'Please choose a payment method.');
-    if (!/^\d{4,40}$/.test(refIn.value.trim())) fail('reference', 'Reference must be 4-40 digits (numbers only).');
-    if (!file.files || !file.files[0]) fail('proof', 'Please upload your proof of payment.');
+    if ($('method').value !== 'gcash') {
+      if (!/^\d{4,40}$/.test(refIn.value.trim())) fail('reference', 'Reference must be 4-40 digits (numbers only).');
+      if (!file.files || !file.files[0]) fail('proof', 'Please upload your proof of payment.');
+    }
 
     if (first) scrollToField(first);
     return ok;
@@ -979,7 +1413,8 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (!validate()) return;
-        if (DEMO_MODE) { demoSubmit(); return; }
+    if (DEMO_MODE) { demoSubmit(); return; }
+    if ($('method').value === 'gcash') { startGcash(); return; }
 
     var data = new FormData(form);
     data.append('csrf', csrf);
@@ -993,7 +1428,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
       .then(function (res) {
         if (res.ok) {
           resetForm();
-          return load().then(function () { showFlash('ok', res.message); });
+          return load().then(goStatus);   // open the "Verification in Progress" view
         }
         var fe = res.fieldErrors || {};
         var firstKey = null;
@@ -1022,7 +1457,7 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     });
   });
 
-    document.querySelectorAll('.copy-btn').forEach(function (b) {
+  document.querySelectorAll('.copy-btn').forEach(function (b) {
     b.addEventListener('click', function () {
       var t = b.getAttribute('data-copy');
       if (navigator.clipboard) navigator.clipboard.writeText(t);
@@ -1031,7 +1466,116 @@ footer{background:var(--line);text-align:center;padding:18px 16px 14px;line-heig
     });
   });
 
-  load();
+  /* ===== CANCEL ORDER (demo; set real calls when the backend is ready) ===== */
+  var CANCEL_KEY = 'rr_cancels';
+  var cModal = $('cancelModal'), cForm = $('cancelForm');
+  function readCancels() {
+    var all = rd(CANCEL_KEY, {});
+    if (!all[order]) {
+      var o = findOrder();
+      all[order] = (o && /pending cancel/i.test(o.status))
+        ? [{ date: todayLabel(), reason: 'Change of plans', details: 'Sample request for the demo.', status: 'pending', prev: 'Awaiting Down Payment' }] : [];
+      wr(CANCEL_KEY, all);
+    }
+    return all[order];
+  }
+  function writeCancels(list) { var all = rd(CANCEL_KEY, {}); all[order] = list; wr(CANCEL_KEY, all); }
+  function setCancelFlow(state, read) {
+    var f = rd('rr_flow', {});
+    f.cancel = { state: state, read: !!read, orderId: order };
+    wr('rr_flow', f);
+    if (window.RR && RR.refresh) RR.refresh();
+  }
+  function renderCancel(d) {
+    $('cancelBtn').hidden = !d.can_cancel;
+    var list = d.cancels || [], body = $('cBody');
+    body.textContent = '';
+    list.forEach(function (c) {
+      var tr = document.createElement('tr');
+      [c.date, c.reason, c.details].forEach(function (t) {
+        var td = document.createElement('td'); td.textContent = t; td.style.whiteSpace = 'normal'; tr.appendChild(td);
+      });
+      var td = document.createElement('td'), b = document.createElement('span');
+      b.className = 'badge ' + (c.status === 'approved' ? 'approved' : c.status === 'rejected' ? 'rejected' : 'pending');
+      b.textContent = c.status === 'approved' ? 'Cancelled' : c.status === 'rejected' ? 'Declined' : 'Under Review';
+      td.appendChild(b); tr.appendChild(td); body.appendChild(tr);
+    });
+    $('cEmpty').hidden = list.length > 0;
+    $('cTable').hidden = list.length === 0;
+    $('cDemo').hidden = !(DEMO_MODE && list[0] && list[0].status === 'pending');
+  }
+
+  var cField = { reason: $('cReason'), details: $('cDetails') };
+  function setCErr(key, msg) {
+    var p = $('cerr-' + key);
+    p.textContent = msg || ''; p.hidden = !msg;
+    cField[key].classList.toggle('bad', !!msg);
+  }
+  function openCancel() {
+    cForm.reset(); setCErr('reason', ''); setCErr('details', '');
+    cModal.classList.add('active'); $('cReason').focus();
+  }
+  function closeCancel() { cModal.classList.remove('active'); }
+  $('cancelBtn').addEventListener('click', openCancel);
+  $('cKeep').addEventListener('click', closeCancel);
+  cModal.addEventListener('click', function (e) { if (e.target === cModal) closeCancel(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCancel(); });
+  $('cReason').addEventListener('change', function () { setCErr('reason', ''); });
+  $('cDetails').addEventListener('input', function () {
+    var v = this.value.replace(/[<>]/g, '').replace(/^\s+/, '').replace(/ {2,}/g, ' ');
+    if (v !== this.value) this.value = v;
+    setCErr('details', '');
+  });
+
+  function showTab(paneId) {
+    var t = document.querySelector('.tabs button[data-pane="' + paneId + '"]');
+    if (t) t.click();
+  }
+
+  cForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var reason = $('cReason').value, det = $('cDetails').value.trim().replace(/\s+/g, ' '), ok = true;
+    setCErr('reason', ''); setCErr('details', '');
+    if (!reason) { setCErr('reason', 'Please choose a reason.'); ok = false; }
+    if (det.length < 10) { setCErr('details', 'Please tell us more (at least 10 characters).'); ok = false; }
+    else if (!/\p{L}{3}/u.test(det)) { setCErr('details', 'Please write your reason in words.'); ok = false; }
+    if (!ok) return;
+
+    var o = findOrder(), list = readCancels();
+    list.unshift({ date: todayLabel(), reason: reason, details: det, status: 'pending', prev: o.status });
+    writeCancels(list);
+    setOrderStatus('Pending Cancellation');
+    setCancelFlow('pending', true);
+    closeCancel();
+    load().then(function () { showTab('pane-cancel'); showFlash('ok', 'Cancellation request sent. The shop will review it.'); });
+  });
+
+  // DEMO ONLY: stands in for the owner approving or declining the cancellation
+  function resolveCancel(approved) {
+    var list = readCancels(), c = list[0];
+    if (!c || c.status !== 'pending') return;
+    c.status = approved ? 'approved' : 'rejected';
+    writeCancels(list);
+    setOrderStatus(approved ? 'Cancelled' : (c.prev || 'Awaiting Down Payment'));
+    setCancelFlow(c.status, false);
+    load().then(function () { showTab('pane-cancel'); });
+  }
+  $('simCancelOk').addEventListener('click', function () { resolveCancel(true); });
+  $('simCancelNo').addEventListener('click', function () { resolveCancel(false); });
+
+  // opening the bell notification (#cancel) shows Cancel History and marks it read
+  function openFromHash() {
+    if (location.hash !== '#cancel') return;
+    showTab('pane-cancel');
+    var f = rd('rr_flow', {});
+    if (f.cancel && !f.cancel.read) { f.cancel.read = true; wr('rr_flow', f); if (window.RR && RR.refresh) RR.refresh(); }
+  }
+  window.addEventListener('hashchange', openFromHash);
+
+  load().then(function () {
+    openFromHash();
+    if (new URLSearchParams(location.search).get('paid') === '1') confirmGcash();
+  });
 })();
 </script>
 </body>

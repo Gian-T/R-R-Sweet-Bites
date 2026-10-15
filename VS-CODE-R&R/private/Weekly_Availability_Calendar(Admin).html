@@ -1,0 +1,698 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekly Availability Manager | R&amp;R Sweet Bites</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7efe9;--card:#fff;--paper:#fbf3ec;--pink:#d9788a;--pink-hover:#cf6c7d;
+  --pink-soft:#fbe6e6;--border:#ecd9d1;--border-strong:#dcc0b5;
+  --text:#4a2a2e;--muted:#8a6a62;--chip-bg:#f6e3df;--chip-border:#ecd2ca;
+  --font-head:'Playfair Display',Georgia,serif;
+  --font-text:'Jost','Helvetica Neue',Arial,sans-serif;
+  --font-btn:'Platypi',Georgia,serif;
+  --sb-w:220px;--sb-w-collapsed:60px;
+  /* availability colours */
+  --avail-open-bg:#dfeede;--avail-open-border:#c4dcc2;--avail-open-text:#4c7d51;
+  --avail-full-bg:#f2d3de;--avail-full-border:#e6b8ca;--avail-full-text:#8e3a58;
+  --avail-closed-bg:#efe9e4;--avail-closed-border:#ddd2cb;--avail-closed-text:#6a5c55;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font-text);background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none}
+input,select{font:inherit;color:inherit}
+:focus-visible{outline:none;box-shadow:0 0 0 3px rgba(217,120,138,.25)}
+
+/* Header */
+.topbar{display:flex;align-items:center;gap:20px;padding:14px 26px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:42px;height:42px;border-radius:50%;object-fit:cover}
+.brand-name{font-family:var(--font-head);font-weight:700;font-size:1.4rem;color:var(--pink)}
+.brand-tag{display:inline-block;margin-left:10px;border:1px solid var(--border-strong);border-radius:999px;padding:4px 12px;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.top-name{text-align:right;line-height:1.15}
+.top-name strong{display:block;font-family:var(--font-head);font-size:1rem;font-weight:700}
+.top-name span{font-size:.78rem;color:var(--muted);font-weight:500}
+.top-avatar{width:38px;height:38px;border-radius:50%;background:var(--pink-soft);color:var(--pink);display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid #f0c3c8;cursor:pointer;transition:background .15s,box-shadow .15s}
+.top-avatar:hover{background:#f6d5d8}
+.top-avatar[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(217,120,138,.25)}
+
+/* Burger */
+.burger{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:9px;color:var(--text);transition:background .15s,color .15s;flex:none;margin-right:4px}
+.burger:hover{background:#f1dfd6;color:var(--pink)}
+.burger svg{width:22px;height:22px}
+
+/* Profile dropdown */
+.profile-wrap{position:relative}
+.profile-menu{
+  position:absolute;top:calc(100% + 10px);right:0;z-index:50;
+  min-width:220px;padding:8px;
+  background:#fffdfb;border:1px solid var(--border-strong);border-radius:12px;
+  box-shadow:0 12px 30px rgba(74,38,46,.18);
+  animation:pmIn .18s ease;
+}
+.profile-menu[hidden]{display:none}
+@keyframes pmIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.profile-menu .item{
+  display:flex;align-items:center;gap:12px;width:100%;
+  padding:10px 12px;border-radius:8px;
+  font-family:var(--font-head);font-weight:700;font-size:1rem;color:#3a1e22;
+  text-align:left;transition:background .15s;
+}
+.profile-menu .item svg{width:22px;height:22px;flex:none;color:#3a1e22}
+.profile-menu .item:hover{background:#f5e3dd}
+.profile-menu .item.name{cursor:default;background:transparent}
+.profile-menu .item.name:hover{background:transparent}
+.profile-menu .divider{height:1px;background:var(--border);margin:6px 4px}
+.profile-menu form{margin:0}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:var(--sb-w) 1fr;gap:22px;padding:22px 26px 40px;align-items:start;transition:grid-template-columns .25s ease}
+body.sb-collapsed .layout{grid-template-columns:var(--sb-w-collapsed) 1fr}
+
+/* Sidebar */
+.sidebar{font-size:.88rem;padding-right:8px;overflow:hidden;transition:opacity .15s}
+.sidebar h4{font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px;transition:opacity .15s}
+.sidebar h4:first-child{margin-top:0}
+.sidebar ul{list-style:none;display:flex;flex-direction:column;gap:2px}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:500;white-space:nowrap;transition:background .15s,color .15s}
+.sidebar a:hover{background:#f1dfd6}
+.sidebar a.active{background:#f2c9cc;color:#7a2c38;font-weight:600}
+.sidebar a svg{width:20px;height:20px;flex:none;stroke-width:1.9}
+.sidebar a span{transition:opacity .15s}
+body.sb-collapsed .sidebar h4{opacity:0;height:0;margin:0;overflow:hidden;pointer-events:none}
+body.sb-collapsed .sidebar a span{display:none}
+body.sb-collapsed .sidebar a{justify-content:center;padding:9px 0}
+body.sb-collapsed .sidebar{font-size:0}
+
+/* Main */
+.main{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px 28px;min-height:600px;max-width:1100px;margin:0 auto}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:6px;flex-wrap:wrap}
+.page-head h1{font-family:var(--font-head);font-size:2rem;font-weight:700;color:#3a1e22;line-height:1}
+.page-head p{color:var(--muted);font-size:.9rem;margin-top:8px}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:#fbf3ec;border:1px solid var(--border);border-radius:10px;padding:10px 16px;min-width:130px}
+.stat small{display:block;font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat strong{display:block;font-family:var(--font-head);font-size:1.15rem;font-weight:700;color:#3a1e22;margin-top:4px}
+
+/* Month bar */
+.monthbar{display:flex;align-items:center;gap:12px;margin:18px 0 16px;background:#fbf3ec;border:1px solid var(--border);border-radius:10px;padding:12px 16px;flex-wrap:wrap}
+.monthbar .nav-btn{background:var(--pink);color:#fff;border:0;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;font-size:1rem;transition:background .15s}
+.monthbar .nav-btn:hover{background:var(--pink-hover)}
+.monthbar h2{font-family:var(--font-head);font-weight:700;font-size:1.15rem;color:#3a1e22;min-width:9.5rem;text-align:center}
+.monthbar .spacer{flex:1}
+
+/* Week cards */
+.weeks{display:flex;flex-direction:column;gap:14px}
+.week{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;transition:border-color .15s, box-shadow .15s}
+.week:hover{border-color:var(--border-strong)}
+.week-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.week-head h3{font-family:var(--font-head);font-weight:700;font-size:1.05rem;color:#3a1e22}
+.week-head .note{display:block;width:100%;min-width:14rem;margin-top:4px;border:0;border-bottom:1px dashed var(--border);background:none;font-size:.8rem;color:var(--muted);padding:2px 0}
+.week-head .note:hover,.week-head .note:focus{border-bottom-color:var(--pink);color:var(--text)}
+.wstatus{display:flex;align-items:center;gap:10px}
+.wlabel{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.statusSel{
+  appearance:none;-webkit-appearance:none;border:1px solid var(--chip-border);border-radius:999px;
+  padding:6px 30px 6px 14px;font-size:.78rem;font-weight:600;
+  background-repeat:no-repeat;background-position:right 12px center;background-size:10px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23382325' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  transition:background-color .25s,border-color .25s,color .25s;
+}
+.statusSel.Open  {background-color:var(--avail-open-bg);border-color:var(--avail-open-border);color:var(--avail-open-text)}
+.statusSel.Full  {background-color:var(--avail-full-bg);border-color:var(--avail-full-border);color:var(--avail-full-text)}
+.statusSel.Closed{background-color:var(--avail-closed-bg);border-color:var(--avail-closed-border);color:var(--avail-closed-text)}
+
+/* Week body: capacity strip + day chips */
+.weekbody{display:grid;grid-template-columns:200px 1fr;gap:14px;align-items:start}
+.capcard{background:#fbf3ec;border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.caplabel{font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.capnum{display:flex;align-items:center;gap:8px}
+.capInput{width:3.4rem;border:1px solid var(--border);border-radius:6px;padding:5px 8px;text-align:center;font-size:.9rem;font-weight:600;color:#3a1e22;background:#fff;outline:none}
+.capInput:focus{border-color:var(--pink);box-shadow:0 0 0 3px rgba(217,120,138,.15)}
+.capnum span{font-size:.8rem;color:var(--muted)}
+.capbar{height:6px;background:#f0e3e0;border-radius:999px;overflow:hidden}
+.capbar i{display:block;height:100%;width:0;border-radius:999px;background:#8FA382;transition:width .4s,background-color .25s}
+.capbar i.bad{background:#C26565}
+.capbar i.off{background:#B9B2AE}
+.capfoot{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--muted)}
+.bookInput{width:2.2rem;border:0;border-bottom:1px solid var(--border);background:none;font:inherit;color:#3a1e22;text-align:center;padding:0}
+.bookInput:focus{border-bottom-color:var(--pink);outline:none}
+
+.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.day{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:6px;min-height:96px;padding:8px 6px;border-radius:10px;border:1px solid var(--border);background:#fff;color:var(--text);user-select:none;cursor:pointer;transition:background-color .2s,border-color .2s,transform .12s}
+.day:hover{transform:translateY(-2px);border-color:var(--border-strong)}
+.day .dow{font-size:.62rem;font-weight:700;letter-spacing:.08em;color:var(--muted)}
+.day .num{font-family:var(--font-head);font-weight:700;font-size:1.35rem;line-height:1;color:#3a1e22}
+.day .tag{width:100%;text-align:center;font-size:.62rem;font-weight:700;letter-spacing:.06em;padding:3px 0;border-radius:6px;background:var(--avail-open-bg);color:var(--avail-open-text);transition:background-color .25s,color .25s}
+.day.blocked{background:#f6d9d9;border-color:#e5b3b3}
+.day.blocked .tag{background:#c26565;color:#fff}
+.day.sel{outline:2px solid var(--pink);outline-offset:1px}
+
+.hint{font-size:.8rem;color:var(--muted);margin-top:16px}
+.empty{font-size:.9rem;color:var(--muted);background:#fbf3ec;border:1px dashed var(--border);border-radius:10px;padding:28px;text-align:center}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;font-family:var(--font-btn);font-weight:600;font-size:.92rem;border:1px solid var(--border-strong);background:transparent;color:var(--text);transition:background .15s,color .15s,border-color .15s}
+.btn:hover{background:#f6e3df}
+.btn.primary{background:var(--pink);border-color:var(--pink);color:#fff;box-shadow:0 4px 10px rgba(217,120,138,.2)}
+.btn.primary:hover{background:var(--pink-hover);border-color:var(--pink-hover)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+
+/* Toast */
+#toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,100px);background:#3a1e22;color:#fff;padding:12px 22px;border-radius:12px;font-size:.9rem;z-index:99;transition:.35s;box-shadow:0 8px 30px rgba(0,0,0,.22)}
+#toast.on{transform:translate(-50%,0)}
+#toast.err{background:#b94550}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:16px}
+  .sidebar{order:2}.main{order:1}
+  body.sb-collapsed .layout{grid-template-columns:1fr}
+  .weekbody{grid-template-columns:1fr}
+  .days{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
+  .brand-name{font-size:1.15rem}.brand-tag{display:none}
+  .layout{padding:14px}.main{padding:16px}
+  .page-head h1{font-size:1.5rem}.stats{width:100%}.stat{flex:1}
+  .monthbar h2{min-width:auto}
+  .days{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <button class="burger" id="burger" type="button" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <img src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo">
+    <span class="brand-name">R&amp;R Sweet Bites</span>
+    <span class="brand-tag">Admin Workspace</span>
+  </div>
+  <div class="topbar-right">
+    <div class="top-name">
+      <strong id="adminName">—</strong>
+      <span>Admin</span>
+    </div>
+    <div class="profile-wrap">
+      <button class="top-avatar" id="profileBtn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true" aria-controls="profileMenu">
+        <span id="adminInitials">—</span>
+      </button>
+      <div class="profile-menu" id="profileMenu" role="menu" hidden>
+        <div class="item name" role="menuitem" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 18.6c1.2-2.4 3.6-3.6 6.2-3.6s5 1.2 6.2 3.6"/></svg>
+          <span id="menuName">Admin Name</span>
+        </div>
+        <a class="item" href="#" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          <span>Settings</span>
+        </a>
+        <div class="divider" role="separator"></div>
+        <form method="post" action="../api/logout.php">
+          <button type="submit" class="item" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+            <span>Log Out</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="layout">
+
+  <aside class="sidebar" id="sidebar">
+    <ul>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        <span>Dashboard</span>
+      </a></li>
+    </ul>
+    <h4>Communication</h4>
+    <ul>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.95 10.05a7 7 0 011.412 7.872 1 1 0 00-.058.787l.675 2.089a1 1 0 01-1.236 1.168l-2.155-.631a1 1 0 00-.745.06 7 7 0 01-7.793-1.445"/><path d="M2.696 12.708a1 1 0 00-.058-.785 7 7 0 113.518 3.473 1 1 0 00-.744-.061l-2.155.63a1 1 0 01-1.236-1.167z"/></svg>
+        <span>Messages</span>
+      </a></li>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+        <span>Notifications</span>
+      </a></li>
+    </ul>
+    <h4>Management</h4>
+    <ul>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16"/><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="13" cy="7" r="1" fill="currentColor"/><rect x="8" y="2" width="14" height="14" rx="2"/></svg>
+        <span>Gallery</span>
+      </a></li>
+      <li><a href="order-requests.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5h6"/><path d="M19 2v6"/><path d="m2.05 2.05 1.099-.028a1 1 0 011.008.815l2.69 14.347A1 1 0 007.83 18H18"/><path d="M4.564 5H12"/><path d="M6.25 14h12.712a2 2 0 001.991-1.57l.172-1.041"/><circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>
+        <span>Orders</span>
+      </a></li>
+      <li><a href="Weekly_Availability_Calendar(Admin).html" class="active" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="m9 15 2 2 4-4"/></svg>
+        <span>Schedule</span>
+      </a></li>
+      <li><a href="admin_payment_verification.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/><path d="M6 14h2"/></svg>
+        <span>Payments</span>
+      </a></li>
+    </ul>
+  </aside>
+
+  <section class="main">
+    <div class="page-head">
+      <div>
+        <h1>Weekly Availability</h1>
+        <p>Set production capacity per week and toggle individual days between Active and Blocked.</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><small>Total Capacity</small><strong id="statCap">—</strong></div>
+        <div class="stat"><small>Booked</small><strong id="statBooked">—</strong></div>
+        <div class="stat"><small>Open Weeks</small><strong id="statOpen">—</strong></div>
+      </div>
+    </div>
+
+    <div class="monthbar">
+      <button class="nav-btn" id="prevM" type="button" aria-label="Previous month">&larr;</button>
+      <h2 id="mLabel"></h2>
+      <button class="nav-btn" id="nextM" type="button" aria-label="Next month">&rarr;</button>
+      <div class="spacer"></div>
+      <button class="btn primary" id="saveAll" type="button">Save All Changes</button>
+    </div>
+
+    <div class="weeks" id="weeks"></div>
+
+    <p class="hint">Click a day to switch it between Active and Blocked. Use the weekly status to open, fully book, or close the whole week for new orders.</p>
+  </section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  /* ---------- CSRF (fetched once on boot) ---------- */
+  let CSRF = "";
+
+  async function loadCsrf() {
+    const res = await fetch("../api/csrf.php", { credentials: "same-origin" });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok || !data.csrf) {
+      throw new Error(data.message || "Could not start an admin session.");
+    }
+    CSRF = data.csrf;
+  }
+
+  /* ---------- Sidebar collapse ---------- */
+  const KEY = "rr_admin_sb_collapsed";
+  const burger = $("burger");
+  function applyCollapsed(c) {
+    document.body.classList.toggle("sb-collapsed", c);
+    burger.setAttribute("aria-expanded", String(!c));
+  }
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === "1"; } catch (e) {}
+  applyCollapsed(collapsed);
+  burger.addEventListener("click", () => {
+    collapsed = !document.body.classList.contains("sb-collapsed");
+    applyCollapsed(collapsed);
+    try { localStorage.setItem(KEY, collapsed ? "1" : "0"); } catch (e) {}
+  });
+
+  /* ---------- Profile dropdown ---------- */
+  const pBtn  = $("profileBtn");
+  const pMenu = $("profileMenu");
+  function closeP() { pMenu.hidden = true; pBtn.setAttribute("aria-expanded", "false"); }
+  function openP()  { pMenu.hidden = false; pBtn.setAttribute("aria-expanded", "true"); }
+  pBtn.addEventListener("click", (e) => { e.stopPropagation(); pMenu.hidden ? openP() : closeP(); });
+  document.addEventListener("click", (e) => {
+    if (pMenu.hidden) return;
+    if (e.target.closest(".profile-wrap")) return;
+    closeP();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !pMenu.hidden) { closeP(); pBtn.focus(); }
+  });
+
+  /* ---------- Toast ---------- */
+  let t;
+  function toast(msg, isErr) {
+    const el = $("toast");
+    el.textContent = msg;
+    el.className = isErr ? "err on" : "on";
+    clearTimeout(t);
+    t = setTimeout(() => el.className = "", 2800);
+  }
+
+  /* =======================================================================
+     DATA — fetched from api/availability_get.php, one call per month.
+     PENDING holds generated-but-unsaved weeks, keyed by "YYYY-MM".
+     ======================================================================= */
+  const STATUS   = { Open: "Open for Orders", Full: "Fully Booked", Closed: "Closed" };
+  const MONTHS   = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const SHORTDOW = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+
+  const CACHE   = {};   // "YYYY-MM" → weeks array fetched from the DB
+  const PENDING = {};   // "YYYY-MM" → generated-but-unsaved weeks
+
+  let view = { y: 2026, m: 9 };
+
+  function keyOf(v) { return v.y + "-" + String(v.m + 1).padStart(2, "0"); }
+  function toDate(iso, off = 0) {
+    const [y, m, d] = iso.split("-").map(Number);
+    return new Date(y, m - 1, d + off);
+  }
+  function isoOf(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fmtShort(d) { return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); }
+  function fmtLong(d)  { return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); }
+  function pctOf(w)    { return w.cap > 0 ? Math.min(100, Math.round(w.booked / w.cap * 100)) : 0; }
+  function barClass(w) { return w.status === "Closed" ? "off" : (w.status === "Full" || pctOf(w) >= 75) ? "bad" : ""; }
+
+  async function loadMonth(force = false) {
+    const k = keyOf(view);
+    if (!force && CACHE[k]) return CACHE[k];
+    const res = await fetch(
+      "../api/availability_get.php?month=" + encodeURIComponent(k),
+      { credentials: "same-origin" }
+    );
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || "Could not load this month.");
+    }
+    CACHE[k] = Array.isArray(data.weeks) ? data.weeks : [];
+
+    // Populate the topbar identity (once per session is enough, but this is idempotent)
+    if (data.me) {
+      const name = data.me.full_name || "Admin";
+      $("adminName").textContent     = name;
+      $("adminInitials").textContent = data.me.initials || "A";
+      $("menuName").textContent      = name;
+    }
+    return CACHE[k];
+  }
+
+  // Source of truth for rendering: unsaved weeks win over DB weeks.
+  function getWeeks() {
+    const k = keyOf(view);
+    if (PENDING[k]) return PENDING[k];
+    return CACHE[k] || [];
+  }
+  function hasPending() { return !!PENDING[keyOf(view)]; }
+
+  /* ---------- Generate weeks for the current view ---------- */
+  function generateWeeksForMonth(v) {
+    // Find the Sunday on or before the 1st of the month.
+    const first = new Date(v.y, v.m, 1);
+    const start = new Date(first);
+    start.setDate(start.getDate() - start.getDay());
+
+    const monthStart = isoOf(new Date(v.y, v.m, 1));
+    const monthEnd   = isoOf(new Date(v.y, v.m + 1, 0));
+
+    const weeks = [];
+    for (let i = 0; i < 6; i++) {
+      const wkStart = new Date(start); wkStart.setDate(start.getDate() + i * 7);
+      const wkEnd   = new Date(wkStart); wkEnd.setDate(wkStart.getDate() + 6);
+      const s = isoOf(wkStart), e = isoOf(wkEnd);
+
+      // Keep only weeks that overlap the month
+      if (e < monthStart) continue;
+      if (s > monthEnd)   break;
+
+      weeks.push({
+        week_id: null,
+        start:   s,
+        end:     e,
+        active:  [1,1,1,1,1,1,1],
+        status:  "Open",
+        cap:     12,
+        booked:  0,
+        note:    "",
+        _new:    true
+      });
+    }
+    return weeks;
+  }
+
+  /* ---------- Render ---------- */
+  async function renderMonth() {
+    $("mLabel").textContent = MONTHS[view.m] + " " + view.y;
+    const wrap = $("weeks");
+    wrap.innerHTML = '<div class="empty">Loading…</div>';
+    try {
+      await loadMonth();
+    } catch (e) {
+      wrap.innerHTML = '<div class="empty">' + esc(e.message) + "</div>";
+      return;
+    }
+
+    const weeks = getWeeks();
+    const isPast = new Date(view.y, view.m + 1, 0) < new Date();
+
+    if (weeks.length) {
+      wrap.innerHTML = weeks.map(weekHTML).join("");
+    } else if (isPast) {
+      wrap.innerHTML = '<div class="empty">No weeks were set for this month.</div>';
+    } else {
+      wrap.innerHTML =
+        '<div class="empty">' +
+          '<p style="margin-bottom:14px">No weeks set up for this month.</p>' +
+          '<button class="btn primary" id="genWeeksBtn" type="button">Generate weeks for ' +
+            MONTHS[view.m] + ' ' + view.y +
+          '</button>' +
+        '</div>';
+      $("genWeeksBtn").addEventListener("click", () => {
+        PENDING[keyOf(view)] = generateWeeksForMonth(view);
+        renderMonth();
+        toast("Weeks generated. Review and click Save All Changes.");
+      });
+    }
+
+    updateStats();
+    updatePendingBadge();
+  }
+
+  function updatePendingBadge() {
+    const existing = $("pendingBadge");
+    if (existing) existing.remove();
+    if (!hasPending()) return;
+    const bar = document.querySelector(".monthbar");
+    if (!bar) return;
+    const badge = document.createElement("span");
+    badge.id = "pendingBadge";
+    badge.style.cssText =
+      "background:#fbe6e6;border:1px solid #d9788a;color:#cf6c7d;" +
+      "font-size:.72rem;font-weight:700;padding:5px 12px;border-radius:999px;";
+    badge.textContent = "Unsaved changes";
+    bar.insertBefore(badge, $("saveAll"));
+  }
+
+  function weekHTML(w, wi) {
+    const first = toDate(w.start);
+    const last  = toDate(w.start, 6);
+    const badge = w._new
+      ? ' <span style="font-size:.62rem;font-weight:700;color:#cf6c7d;background:#fbe6e6;padding:2px 8px;border-radius:999px;margin-left:6px">NEW</span>'
+      : "";
+    return `
+    <section class="week" data-wi="${wi}">
+      <div class="week-head">
+        <div>
+          <h3>Week ${wi + 1}: ${fmtShort(first)} – ${fmtLong(last)}${badge}</h3>
+          <input class="note" type="text" value="${esc(w.note)}" placeholder="Add a note for this week" maxlength="80" aria-label="Week note">
+        </div>
+        <div class="wstatus">
+          <span class="wlabel">Weekly Status</span>
+          <select class="statusSel ${w.status}" aria-label="Weekly status">
+            ${Object.entries(STATUS).map(([v,l]) => `<option value="${v}" ${w.status===v?'selected':''}>${l}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+      <div class="weekbody">
+        <div class="capcard">
+          <div class="caplabel">Max Capacity</div>
+          <div class="capnum">
+            <input class="capInput" type="number" min="1" max="99" value="${w.cap}" aria-label="Max capacity">
+            <span>cakes</span>
+          </div>
+          <div class="capbar"><i class="${barClass(w)}" style="width:${pctOf(w)}%"></i></div>
+          <div class="capfoot">
+            <span>Booked: <input class="bookInput" type="number" min="0" max="${w.cap}" value="${w.booked}" aria-label="Booked orders"> / <span class="capTotal">${w.cap}</span></span>
+            <span class="pct">${pctOf(w)}%</span>
+          </div>
+        </div>
+        <div class="days">
+          ${w.active.map((on, di) => dayHTML(toDate(w.start, di), on, di)).join("")}
+        </div>
+      </div>
+    </section>`;
+  }
+
+  function dayHTML(d, on, di) {
+    const dow = SHORTDOW[d.getDay()];
+    return `<button type="button" class="day ${on ? '' : 'blocked'}" data-di="${di}" aria-pressed="${on ? 'true' : 'false'}" aria-label="${fmtShort(d)}, ${on ? 'active' : 'blocked'}">
+      <span class="dow">${dow}</span>
+      <span class="num">${d.getDate()}</span>
+      <span class="tag">${on ? 'Active' : 'Blocked'}</span>
+    </button>`;
+  }
+
+  function updateStats() {
+    const weeks = getWeeks();
+    $("statCap").textContent    = weeks.reduce((a,w) => a + (Number(w.cap) || 0), 0);
+    $("statBooked").textContent = weeks.reduce((a,w) => a + (Number(w.booked) || 0), 0);
+    $("statOpen").textContent   = weeks.filter(w => w.status === "Open").length;
+  }
+
+  function refreshWeek(wi) {
+    const w = getWeeks()[wi];
+    const el = document.querySelector(`.week[data-wi="${wi}"]`);
+    if (!el || !w) return;
+    const sel = el.querySelector(".statusSel");
+    sel.className = "statusSel " + w.status;
+    const bar = el.querySelector(".capbar i");
+    bar.className = barClass(w);
+    bar.style.width = pctOf(w) + "%";
+    el.querySelector(".pct").textContent = pctOf(w) + "%";
+    el.querySelector(".capTotal").textContent = w.cap;
+    const bi = el.querySelector(".bookInput");
+    bi.max = w.cap; bi.value = w.booked;
+    updateStats();
+  }
+
+  /* ---------- Event delegation ---------- */
+  $("weeks").addEventListener("click", (e) => {
+    const btn = e.target.closest(".day");
+    if (!btn) return;
+    const wi = +btn.closest(".week").dataset.wi;
+    const di = +btn.dataset.di;
+    const w = getWeeks()[wi];
+    w.active[di] = w.active[di] ? 0 : 1;
+    const on = !!w.active[di];
+    btn.classList.toggle("blocked", !on);
+    btn.setAttribute("aria-pressed", String(on));
+    btn.querySelector(".tag").textContent = on ? "Active" : "Blocked";
+  });
+
+  $("weeks").addEventListener("change", (e) => {
+    const wk = e.target.closest(".week");
+    if (!wk) return;
+    const wi = +wk.dataset.wi;
+    const w = getWeeks()[wi];
+    if (e.target.matches(".statusSel")) w.status = e.target.value;
+    if (e.target.matches(".capInput")) {
+      w.cap = Math.min(99, Math.max(1, Math.round(Number(e.target.value)) || 1));
+      w.booked = Math.min(w.booked, w.cap);
+      e.target.value = w.cap;
+    }
+    if (e.target.matches(".bookInput")) {
+      w.booked = Math.min(w.cap, Math.max(0, Math.round(Number(e.target.value)) || 0));
+    }
+    refreshWeek(wi);
+  });
+
+  $("weeks").addEventListener("input", (e) => {
+    if (!e.target.matches(".note")) return;
+    const wi = +e.target.closest(".week").dataset.wi;
+    getWeeks()[wi].note = e.target.value;
+  });
+
+  /* ---------- Month navigation (guarded by unsaved changes) ---------- */
+  async function shiftMonth(step) {
+    if (hasPending()) {
+      const ok = confirm("You have unsaved weeks for " + MONTHS[view.m] + ". Leave without saving?");
+      if (!ok) return;
+      delete PENDING[keyOf(view)];
+    }
+    view.m += step;
+    if (view.m < 0)  { view.m = 11; view.y--; }
+    if (view.m > 11) { view.m = 0;  view.y++; }
+    await renderMonth();
+  }
+  $("prevM").addEventListener("click", () => shiftMonth(-1));
+  $("nextM").addEventListener("click", () => shiftMonth(1));
+
+  /* ---------- Save ---------- */
+  $("saveAll").addEventListener("click", async () => {
+    const weeks = getWeeks();
+    if (!weeks.length) return toast("Nothing to save for this month.", true);
+
+    if (!CSRF) {
+      try { await loadCsrf(); }
+      catch (e) { return toast("Session expired. Please reload the page.", true); }
+    }
+
+    // Strip server-only fields on new rows; keep the rest as-is.
+    const payload = weeks.map(w => ({
+      start:  w.start,
+      end:    w.end,
+      active: w.active,
+      status: w.status,
+      cap:    w.cap,
+      booked: w.booked,
+      note:   w.note || ""
+    }));
+
+    const fd = new FormData();
+    fd.append("weeks", JSON.stringify(payload));
+    fd.append("csrf",  CSRF);
+
+    $("saveAll").disabled = true;
+    try {
+      const res = await fetch("../api/availability_save.php", {
+        method: "POST",
+        body: fd,
+        credentials: "same-origin",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.success) throw new Error(data.error || "Save failed.");
+      toast(data.message || "Weekly availability saved.");
+      // Clear pending and refresh from server (server recomputes `booked`)
+      delete PENDING[keyOf(view)];
+      CACHE[keyOf(view)] = null;
+      await renderMonth();
+    } catch (e) {
+      toast(e.message, true);
+    } finally {
+      $("saveAll").disabled = false;
+    }
+  });
+
+  /* ---------- Warn before unload if there are unsaved weeks ---------- */
+  window.addEventListener("beforeunload", (e) => {
+    if (Object.keys(PENDING).length === 0) return;
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  /* ---------- Boot ---------- */
+  (async () => {
+    try {
+      await loadCsrf();
+    } catch (e) {
+      toast(e.message, true);
+      return;
+    }
+    await renderMonth();
+  })();
+})();
+</script>
+</body>
+</html>

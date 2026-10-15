@@ -9,12 +9,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600;700&family=Platypi:wght@500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f7efe9;--card:#fff;--paper:#fbf3ec;--rail:#f7e9e0;--pink:#d9788a;
-  --pink-soft:#fbe6e6;--pink-hover:#cf6c7d;--border:#ecd9d1;--border-strong:#dcc0b5;
+  --bg:#f7efe9;--card:#fff;--paper:#fbf3ec;--pink:#d9788a;--pink-hover:#cf6c7d;
+  --pink-soft:#fbe6e6;--border:#ecd9d1;--border-strong:#dcc0b5;
   --text:#4a2a2e;--muted:#8a6a62;--chip-bg:#f6e3df;--chip-border:#ecd2ca;
   --font-head:'Playfair Display',Georgia,serif;
   --font-text:'Jost','Helvetica Neue',Arial,sans-serif;
   --font-btn:'Platypi',Georgia,serif;
+  --sb-w:220px;--sb-w-collapsed:60px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -33,117 +34,226 @@ input,select,textarea{font:inherit;color:inherit}
 .top-name{text-align:right;line-height:1.15}
 .top-name strong{display:block;font-family:var(--font-head);font-size:1rem;font-weight:700}
 .top-name span{font-size:.78rem;color:var(--muted);font-weight:500}
-.top-avatar{width:38px;height:38px;border-radius:50%;background:var(--pink-soft);color:var(--pink);display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid #f0c3c8}
+.top-avatar{width:38px;height:38px;border-radius:50%;background:var(--pink-soft);color:var(--pink);display:grid;place-items:center;font-weight:700;font-size:.9rem;border:1px solid #f0c3c8;cursor:pointer;transition:background .15s,box-shadow .15s}
+.top-avatar:hover{background:#f6d5d8}
+.top-avatar[aria-expanded="true"]{box-shadow:0 0 0 3px rgba(217,120,138,.25)}
+
+/* Burger */
+.burger{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:9px;color:var(--text);transition:background .15s,color .15s;flex:none;margin-right:4px}
+.burger:hover{background:#f1dfd6;color:var(--pink)}
+.burger svg{width:22px;height:22px}
+
+/* Profile dropdown */
+.profile-wrap{position:relative}
+.profile-menu{
+  position:absolute;top:calc(100% + 10px);right:0;z-index:50;
+  min-width:220px;padding:8px;
+  background:#fffdfb;border:1px solid var(--border-strong);border-radius:12px;
+  box-shadow:0 12px 30px rgba(74,38,46,.18);
+  animation:pmIn .18s ease;
+}
+.profile-menu[hidden]{display:none}
+@keyframes pmIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.profile-menu .item{
+  display:flex;align-items:center;gap:12px;width:100%;
+  padding:10px 12px;border-radius:8px;
+  font-family:var(--font-head);font-weight:700;font-size:1rem;color:#3a1e22;
+  text-align:left;transition:background .15s;
+}
+.profile-menu .item svg{width:22px;height:22px;flex:none;color:#3a1e22}
+.profile-menu .item:hover{background:#f5e3dd}
+.profile-menu .item.name{cursor:default;background:transparent}
+.profile-menu .item.name:hover{background:transparent}
+.profile-menu .divider{height:1px;background:var(--border);margin:6px 4px}
+.profile-menu form{margin:0}
 
 /* Layout */
-.layout{display:grid;grid-template-columns:220px 340px 1fr;gap:16px;padding:16px 22px 40px;align-items:start}
+.layout{
+  display:grid;grid-template-columns:var(--sb-w) 1fr;gap:22px;
+  padding:22px 26px 40px;align-items:start;
+  transition:grid-template-columns .25s ease;
+}
+body.sb-collapsed .layout{grid-template-columns:var(--sb-w-collapsed) 1fr}
 
 /* Sidebar */
-.sidebar{font-size:.88rem;padding-right:8px}
-.sidebar h4{font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.sidebar{font-size:.88rem;padding-right:8px;overflow:hidden;transition:opacity .15s}
+.sidebar h4{font-weight:600;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px;transition:opacity .15s}
 .sidebar h4:first-child{margin-top:0}
 .sidebar ul{list-style:none;display:flex;flex-direction:column;gap:2px}
-.sidebar a{display:block;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:500}
+.sidebar a{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;color:var(--text);font-weight:500;white-space:nowrap;transition:background .15s,color .15s}
 .sidebar a:hover{background:#f1dfd6}
 .sidebar a.active{background:#f2c9cc;color:#7a2c38;font-weight:600}
+.sidebar a svg{width:20px;height:20px;flex:none;stroke-width:1.9}
+.sidebar a span{transition:opacity .15s}
+body.sb-collapsed .sidebar h4{opacity:0;height:0;margin:0;overflow:hidden;pointer-events:none}
+body.sb-collapsed .sidebar a span{display:none}
+body.sb-collapsed .sidebar a{justify-content:center;padding:9px 0}
+body.sb-collapsed .sidebar{font-size:0}
 
-/* Middle rail */
-.rail{background:var(--paper);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:14px;min-height:600px}
-.rail-orders{display:flex;flex-direction:column;gap:8px}
-.order-chip{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:10px;background:var(--card);border:1px solid var(--border);cursor:pointer;transition:background .15s,border-color .15s;text-align:left;width:100%}
-.order-chip:hover{background:#fbe9e6;border-color:var(--border-strong)}
-.order-chip.is-active{background:var(--chip-bg);border-color:#dab6ae}
-.order-chip .id{font-family:var(--font-head);font-weight:700;color:#7a3b45}
-.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:.68rem;font-weight:700;letter-spacing:.03em;border:1px solid var(--chip-border);background:#f2e2dd;color:#8a5a4f}
-.pill.new{background:#f2e2dd;color:#8a5a4f}
-.pill.quoted{background:#fbe6d5;color:#a86a3b;border-color:#f0ceb3}
-.pill.accepted{background:#dfeede;color:#4c7d51;border-color:#c4dcc2}
-.pill.completed{background:#e5e9ee;color:#4f5c72;border-color:#d2d8e2}
-.pill.draft{background:var(--chip-bg);color:#8a5a4f}
-.pill.rejected{background:#f5dde0;color:#b94550;border-color:#e9c3c8}
-.pill.expired{background:#efe9e4;color:#8a7d78}
-
-.request-ref{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
-.request-ref h3{font-family:var(--font-head);font-size:1.15rem;font-weight:700;margin-bottom:10px}
-.ref-row{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:.85rem}
-.ref-row span:first-child{color:var(--muted)}
-.ref-row span:last-child{font-weight:600}
-.ref-notes{margin-top:10px;background:#fbf3ec;border-radius:8px;padding:10px 12px;font-size:.83rem;font-style:italic;color:#7a4a4a;min-height:44px}
-.ref-thumb{margin-top:10px;height:120px;border-radius:8px;background:#f3e0d6;border:1px dashed var(--border-strong);display:grid;place-items:center;color:var(--muted);font-size:.78rem;overflow:hidden}
-.ref-thumb img{width:100%;height:100%;object-fit:cover}
-
-.revisions{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
-.revisions h3{font-family:var(--font-head);font-size:1.1rem;font-weight:700;margin-bottom:10px}
-.rev{position:relative;padding:10px 0 10px 16px;border-left:1px solid var(--border)}
-.rev::before{content:'';position:absolute;left:-5px;top:16px;width:8px;height:8px;border-radius:50%;background:var(--pink);box-shadow:0 0 0 3px var(--paper)}
-.rev:first-child::before{background:#c15b6a}
-.rev-head{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:.85rem}
-.rev-head strong{font-family:var(--font-head)}
-.rev-date{font-size:.72rem;color:var(--muted);margin-top:3px}
-.rev-amount{font-weight:700;margin-top:4px}
-
-/* Right pane */
-.pane{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 26px 26px;min-height:600px;display:flex;flex-direction:column}
-.crumb{font-size:.82rem;color:var(--muted);margin-bottom:14px}
+/* Main */
+.main{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:22px 26px 28px;min-height:600px;
+  max-width:1100px;margin:0 auto;
+}
+.crumb{font-size:.82rem;color:var(--muted);margin-bottom:10px}
 .crumb a{color:var(--pink)}
-.pane-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:6px}
-.pane-head h1{font-family:var(--font-head);font-size:2rem;font-weight:700;color:#3a1e22}
-.pane-head p{color:var(--muted);font-size:.9rem;margin-top:4px}
-.draft-tag{display:inline-block;background:#fbe6d5;color:#a86a3b;border:1px solid #f0ceb3;border-radius:6px;padding:3px 8px;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+.main h1{font-family:var(--font-head);font-size:2rem;font-weight:700;color:#3a1e22;margin-bottom:6px}
+.main > p.sub{color:var(--muted);font-size:.9rem;margin-bottom:18px}
 
-.sheet{margin-top:18px;flex:1;display:flex;flex-direction:column;gap:20px}
-.sheet-header{display:grid;grid-template-columns:2.2fr .5fr .9fr .9fr;gap:12px;padding:0 6px 8px;border-bottom:1px solid var(--border);font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-.sheet-header span:last-child{text-align:right}
-.sheet-empty{padding:36px 20px;text-align:center;color:var(--muted);font-size:.88rem;border:1px dashed var(--border);border-radius:10px;background:#fdf9f6}
-.line{display:grid;grid-template-columns:2.2fr .5fr .9fr .9fr;gap:12px;padding:6px 6px;border-bottom:1px dashed var(--border);align-items:center}
-.line input{width:100%;padding:8px 10px;background:#fdf9f6;border:1px solid var(--border);border-radius:8px;font-size:.88rem;outline:none}
-.line input:focus{border-color:var(--pink);background:#fff}
-.line .total{text-align:right;font-weight:700;color:#7a3b45}
+/* Cards */
+.card{background:#fffdfb;border:1px solid var(--border-strong);border-radius:14px;padding:22px 24px 24px;margin-bottom:18px}
+.card h2{font-family:var(--font-head);font-size:1.35rem;font-weight:700;color:#3a1e22;margin-bottom:16px}
 
-.summary-row{display:grid;grid-template-columns:1fr 1fr auto;gap:20px;align-items:end;margin-top:6px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field label{font-size:.8rem;font-weight:600}
-.field input,.field select{width:100%;padding:10px 12px;background:#fdf9f6;border:1px solid var(--border);border-radius:9px;font-size:.9rem;outline:none}
-.field input:focus,.field select:focus{border-color:var(--pink);background:#fff}
-.total-box{background:#fbeee9;border-radius:12px;padding:14px 22px;text-align:right;min-width:220px}
-.total-box .lbl{font-size:.85rem;color:var(--muted);font-weight:600}
-.total-box .amt{font-family:var(--font-head);font-size:1.8rem;font-weight:700;color:var(--pink);margin-top:2px}
+/* Order details 2-col grid */
+.od-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 40px}
+.od-row{display:flex;justify-content:space-between;gap:16px;padding:6px 0;font-size:.9rem;border-bottom:1px dashed #f0e0d8}
+.od-row:last-child{border-bottom:0}
+.od-row .k{color:var(--muted);font-weight:500}
+.od-row .v{font-weight:600;text-align:right;color:#3a1e22}
+.od-notes{grid-column:1/-1;background:#fbf3ec;border-radius:8px;padding:12px 14px;font-size:.85rem;color:#6a4a4a;line-height:1.45;min-height:56px}
+.od-thumb{grid-column:1/-1;margin-top:6px;border-radius:10px;border:1px dashed var(--border-strong);background:#f9f0ea;min-height:140px;display:grid;place-items:center;color:var(--muted);font-size:.82rem;overflow:hidden}
+.od-thumb img{width:100%;max-height:280px;object-fit:contain;border-radius:8px}
+.od-thumb.has-gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
+  gap:10px;
+  place-items:stretch;
+  padding:10px;
+  min-height:0;
+}
+.od-thumb.has-gallery a{display:block;height:140px;overflow:hidden;border-radius:8px}
+.od-thumb.has-gallery img{width:100%;height:100%;object-fit:cover;border-radius:8px;transition:transform .2s}
+.od-thumb.has-gallery a:hover img{transform:scale(1.05)}
 
-.note-block{margin-top:20px}
-.note-block h4{font-family:var(--font-head);font-size:1.05rem;font-weight:700;margin-bottom:8px}
-.note-block textarea{width:100%;min-height:110px;padding:12px 14px;resize:vertical;background:#fdf9f6;border:1px solid var(--border);border-radius:10px;font-size:.9rem;outline:none}
-.note-block textarea:focus{border-color:var(--pink);background:#fff}
-.note-block small{display:block;margin-top:6px;font-size:.72rem;color:var(--muted)}
+/* Pricing */
+.pricing .fee-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px 24px;margin-bottom:16px}
+.pricing .field{display:flex;flex-direction:column;gap:6px}
+.pricing .field label{font-size:.82rem;font-weight:600;color:#3a1e22}
+.pricing .field label .req{color:var(--pink)}
+.peso-box{display:flex;align-items:stretch;border:1px solid var(--border);border-radius:9px;background:#fff;overflow:hidden}
+.peso-box .peso{display:grid;place-items:center;width:40px;background:#fbf3ec;border-right:1px solid var(--border);font-weight:700;color:#7a3b45}
+.peso-box input{flex:1;border:0;padding:10px 12px;font-size:.9rem;outline:none;background:transparent}
+.peso-box input:focus{background:#fffaf7}
+.peso-box input.bad{border-color:#C65F62;background:#FFF8F8}
+.field .ferr{
+  color:#C65F62;
+  font-size:.72rem;
+  font-weight:600;
+  margin-top:4px;
+  min-height:1em;
+  visibility:hidden;
+}
+.field .ferr.on{visibility:visible}
 
-.actions{display:flex;justify-content:flex-end;gap:12px;margin-top:22px;flex-wrap:wrap}
+/* Total band */
+.total-band{display:flex;justify-content:space-between;align-items:center;background:#f7d3d3;border-radius:10px;padding:16px 22px;margin:18px 0 18px}
+.total-band .lbl{font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:#7a3b45}
+.total-band .amt{font-family:var(--font-head);font-size:2rem;font-weight:700;color:#7a3b45}
+
+/* Note */
+.note h3{font-family:var(--font-head);font-size:1.25rem;font-weight:700;color:#3a1e22;margin-bottom:10px}
+.note h3 .opt{font-family:var(--font-text);font-size:.85rem;font-weight:500;color:var(--muted)}
+.note textarea{width:100%;min-height:110px;padding:14px;background:#fdf9f6;border:1px solid var(--border);border-radius:10px;font-size:.92rem;outline:none;resize:vertical}
+.note textarea:focus{border-color:var(--pink);background:#fff}
+
+/* Actions */
+.actions{display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;margin-top:6px}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;font-family:var(--font-btn);font-weight:600;font-size:.92rem;border:1px solid var(--border-strong);background:transparent;color:var(--text);transition:background .15s,color .15s,border-color .15s}
 .btn:hover{background:#f6e3df}
 .btn.primary{background:var(--pink);border-color:var(--pink);color:#fff}
 .btn.primary:hover{background:var(--pink-hover);border-color:var(--pink-hover)}
 .btn:disabled{opacity:.55;cursor:not-allowed}
 
+.revision-card{
+  border-color:var(--pink);
+  background:#fff7f8;
+}
+.revision-card h2{
+  color:#7a3b45;
+  margin-bottom:10px;
+}
+.revision-card .rev-message{
+  font-family:var(--font-text);
+  font-size:.95rem;
+  line-height:1.55;
+  color:#3a1e22;
+  background:#fff;
+  border-left:3px solid var(--pink);
+  border-radius:4px;
+  padding:12px 14px;
+  margin-bottom:10px;
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+}
+.revision-card .rev-meta{
+  font-size:.75rem;
+  color:var(--muted);
+}
+
+.state{padding:60px 16px;text-align:center;color:var(--muted);font-size:.95rem}
 #toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,100px);background:#3a1e22;color:#fff;padding:12px 22px;border-radius:12px;font-size:.9rem;z-index:99;transition:.35s;box-shadow:0 8px 30px rgba(0,0,0,.22)}
 #toast.on{transform:translate(-50%,0)}
 #toast.err{background:#b94550}
 
-.state{padding:60px 16px;text-align:center;color:var(--muted);font-size:.95rem}
+/* ---------- Confirm dialog ---------- */
+.confirm-overlay{
+  position:fixed;inset:0;z-index:2000;
+  display:grid;place-items:center;padding:1rem;
+  background:rgba(56,35,37,.45);
+  backdrop-filter:blur(4px);
+  animation:cfFade .18s ease;
+}
+.confirm-overlay[hidden]{display:none}
+@keyframes cfFade{from{opacity:0}to{opacity:1}}
 
-@media (max-width:1180px){
-  .layout{grid-template-columns:1fr;gap:18px}
-  .rail{min-height:0;order:1}
-  .sidebar{order:2}
-  .pane{order:3}
+.confirm-box{
+  width:min(100%,420px);
+  background:#fffdfb;
+  border:1px solid var(--border-strong);
+  border-radius:18px;
+  padding:28px 28px 22px;
+  text-align:center;
+  box-shadow:0 24px 50px rgba(74,38,46,.25), 0 8px 16px rgba(74,38,46,.12);
+  animation:cfPop .22s cubic-bezier(.175,.885,.32,1.275);
+}
+@keyframes cfPop{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+
+.confirm-icon{
+  width:52px;height:52px;border-radius:50%;
+  background:#fbe6e6;color:var(--pink);
+  display:grid;place-items:center;margin:0 auto 14px;
+}
+.confirm-icon svg{width:26px;height:26px}
+
+.confirm-box h3{
+  font-family:var(--font-head);
+  font-size:1.25rem;font-weight:700;color:#3a1e22;
+  margin-bottom:8px;
+}
+.confirm-box p{
+  font-size:.9rem;color:var(--muted);line-height:1.5;
+  margin-bottom:22px;
+}
+.confirm-actions{
+  display:flex;justify-content:center;gap:10px;flex-wrap:wrap;
+}
+.confirm-actions .btn{padding:10px 22px;font-size:.9rem}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;gap:16px}
+  .sidebar{order:2}.main{order:1}
+  body.sb-collapsed .layout{grid-template-columns:1fr}
+  .od-grid,.pricing .fee-grid{grid-template-columns:1fr}
 }
 @media (max-width:640px){
   .topbar{padding:12px 16px;gap:12px;flex-wrap:wrap}
   .brand-name{font-size:1.15rem}.brand-tag{display:none}
-  .layout{padding:14px}
+  .layout{padding:14px}.main{padding:16px}
+  .main h1{font-size:1.5rem}
   .sheet-header{display:none}
   .line{grid-template-columns:1fr 1fr;gap:8px}
-  .pane{padding:16px}
-  .pane-head h1{font-size:1.5rem}
-  .summary-row{grid-template-columns:1fr;gap:14px}
-  .total-box{width:100%;text-align:left}
+  .line .remove{grid-column:1/-1;justify-self:end}
 }
 </style>
 </head>
@@ -151,6 +261,9 @@ input,select,textarea{font:inherit;color:inherit}
 
 <header class="topbar">
   <div class="brand">
+    <button class="burger" id="burger" type="button" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <img src="../Images-Icons/R&R Logo.jpg" alt="R&amp;R Sweet Bites logo">
     <span class="brand-name">R&amp;R Sweet Bites</span>
     <span class="brand-tag">Admin Workspace</span>
@@ -160,108 +273,170 @@ input,select,textarea{font:inherit;color:inherit}
       <strong id="adminName">—</strong>
       <span>Admin</span>
     </div>
-    <div class="top-avatar" id="adminInitials">—</div>
+    <div class="profile-wrap">
+      <button class="top-avatar" id="profileBtn" type="button" aria-label="Account menu" aria-expanded="false" aria-haspopup="true" aria-controls="profileMenu">
+        <span id="adminInitials">—</span>
+      </button>
+      <div class="profile-menu" id="profileMenu" role="menu" hidden>
+        <div class="item name" role="menuitem" aria-disabled="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2"/><path d="M5.8 18.6c1.2-2.4 3.6-3.6 6.2-3.6s5 1.2 6.2 3.6"/></svg>
+          <span id="menuName">Admin Name</span>
+        </div>
+        <a class="item" href="#" role="menuitem">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.9 19a1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+          <span>Settings</span>
+        </a>
+        <div class="divider" role="separator"></div>
+        <form method="post" action="../api/logout.php">
+          <button type="submit" class="item" role="menuitem">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg>
+            <span>Log Out</span>
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
 </header>
 
 <main class="layout">
 
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
+    <ul>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+        <span>Dashboard</span>
+      </a></li>
+    </ul>
     <h4>Communication</h4>
     <ul>
-      <li><a href="#">Messages</a></li>
-      <li><a href="#">Notifications</a></li>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.95 10.05a7 7 0 011.412 7.872 1 1 0 00-.058.787l.675 2.089a1 1 0 01-1.236 1.168l-2.155-.631a1 1 0 00-.745.06 7 7 0 01-7.793-1.445"/><path d="M2.696 12.708a1 1 0 00-.058-.785 7 7 0 113.518 3.473 1 1 0 00-.744-.061l-2.155.63a1 1 0 01-1.236-1.167z"/></svg>
+        <span>Messages</span>
+      </a></li>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>
+        <span>Notifications</span>
+      </a></li>
     </ul>
-    <h4>Order Management</h4>
+    <h4>Management</h4>
     <ul>
-      <li><a href="#">Design Gallery</a></li>
-      <li><a href="order-requests.html">Order Request</a></li>
-      <li><a href="Weekly-Availability.html">Week Availability</a></li>
-      <li><a href="admin_payment_verification.html">Payment Verification</a></li>
-      <li><a href="#">Cancellation Requests</a></li>
-    </ul>
-    <h4>Store Management</h4>
-    <ul>
-      <li><a href="#">Sales &amp; Performance</a></li>
+      <li><a href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16"/><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="13" cy="7" r="1" fill="currentColor"/><rect x="8" y="2" width="14" height="14" rx="2"/></svg>
+        <span>Gallery</span>
+      </a></li>
+      <li><a href="order-requests.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 5h6"/><path d="M19 2v6"/><path d="m2.05 2.05 1.099-.028a1 1 0 011.008.815l2.69 14.347A1 1 0 007.83 18H18"/><path d="M4.564 5H12"/><path d="M6.25 14h12.712a2 2 0 001.991-1.57l.172-1.041"/><circle cx="18" cy="20" r="2"/><circle cx="8" cy="20" r="2"/></svg>
+        <span>Orders</span>
+      </a></li>
+      <li><a href="Weekly_Availability_Calendar(Admin).html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3"/><path d="M16 2v3"/><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="m9 15 2 2 4-4"/></svg>
+        <span>Schedule</span>
+      </a></li>
+      <li><a href="admin_payment_verification.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/><path d="M6 14h2"/></svg>
+        <span>Payments</span>
+      </a></li>
     </ul>
   </aside>
 
-  <section class="rail">
-    <div class="rail-orders" id="orderList"><p class="state" style="padding:20px 10px;font-size:.85rem">Loading orders…</p></div>
-
-    <div class="request-ref" id="refCard" hidden>
-      <h3>Request Reference</h3>
-      <div class="ref-row"><span>ID:</span><span id="refId">—</span></div>
-      <div class="ref-row"><span>Client:</span><span id="refClient">—</span></div>
-      <div class="ref-row"><span>Type:</span><span id="refType">—</span></div>
-      <div class="ref-row"><span>Complexity:</span><span id="refComplexity" class="pill">—</span></div>
-      <div class="ref-notes" id="refNotes">—</div>
-      <div class="ref-thumb" id="refThumb">No reference image</div>
+  <section class="main" id="pane" hidden>
+    <div class="crumb"><a href="order-requests.html">Order Request</a> / Quotation Worksheet</div>
+    <h1>Quotation Worksheet</h1>
+    <p class="sub">Set the pricing details for this order. The quotation will be sent to the customer for approval.</p>
+    
+    <div class="card revision-card" id="revCard" hidden>
+    <h2>Customer Revision Request</h2>
+    <p class="rev-message" id="revMsg"></p>
+    <p class="rev-meta" id="revMeta"></p>
     </div>
-
-    <div class="revisions" id="revCard" hidden>
-      <h3>Quotation Revisions</h3>
-      <div id="revList"></div>
-    </div>
-  </section>
-
-  <section class="pane" id="pane" hidden>
-    <div class="crumb"><a href="order-requests.html">Order Request</a> / Quotation/Revision</div>
-    <div class="pane-head">
-      <div>
-        <h1>Quotation Worksheet</h1>
-        <p>Create formal pricing line items for custom cake designs. Draft changes auto-save.</p>
+    
+    <!-- Order Details -->
+    <div class="card">
+      <h2>Order Details</h2>
+      <div class="od-grid">
+        <div>
+          <div class="od-row"><span class="k">Order No.</span><span class="v" id="odNo">—</span></div>
+          <div class="od-row"><span class="k">Rush Order</span><span class="v" id="odRush">—</span></div>
+          <div class="od-row"><span class="k">Customer Name</span><span class="v" id="odName">—</span></div>
+          <div class="od-row"><span class="k">Customer No.</span><span class="v" id="odPhone">—</span></div>
+          <div class="od-row"><span class="k">Occasion</span><span class="v" id="odOccasion">—</span></div>
+        </div>
+        <div>
+          <div class="od-row"><span class="k">Delivery Date</span><span class="v" id="odDate">—</span></div>
+          <div class="od-row"><span class="k">Delivery Address</span><span class="v" id="odAddress">—</span></div>
+        </div>
+        <div class="od-notes" id="odNotes">—</div>
+        <div class="od-thumb" id="odThumb">No reference image</div>
       </div>
-      <span class="draft-tag" id="draftTag">Draft state</span>
     </div>
 
-    <div class="sheet">
-      <div class="sheet-header">
-        <span>Line item description</span>
-        <span>Qty</span>
-        <span>Unit price</span>
-        <span>Total</span>
-      </div>
+    <!-- Pricing Details -->
+    <div class="card pricing">
+      <h2>Pricing Details</h2>
 
-      <div id="lineItems"></div>
-
-      <button type="button" class="btn" id="addLine">+ Add line item</button>
-
-      <div class="summary-row">
+      <div class="fee-grid">
         <div class="field">
-          <label for="prepTime">Est. Preparation / Completion Time</label>
-          <select id="prepTime">
-            <option value="1 day">1 Day (Rush)</option>
-            <option value="2 days" selected>2 Days (Standard)</option>
-            <option value="3 days">3 Days</option>
-            <option value="5 days">5 Days</option>
-            <option value="7 days">1 Week</option>
-          </select>
+          <label for="customPrice">Custom Order Price <span class="req">*</span></label>
+          <div class="peso-box">
+            <span class="peso">₱</span>
+            <input id="customPrice" type="text" inputmode="decimal" value="0" />
+          </div>
         </div>
         <div class="field">
-          <label for="deposit">Deposit Required</label>
-          <input id="deposit" value="20% upfront payment">
+          <label for="deliveryFee">Delivery Fee <span style="color:var(--muted);font-weight:500">(Optional)</span></label>
+          <div class="peso-box">
+            <span class="peso">₱</span>
+            <input id="deliveryFee" type="text" inputmode="decimal" value="0" />
+          </div>
         </div>
-        <div class="total-box">
-          <div class="lbl">Total</div>
-          <div class="amt" id="grandTotal">₱0.00</div>
+        <div class="field">
+          <label for="rushFee">Rush Order Fee <span style="color:var(--muted);font-weight:500">(Optional)</span></label>
+          <div class="peso-box">
+            <span class="peso">₱</span>
+            <input id="rushFee" type="text" inputmode="decimal" value="0" />
+          </div>
         </div>
       </div>
 
-      <div class="note-block">
-        <h4>Special Note for <span id="noteClient">Client</span></h4>
-        <textarea id="specialNote" placeholder="Add any special instructions…"></textarea>
-        <small>Terms: Quotations expire 7 days from generation. Orders are secured only upon deposit completion.</small>
+      <!-- Total -->
+      <div class="total-band">
+        <div class="lbl">Total Amount</div>
+        <div class="amt" id="grandTotal">₱0.00</div>
       </div>
 
-      <div class="actions">
-        <button type="button" class="btn" id="btnDuplicate">Duplicate Previous Draft</button>
-        <button type="button" class="btn" id="btnSave">Save Draft</button>
-        <button type="button" class="btn primary" id="btnSend">Send Quotation to Client</button>
+      <!-- Note -->
+      <div class="note">
+        <h3>Note for Customer <span class="opt">(Optional)</span></h3>
+        <textarea id="specialNote" placeholder="Add any additional notes, terms, or reminders for customers…"></textarea>
       </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button type="button" class="btn" id="btnRevert" hidden>Revert to Draft</button>
+      <button type="button" class="btn" id="btnSave">Save as Draft</button>
+      <button type="button" class="btn primary" id="btnSend">Send Quotation to Customer</button>
     </div>
   </section>
 </main>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="confirmOverlay" hidden>
+  <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="cfTitle" aria-describedby="cfText">
+    <div class="confirm-icon" id="cfIcon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 3-6.7"/>
+        <path d="M3 4v5h5"/>
+      </svg>
+    </div>
+    <h3 id="cfTitle">Confirm</h3>
+    <p id="cfText">Are you sure?</p>
+    <div class="confirm-actions">
+      <button type="button" class="btn" id="cfCancel">Cancel</button>
+      <button type="button" class="btn primary" id="cfOk">Confirm</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast" role="status"></div>
 
@@ -272,9 +447,41 @@ input,select,textarea{font:inherit;color:inherit}
   const $ = (id) => document.getElementById(id);
   const peso = (n) => "₱" + (Number(n) || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  let orders = [];
   let currentId = null;
+  let currentOrder = null;
 
+  /* ---------- Sidebar collapse ---------- */
+  const KEY = "rr_admin_sb_collapsed";
+  const burger = $("burger");
+  function applyCollapsed(c) {
+    document.body.classList.toggle("sb-collapsed", c);
+    burger.setAttribute("aria-expanded", String(!c));
+  }
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(KEY) === "1"; } catch (e) {}
+  applyCollapsed(collapsed);
+  burger.addEventListener("click", () => {
+    collapsed = !document.body.classList.contains("sb-collapsed");
+    applyCollapsed(collapsed);
+    try { localStorage.setItem(KEY, collapsed ? "1" : "0"); } catch (e) {}
+  });
+
+  /* ---------- Profile dropdown ---------- */
+  const pBtn  = $("profileBtn");
+  const pMenu = $("profileMenu");
+  function closeP() { pMenu.hidden = true; pBtn.setAttribute("aria-expanded", "false"); }
+  function openP()  { pMenu.hidden = false; pBtn.setAttribute("aria-expanded", "true"); }
+  pBtn.addEventListener("click", (e) => { e.stopPropagation(); pMenu.hidden ? openP() : closeP(); });
+  document.addEventListener("click", (e) => {
+    if (pMenu.hidden) return;
+    if (e.target.closest(".profile-wrap")) return;
+    closeP();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !pMenu.hidden) { closeP(); pBtn.focus(); }
+  });
+
+  /* ---------- Toast ---------- */
   let t;
   function toast(msg, isErr) {
     const el = $("toast");
@@ -297,239 +504,335 @@ input,select,textarea{font:inherit;color:inherit}
     }
   }
 
-  const orderLabel = (id) => "RQ-" + String(id).padStart(4, "0");
+  const orderLabel = (id) => "RR" + String(id).padStart(7, "0");
 
-  const statusClass = (s) => ({
-    pending_review: "new", quoted: "quoted", confirmed: "accepted",
-    in_production: "accepted", completed: "completed", cancelled: "expired"
-  })[s] || "new";
+  /* ---------- Confirm dialog ---------- */
+  const cf = {
+    overlay: $("confirmOverlay"),
+    icon:    $("cfIcon"),
+    title:   $("cfTitle"),
+    text:    $("cfText"),
+    ok:      $("cfOk"),
+    cancel:  $("cfCancel")
+  };
 
-  const statusLabel = (s) => ({
-    pending_review: "New", quoted: "Quoted", confirmed: "Accepted",
-    downpayment_pending_verification: "Awaiting DP", in_production: "In Progress",
-    completed: "Completed", cancellation_requested: "Cancelling", cancelled: "Cancelled"
-  })[s] || s;
+  function askConfirm({ title, text, okLabel, danger = false }) {
+    cf.title.textContent = title;
+    cf.text.textContent  = text;
+    cf.ok.textContent    = okLabel;
+    cf.icon.style.background = danger ? "#fbe6e6" : "#e9efe5";
+    cf.icon.style.color      = danger ? "#b94550" : "#5c8f63";
+    cf.overlay.hidden = false;
+    cf.ok.focus();
 
-  async function loadOrders() {
+    return new Promise((resolve) => {
+      const done = (val) => {
+        cf.overlay.hidden = true;
+        cf.ok.removeEventListener("click", onOk);
+        cf.cancel.removeEventListener("click", onCancel);
+        document.removeEventListener("keydown", onKey);
+        cf.overlay.removeEventListener("click", onBackdrop);
+        resolve(val);
+      };
+      const onOk       = () => done(true);
+      const onCancel   = () => done(false);
+      const onKey      = (e) => { if (e.key === "Escape") done(false); };
+      const onBackdrop = (e) => { if (e.target === cf.overlay) done(false); };
+
+      cf.ok.addEventListener("click", onOk);
+      cf.cancel.addEventListener("click", onCancel);
+      document.addEventListener("keydown", onKey);
+      cf.overlay.addEventListener("click", onBackdrop);
+    });
+  }
+
+  /* ---------- Validation helpers ---------- */
+  function setFieldError(inputEl, msg) {
+    const field = inputEl.closest(".field");
+    if (!field) return;
+    let err = field.querySelector(".ferr");
+    if (!err) {
+      err = document.createElement("span");
+      err.className = "ferr";
+      field.appendChild(err);
+    }
+    err.textContent = msg || "";
+    err.classList.toggle("on", !!msg);
+    inputEl.classList.toggle("bad", !!msg);
+  }
+
+  function clearAllErrors() {
+    document.querySelectorAll(".peso-box input").forEach(i => setFieldError(i, ""));
+  }
+
+  function validateForm({ forSend }) {
+    clearAllErrors();
+    let ok = true;
+    let firstBad = null;
+
+    const custom   = parseFloat($("customPrice").value);
+    const delivery = parseFloat($("deliveryFee").value);
+    const rush     = parseFloat($("rushFee").value);
+
+    if (!Number.isFinite(custom) || custom <= 0) {
+      setFieldError($("customPrice"), "Enter a price greater than 0.");
+      ok = false; firstBad = firstBad || $("customPrice");
+    }
+    if (Number.isFinite(delivery) && delivery < 0) {
+      setFieldError($("deliveryFee"), "Delivery fee cannot be negative.");
+      ok = false; firstBad = firstBad || $("deliveryFee");
+    }
+    if (Number.isFinite(rush) && rush < 0) {
+      setFieldError($("rushFee"), "Rush fee cannot be negative.");
+      ok = false; firstBad = firstBad || $("rushFee");
+    }
+
+    const noteVal = $("specialNote").value;
+    if (noteVal.length > 1000) {
+      $("specialNote").focus();
+      toast("Note for Customer must be 1000 characters or fewer.", true);
+      ok = false;
+    }
+
+    if (forSend && currentOrder && currentOrder.is_rush) {
+      if (!Number.isFinite(rush) || rush <= 0) {
+        setFieldError($("rushFee"), "Add a Rush Order Fee before sending.");
+        ok = false; firstBad = firstBad || $("rushFee");
+      }
+    }
+
+    if (firstBad) firstBad.focus();
+    return ok;
+  }
+
+  /* ---------- Button state (Send / Revert / Save) ---------- */
+  function applyButtonState(o) {
+    const pending = o.pending_quotation || null;
+    const draft   = o.draft_quotation   || null;
+
+    const btnSend   = $("btnSend");
+    const btnRevert = $("btnRevert");
+    const btnSave   = $("btnSave");
+
+    btnRevert.hidden = !pending;
+    if (pending) btnRevert.dataset.qid = pending.quotation_id;
+
+    btnSend.disabled = !!pending;
+    btnSend.title    = pending
+      ? "A quotation is already awaiting the customer. Revert it to draft to make changes."
+      : "";
+
+    btnSave.disabled = !!pending;
+    btnSave.title    = pending
+      ? "A quotation is already awaiting the customer. Revert it to draft to make changes."
+      : "";
+
+    btnSave.textContent = draft ? "Update Draft" : "Save as Draft";
+  }
+
+  /* ---------- Load the order ---------- */
+  async function load() {
+    const urlOrder = parseInt(new URLSearchParams(location.search).get("order") || "0", 10);
+    if (!urlOrder) {
+      toast("No order specified.", true);
+      return;
+    }
+    currentId = urlOrder;
     try {
-      const data = await api(API + "?action=list");
-      orders = data.orders || [];
+      const data = await api(API + "?action=load&order_id=" + encodeURIComponent(urlOrder));
+      const o = data.order || {};
+      currentOrder = o;
+
       if (data.me) {
         $("adminName").textContent     = data.me.full_name || "Admin";
         $("adminInitials").textContent = data.me.initials  || "A";
+        $("menuName").textContent      = data.me.full_name || "Admin";
       }
-      renderOrders();
 
-      // Preselect from URL (?order=42) or first order
-      const urlOrder = parseInt(new URLSearchParams(location.search).get("order") || "0", 10);
-      const initial  = orders.find(o => o.order_id === urlOrder) || orders[0];
-      if (initial) selectOrder(initial.order_id);
-      else $("orderList").innerHTML = '<p class="state" style="padding:20px 10px;font-size:.85rem">No pending orders.</p>';
-    } catch (e) {
-      toast(e.message, true);
-      $("orderList").innerHTML = '<p class="state" style="padding:20px 10px;font-size:.85rem">Could not load orders.</p>';
-    }
-  }
+      $("odNo").textContent       = orderLabel(o.order_id);
+      $("odName").textContent     = o.client_name || "—";
+      $("odPhone").textContent    = o.client_phone || "—";
+      $("odOccasion").textContent = o.occasion_label || o.cake_type_label || "—";
+      $("odDate").textContent     = o.preferred_date || "—";
+      $("odAddress").textContent  = o.delivery_address || "—";
+      $("odNotes").textContent    = o.design_description || "No notes provided.";
 
-  function renderOrders() {
-    const wrap = $("orderList");
-    wrap.innerHTML = "";
-    if (!orders.length) {
-      wrap.innerHTML = '<p class="state" style="padding:20px 10px;font-size:.85rem">No pending orders.</p>';
-      return;
-    }
-    orders.forEach(o => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "order-chip" + (o.order_id === currentId ? " is-active" : "");
-      btn.innerHTML = `<span class="id">${orderLabel(o.order_id)}</span>
-                       <span class="pill ${statusClass(o.status)}">${statusLabel(o.status)}</span>`;
-      btn.addEventListener("click", () => selectOrder(o.order_id));
-      wrap.appendChild(btn);
-    });
-  }
+      const rushEl = $("odRush");
+      if (o.is_rush) {
+        rushEl.textContent = "Yes — rush fee applies";
+        rushEl.style.color = "#b94550";
+        rushEl.style.fontWeight = "700";
+      } else {
+        rushEl.textContent = "No";
+        rushEl.style.color = "";
+        rushEl.style.fontWeight = "";
+      }
 
-  async function selectOrder(orderId) {
-    currentId = orderId;
-    renderOrders();
-    try {
-      const data = await api(API + "?action=load&order_id=" + encodeURIComponent(orderId));
-      renderReference(data.order);
-      renderRevisions(data.revisions || []);
-      renderSheet(data.draft || { lines: [], prep: "2 days", deposit: "20% upfront payment", note: "" });
+      const cr = data.customer_revision;
+      if (cr && o.latest_quotation && cr.quotation_id === o.latest_quotation.quotation_id) {
+        $("revCard").hidden = false;
+        $("revMsg").textContent  = cr.message;
+        $("revMeta").textContent = "Requested on v" + cr.version + " · " + cr.created_at;
+      } else {
+        $("revCard").hidden = true;
+      }
+
+      const thumb = $("odThumb");
+      const urls = Array.isArray(o.ref_image_urls) && o.ref_image_urls.length
+        ? o.ref_image_urls
+        : (o.ref_image_url ? [o.ref_image_url] : []);
+
+      if (urls.length) {
+        thumb.innerHTML = "";
+        thumb.classList.add("has-gallery");
+        urls.forEach((url, i) => {
+          const a = document.createElement("a");
+          a.href = url;
+          a.target = "_blank";
+          a.rel = "noopener";
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = "Reference " + (i + 1);
+          a.appendChild(img);
+          thumb.appendChild(a);
+        });
+      } else {
+        thumb.textContent = "No reference image";
+        thumb.classList.remove("has-gallery");
+      }
+
+      // Prefill the pricing form from the existing draft, or the sent quote, or blank
+      const seedFrom = o.draft_quotation || o.pending_quotation || null;
+      renderSheet(seedFrom
+        ? { lines: [{ description: "Custom Order Price", qty: 1, unit_price: seedFrom.quoted_price }],
+            note:  seedFrom.remarks || "" }
+        : { lines: [], note: "" });
+
       $("pane").hidden = false;
-      $("refCard").hidden = false;
-      $("revCard").hidden = false;
+
+      applyButtonState(o);
     } catch (e) {
       toast(e.message, true);
     }
-  }
-
-  function renderReference(o) {
-    $("refId").textContent     = orderLabel(o.order_id);
-    $("refClient").textContent = o.initials || "—";
-    $("refType").textContent   = o.cake_type_label || "Cake";
-    const cplx = $("refComplexity");
-    cplx.textContent = o.difficulty_label || "—";
-    cplx.className = "pill " + ({ low: "accepted", medium: "quoted", high: "rejected" }[o.difficulty] || "new");
-    $("refNotes").textContent = o.design_description || "No notes provided.";
-    $("noteClient").textContent = o.initials || "Client";
-    const thumb = $("refThumb");
-    if (o.ref_image_url) {
-      thumb.innerHTML = "";
-      const img = document.createElement("img");
-      img.src = o.ref_image_url;
-      img.alt = "Reference";
-      thumb.appendChild(img);
-    } else {
-      thumb.textContent = "No reference image";
-    }
-  }
-
-  function renderRevisions(list) {
-    const wrap = $("revList");
-    wrap.innerHTML = "";
-    if (!list.length) {
-      wrap.innerHTML = '<p style="font-size:.83rem;color:var(--muted)">No revisions yet.</p>';
-      return;
-    }
-    list.forEach(r => {
-      const div = document.createElement("div");
-      div.className = "rev";
-      const cls = ({
-        pending: "new", issued: "draft", revision_requested: "rejected",
-        accepted: "accepted", revised: "quoted", rejected: "rejected"
-      })[r.status] || "draft";
-      div.innerHTML = `
-        <div class="rev-head">
-          <strong>v${r.version_number} (${r.label})</strong>
-          <span class="pill ${cls}">${r.status_label}</span>
-        </div>
-        <div class="rev-date">${r.created_at}</div>
-        <div class="rev-amount">${peso(r.quoted_price)}</div>
-      `;
-      wrap.appendChild(div);
-    });
   }
 
   function renderSheet(draft) {
-    const wrap = $("lineItems");
-    wrap.innerHTML = "";
-    (draft.lines || []).forEach(line => addLine(line));
-    if (!(draft.lines || []).length) {
-      wrap.innerHTML = '<div class="sheet-empty">No line items yet. Click "Add line item" to begin.</div>';
-    }
-    if (draft.prep)    $("prepTime").value = draft.prep;
-    if (draft.deposit) $("deposit").value  = draft.deposit;
+    let custom = 0;
+    (draft.lines || []).forEach(l => {
+      if (l.description === "Custom Order Price") custom = l.unit_price || 0;
+    });
+    $("customPrice").value = custom ? custom.toFixed(2) : "0";
     if (draft.note !== undefined) $("specialNote").value = draft.note;
     recalc();
   }
 
-  function addLine(line) {
-    const wrap = $("lineItems");
-    const empty = wrap.querySelector(".sheet-empty");
-    if (empty) empty.remove();
-
-    const row = document.createElement("div");
-    row.className = "line";
-    row.innerHTML = `
-      <input type="text" class="desc"  placeholder="e.g. 2-tier chocolate cake" value="">
-      <input type="text" class="qty"   value="1" inputmode="numeric">
-      <input type="text" class="price" value="0" inputmode="decimal">
-      <div class="total">₱0.00</div>
-    `;
-    if (line) {
-      row.querySelector(".desc").value  = line.description || "";
-      row.querySelector(".qty").value   = line.qty ?? 1;
-      row.querySelector(".price").value = line.unit_price ?? 0;
-    }
-    row.querySelectorAll("input").forEach(inp => inp.addEventListener("input", recalc));
-
-    const del = document.createElement("button");
-    del.type = "button";
-    del.className = "btn";
-    del.textContent = "Remove";
-    del.style.cssText = "padding:6px 12px;font-size:.78rem;margin-top:6px;grid-column:1/-1;justify-self:start";
-    del.addEventListener("click", () => { row.remove(); recalc(); });
-    row.appendChild(del);
-
-    wrap.appendChild(row);
-  }
-
   function collectLines() {
-    return Array.from($("lineItems").querySelectorAll(".line")).map(row => {
-      const qty   = parseFloat(row.querySelector(".qty").value) || 0;
-      const price = parseFloat(row.querySelector(".price").value) || 0;
-      return {
-        description: row.querySelector(".desc").value.trim(),
-        qty, unit_price: price,
-        line_total: +(qty * price).toFixed(2),
-      };
-    });
+    const custom   = parseFloat($("customPrice").value) || 0;
+    const delivery = parseFloat($("deliveryFee").value) || 0;
+    const rush     = parseFloat($("rushFee").value)     || 0;
+
+    const lines = [];
+    if (custom   > 0) lines.push({ description: "Custom Order Price", qty: 1, unit_price: custom,   line_total: custom });
+    if (delivery > 0) lines.push({ description: "Delivery Fee",       qty: 1, unit_price: delivery, line_total: delivery });
+    if (rush     > 0) lines.push({ description: "Rush Order Fee",     qty: 1, unit_price: rush,     line_total: rush });
+    return lines;
   }
 
   function recalc() {
-    let grand = 0;
-    $("lineItems").querySelectorAll(".line").forEach(row => {
-      const qty   = parseFloat(row.querySelector(".qty").value) || 0;
-      const price = parseFloat(row.querySelector(".price").value) || 0;
-      const total = qty * price;
-      grand += total;
-      row.querySelector(".total").textContent = peso(total);
-    });
-    $("grandTotal").textContent = peso(grand);
+    const custom   = parseFloat($("customPrice").value) || 0;
+    const delivery = parseFloat($("deliveryFee").value) || 0;
+    const rush     = parseFloat($("rushFee").value)     || 0;
+    $("grandTotal").textContent = peso(custom + delivery + rush);
   }
 
-  $("addLine").addEventListener("click", () => addLine(null));
+  $("customPrice").addEventListener("input", recalc);
+  $("deliveryFee").addEventListener("input", recalc);
+  $("rushFee").addEventListener("input", recalc);
 
-  $("btnDuplicate").addEventListener("click", () => {
-    if (!currentId) return;
-    toast("Duplicated the latest draft into the current sheet.");
+  ["customPrice", "deliveryFee", "rushFee"].forEach(id => {
+    $(id).addEventListener("input", () => setFieldError($(id), ""));
   });
 
+  /* ---------- Save as Draft ---------- */
   $("btnSave").addEventListener("click", async () => {
     if (!currentId) return;
+    if (!validateForm({ forSend: false })) {
+      return toast("Please fix the highlighted fields.", true);
+    }
     try {
       const r = await api(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "save_draft", order_id: currentId, send: false,
-          prep: $("prepTime").value,
-          deposit: $("deposit").value.trim(),
           note: $("specialNote").value.trim(),
           lines: collectLines(),
         }),
       });
       toast(r.message || "Draft saved.");
-      selectOrder(currentId);
+      load();                       // refresh button state (label: Update Draft)
     } catch (e) { toast(e.message, true); }
   });
 
+  /* ---------- Send Quotation to Customer ---------- */
   $("btnSend").addEventListener("click", async () => {
     if (!currentId) return;
-    const lines = collectLines();
-    if (!lines.length || lines.every(l => !l.description)) {
-      return toast("Add at least one line item before sending.", true);
+    if (!validateForm({ forSend: true })) {
+      return toast("Please fix the highlighted fields before sending.", true);
     }
+    const lines = collectLines();
+    if (!lines.length) return toast("Add at least one line item before sending.", true);
+
+    const okSend = await askConfirm({
+      title: "Send quotation to customer?",
+      text:  "They will be able to accept it or request revisions.",
+      okLabel: "Send Quotation"
+    });
+    if (!okSend) return;
+
     try {
       const r = await api(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "send_quotation", order_id: currentId, send: true,
-          prep: $("prepTime").value,
-          deposit: $("deposit").value.trim(),
           note: $("specialNote").value.trim(),
           lines,
         }),
       });
       toast(r.message || "Quotation sent to client.");
-      loadOrders();
+      load();                       // locks the Send button
     } catch (e) { toast(e.message, true); }
   });
 
-  loadOrders();
+  /* ---------- Revert to Draft ---------- */
+  $("btnRevert").addEventListener("click", async () => {
+    if (!currentId) return;
+    const okRevert = await askConfirm({
+      title: "Revert this quotation?",
+      text:  "The customer will no longer see it until you resend.",
+      okLabel: "Revert to Draft",
+      danger: true
+    });
+    if (!okRevert) return;
+
+    try {
+      const r = await api(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "revert_quotation", order_id: currentId }),
+      });
+      toast(r.message || "Quotation reverted.");
+      load();                       // unlocks Send, hides Revert
+    } catch (e) { toast(e.message, true); }
+  });
+
+  /* Reserve error space so validation never shifts the layout */
+  ["customPrice", "deliveryFee", "rushFee"].forEach(id => {
+    setFieldError($(id), "");
+  });
+
+  load();
 })();
 </script>
 </body>

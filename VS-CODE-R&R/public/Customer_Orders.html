@@ -64,6 +64,33 @@ h1{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.5rem
 a.nt{text-decoration:none;color:inherit}
 .nt.link{cursor:pointer;transition:transform .2s,box-shadow .2s}
 .nt.link:hover{transform:translateX(3px);box-shadow:0 8px 22px rgba(217,125,138,.22)}
+/* ===== Order Status view ===== */
+#viewStatus{max-width:640px;margin:0 auto;padding:0 4px}
+.sv{display:flex;flex-direction:column;align-items:center;text-align:center;padding:18px 8px 6px}
+.sv-ico{width:72px;height:72px;border-radius:50%;background:#F6D9DC;color:var(--deep);display:grid;place-items:center;margin-bottom:22px}
+.sv-ico svg{width:32px;height:32px}
+.sv-title{font-family:'Playfair Display',Georgia,serif;font-weight:800;font-size:2.4rem;line-height:1.2;color:var(--deep);max-width:520px;margin:0 0 14px}
+.sv-msg{max-width:460px;font-size:.92rem;line-height:1.55;color:#7A6B6C;margin:0 0 28px}
+.sv-tracker{width:100%;max-width:560px;background:#fff;border:1px solid #E58A97;border-radius:12px;padding:16px 22px 20px}
+.sv-tracker h2{font:700 .68rem 'Jost',sans-serif;letter-spacing:.6px;text-transform:uppercase;color:#7a5058;margin:0 0 14px}
+.sv-steps{display:flex;align-items:center;justify-content:center;gap:10px}
+.sv-sep{font-size:.6rem;color:#7a5058}
+.sv-step{display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:8px;border:1px solid #EBD9D3;background:#F8EBE3;color:#8a7a7b;font:600 .68rem 'Jost',sans-serif;white-space:nowrap}
+.sv-step i{font-style:normal;width:18px;height:18px;border-radius:50%;background:#fff;color:#8a7a7b;display:grid;place-items:center;font-size:.62rem;font-weight:700}
+.sv-step.done{background:#E8F0E6;border-color:#8FA287;color:var(--deep)}
+.sv-step.done i{background:#8FA287;color:#fff}
+.sv-step.now{background:#FBF1DC;border-color:#DDA25E;color:var(--deep)}
+.sv-step.now i{background:#DDA25E;color:#fff}
+.sv-step.soft{opacity:.75}
+.sv-btn{display:inline-block;margin-top:36px;min-width:260px;padding:.8rem 2rem;border-radius:99px;background:#DB7F8E;color:#fff;font:600 1rem 'Platypi',Georgia,serif;box-shadow:0 4px 12px rgba(219,127,142,.25);transition:background .2s,transform .2s;text-decoration:none}
+.sv-btn:hover{background:#cf6c7d;transform:translateY(-2px)}
+.sv-btn[hidden]{display:none}
+
+@media(max-width:600px){
+  .sv-title{font-size:1.8rem}
+  .sv-steps{flex-direction:column;align-items:stretch}
+  .sv-sep{display:none}
+}
 
 
 @media(max-width:760px){
@@ -394,12 +421,12 @@ a.nt{text-decoration:none;color:inherit}
   /* ===== SETTINGS ===== */
   // true  = preview as the logged-in customer "Lia Norman" (no backend needed)
   // false = real mode: asks ../api/me.php who is logged in and ../api/notifications.php for notifications
-  const DEMO_MODE = true;
+  const DEMO_MODE = false;
   const API = { me: "../api/me.php", notifications: "../api/notifications.php", logout: "../api/logout.php" };
   const PAGE = {
-    home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.html",
-    orders: "Customer_Orders.html", messages: "Weekly-Availability.html#messages", notifications: "Customer_Orders.html#notifications",
-    settings: "Weekly-Availability.html#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
+    home: "index.html", gallery: "Cake-Gallery.html", submit: "Weekly-Availability.php",
+    orders: "Customer_Orders.html", messages: "Weekly-Availability.php#messages", notifications: "Customer_Orders.html#notifications",
+    settings: "Weekly-Availability.php#account", reviews: "my-reviews.html", login: "login.html", register: "register.html"
   };
   const DEMO_USER = { name: "Lia Norman" };
   const DEMO_NOTIFS = [
@@ -414,30 +441,50 @@ a.nt{text-decoration:none;color:inherit}
   ];
 
     /* Demo flow: Custom-Cake-Request.html saves "rr_flow" when a request is submitted */
-  function flowNotifs() {
-  let f = null;
-  try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
-  if (!f) return null;
-  const ok = f.status === "confirmed";
-  const list = [];
-  if (f.quoted) {   // owner sent the quotation (newest, so it goes first)
-    list.push({
-      type: "quote",
-      title: "Quotation Ready",
-      text: "R&R Sweet Bites sent your quotation. Tap to review it.",
-      unread: !f.quoteRead,
-      href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
-    });
+    function flowNotifs() {
+    let f = null;
+    try { f = JSON.parse(localStorage.getItem("rr_flow") || "null"); } catch (e) {}
+    if (!f) return null;
+    const list = [];
+    if (f.pay) {
+      list.push({
+        type: "payment",
+        title: f.pay.title || "Payment Update",
+        text: f.pay.text || "Tap to see your payment status.",
+        unread: !f.pay.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.pay.orderId) + "#status"
+      });
+    }
+    if (f.cancel) {
+      const s = f.cancel.state;
+      list.push({
+        type: "order",
+        title: s === "approved" ? "Cancellation Approved" : s === "rejected" ? "Cancellation Declined" : "Cancellation Request Sent",
+        text: s === "approved" ? "Your order was cancelled." : s === "rejected" ? "The shop declined your cancellation. Your order continues." : "Your cancellation request is under review.",
+        unread: !f.cancel.read,
+        href: "customer-orders-PaymentAndBalance.html?order=" + encodeURIComponent(f.cancel.orderId) + "#cancel"
+      });
+    }
+    if (f.quoted) {
+      list.push({
+        type: "quote", title: "Quotation Ready",
+        text: "R&R Sweet Bites sent your quotation. Tap to review it.",
+        unread: !f.quoteRead,
+        href: "quotation-accept.html" + (f.orderId ? "?order=" + encodeURIComponent(f.orderId) : "")
+      });
+    }
+    if (f.status) {
+      const ok = f.status === 'confirmed';
+        list.push({
+          type: 'order',
+          title: ok ? 'Order Confirmed' : 'Order Request Submitted',
+          text:  ok ? 'Your order request was approved. Tap to continue.' : 'Your order request is under review.',
+          unread: f.readStatus !== f.status,
+          href: 'Customer_Orders.html#status&order=' + encodeURIComponent(f.orderId || '')
+        });
+    }
+    return list.length ? list : null;
   }
-  list.push({
-    type: "order",
-    title: ok ? "Order Confirmed" : "Order Request Submitted",
-    text: ok ? "Your order request was approved. Tap to continue." : "Your order request is under review.",
-    unread: f.readStatus !== f.status,
-    href: "Custom-Cake-Request.html#status"
-  });
-  return list;
-}
 
   const ACTIVE = (document.currentScript && document.currentScript.dataset.active) || "";
   if (ACTIVE === "orders") { PAGE.orders = "#orders"; PAGE.notifications = "#notifications"; PAGE.gallery = "#gallery"; }   // same page, no reload
@@ -460,6 +507,10 @@ a.nt{text-decoration:none;color:inherit}
 
   const RR = (window.RR = { user: null, notifs: [], esc, ICON, notifIcon, PAGE });
   const onReady = (fn) => (document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", fn) : fn());
+
+  RR.refresh = () => { if (DEMO_MODE && RR.user) { RR.notifs = flowNotifs() || DEMO_NOTIFS; render(); if (window.onNotifsChanged) window.onNotifsChanged(); } };
+  window.addEventListener("storage", (e) => { if (e.key === "rr_flow") RR.refresh(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) RR.refresh(); });
 
   /* ===== STYLES ===== */
   const css = `
@@ -524,7 +575,7 @@ a.nt{text-decoration:none;color:inherit}
         return n.href ? '<a class="rr-n" href="' + esc(n.href) + '">' + inner + "</a>" : '<div class="rr-n">' + inner + "</div>";
       }).join("");
       tools =
-        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + unread + "</b>" : "") + "</button>" +
+        '<div class="rr-menu-wrap"><button class="rr-bell" id="rrBell" aria-label="Notifications" aria-expanded="false"><img src="../Images-Icons/bell-icon.png" alt="">' + (unread ? "<b>" + (unread > 9 ? "9+" : unread) + "</b>" : "") + "</button>" +
         '<div class="rr-pop rr-notif" id="rrNotif" hidden><div class="rr-notif-head"><strong>NOTIFICATION</strong><a href="' + PAGE.notifications + '">See all</a></div>' + (items || '<p class="rr-empty">No notifications yet.</p>') + "</div></div>" +
         '<div class="rr-menu-wrap"><button class="rr-avatar" id="rrAvatar" aria-label="Account menu" aria-expanded="false">' + esc(user.initials) + "</button>" +
         '<div class="rr-pop rr-account" id="rrAccount" hidden>' +
@@ -622,7 +673,7 @@ a.nt{text-decoration:none;color:inherit}
 
   <div class="empty" id="empty" hidden>
     <p>NO ORDER</p>
-    <a class="btn" href="Weekly-Availability.html">Request Order</a>
+    <a class="btn" href="Weekly-Availability.php">Request Order</a>
   </div>
 
   <div class="center"><button class="btn" id="moreBtn" type="button" hidden>See More</button></div>
@@ -635,6 +686,24 @@ a.nt{text-decoration:none;color:inherit}
     <p class="nsub">Stay updated when your order status changes.</p>
     <div id="nList"></div>
     <div class="center"><button class="btn" id="nMore" type="button" hidden>See More</button></div>
+  </div>
+
+  <!-- Order Status view (opens when a row is clicked and the order is still awaiting a quotation) -->
+  <div id="viewStatus" hidden>
+    <a class="back-btn" href="#orders">Back to My Orders</a>
+
+    <section class="sv" aria-live="polite">
+      <div class="sv-ico" id="svIcon"></div>
+      <h1 class="sv-title" id="svTitle"></h1>
+      <p class="sv-msg" id="svMsg"></p>
+
+      <div class="sv-tracker">
+        <h2>ORDER JOURNEY TRACKER</h2>
+        <div class="sv-steps" id="svSteps"></div>
+      </div>
+
+      <a class="sv-btn" id="svProceed" href="#" hidden>Proceed</a>
+    </section>
   </div>
 </main>
 
@@ -687,17 +756,11 @@ a.nt{text-decoration:none;color:inherit}
 /* ===== SETTINGS ===== */
 // true  = preview with sample orders (add ?empty to the address to preview the "NO ORDER" page)
 // false = real mode: loads the customer's orders from ../api/orders.php
-const DEMO_MODE = true;
+const DEMO_MODE = false;
 const PAGE_SIZE = 6;
 
 const DEMO_ORDERS = [
   {order_id:30, id:'RR-2026030', title:'2-Tier Custom Birthday Cake', customer:'Lia Norman', occasion:'Birthday', total:10000, due:'Nov 01, 2026', status:'Payment Under Review'},
-  {order_id:25, id:'RR-2026025', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 29, 2026', status:'Awaiting Down Payment'},
-  {order_id:19, id:'RR-2026019', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 20, 2026', status:'Pending Balance'},
-  {order_id:18, id:'RR-2026018', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 14, 2026', status:'Pending Cancellation'},
-  {order_id:15, id:'RR-2026015', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Oct 10, 2026', status:'Order Request Under Review'},
-  {order_id:3,  id:'RR-2026003', title:'Classic 1-Tier Wedding Cake', customer:'Lia Norman', occasion:'Wedding', total:15000, due:'Sept. 29, 2026', status:'Completed'},
-  {order_id:2,  id:'RR-2026002', title:'Cupcake Box (24 pcs)', customer:'Lia Norman', occasion:'Anniversary', total:3600, due:'Sept. 05, 2026', status:'Completed'},
 ];
 
 const $ = s => document.querySelector(s);
@@ -739,17 +802,28 @@ function renderList() {
   $('#moreBtn').hidden = rows.length <= shown;
 
   $('#list').innerHTML = rows.slice(0, shown).map(o => {
-    const quoted = o.quotation_status === 'pending' && o.status === 'Quoted';
-        const href = o.href || (quoted ? `quotation-accept.html?order=${encodeURIComponent(o.order_id)}`
-                                   : `customer-orders-PaymentAndBalance.html?order=${encodeURIComponent(o.order_id)}`);
-    const badge = quoted ? '<span class="badge review">Review Quotation \u203A</span>'
-                         : `<span class="badge ${badgeClass(o.status)}">${esc(o.status)}</span>`;
-    return `<a class="order" href="${href}">
-      <span class="id">${esc(o.id)}</span>
-      <span><h3>${esc(o.title)}</h3><small>${esc(o.customer)}</small><small>${esc(o.occasion)} \u2022 ${peso(o.total)}</small></span>
-      <span class="right"><span class="date">${esc(o.due)}</span>${badge}</span>
-    </a>`;
-  }).join('');
+  const kind = statusViewFor(o);
+  let href;
+  if (kind === 'pending' || kind === 'revision' || kind === 'confirmed') {
+    href = '#status&order=' + o.order_id;
+  } else if (o.quotation_status === 'pending' && o.status === 'Quoted') {
+    href = 'quotation-accept.html?order=' + encodeURIComponent(o.order_id);
+  } else {
+    href = o.href || ('customer-orders-PaymentAndBalance.html?order=' + encodeURIComponent(o.order_id));
+  }
+
+  const badge = kind === 'confirmed'
+    ? '<span class="badge review">Review Quotation \u203A</span>'
+    : kind === 'pending' || kind === 'revision'
+    ? '<span class="badge">Awaiting Quotation</span>'
+    : `<span class="badge ${badgeClass(o.status)}">${esc(o.status)}</span>`;
+
+  return `<a class="order" href="${href}">
+    <span class="id">${esc(o.id)}</span>
+    <span><h3>${esc(o.title)}</h3><small>${esc(o.customer)}</small><small>${esc(o.occasion)} \u2022 ${peso(o.total)}</small></span>
+    <span class="right"><span class="date">${esc(o.due)}</span>${badge}</span>
+  </a>`;
+}).join('');
 }
 
 function resetPaging() { shown = PAGE_SIZE; renderList(); }
@@ -763,13 +837,33 @@ $('#moreBtn').addEventListener('click', () => { shown += PAGE_SIZE; renderList()
 
 function showView() {
   const h = location.hash;
-  const view = h === '#notifications' ? 'notif' : h === '#gallery' ? 'gallery' : 'orders';
+  const statusMatch = h.match(/^#status(?:&|&amp;)order=(\d+)/) || h.match(/^#status&order=(\d+)/);
+  let view = 'orders';
+  if (h === '#notifications') view = 'notif';
+  else if (h === '#gallery')  view = 'gallery';
+  else if (statusMatch)       view = 'status';
+
   document.querySelector('main').hidden = view === 'gallery';
   $('#viewGallery').hidden = view !== 'gallery';
-  $('#viewOrders').hidden = view !== 'orders';
-  $('#viewNotif').hidden = view !== 'notif';
-  document.title = {notif: 'Notifications | R&R Sweet Bites', gallery: 'Cake Gallery | R&R Sweet Bites', orders: 'R&R Sweet Bites \u2013 My Orders'}[view];
-  document.querySelectorAll('.rr-links a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === (view === 'gallery' ? '#gallery' : '#orders')));
+  $('#viewOrders').hidden  = view !== 'orders';
+  $('#viewNotif').hidden   = view !== 'notif';
+  $('#viewStatus').hidden  = view !== 'status';
+
+  if (view === 'status') {
+    const oid = Number(statusMatch[1]);
+    const o = orders.find(x => Number(x.order_id) === oid);
+    if (!o || !renderStatusView(o)) {
+      // Bad/expired deep link: drop the hash and go back to the list
+      location.replace('#orders');
+      return;
+    }
+  } else {
+    document.title = {notif:'Notifications | R&R Sweet Bites', gallery:'Cake Gallery | R&R Sweet Bites', orders:'R&R Sweet Bites – My Orders'}[view];
+  }
+
+  document.querySelectorAll('.rr-links a').forEach(a =>
+    a.classList.toggle('active', a.getAttribute('href') === (view === 'gallery' ? '#gallery' : '#orders'))
+  );
   window.scrollTo({top: 0});
 }
 let nShown = 4;
@@ -786,7 +880,75 @@ function renderNotifs() {
     : '<p class="none">No notifications yet.</p>';
 }
 $('#nMore').addEventListener('click', () => { nShown += 4; renderNotifs(); });
+window.onNotifsChanged = renderNotifs;
 addEventListener('hashchange', showView);
+
+/* ===== Order Status view (#status&order=X) ===== */
+const STATUS_ICON = {
+  pending: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h10M7 21h10M8 3c0 5 8 5 8 9s-8 4-8 9M16 3c0 5-8 5-8 9s8 4 8 9"/></svg>',
+  confirmed: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+};
+
+const STEPS_PENDING  = [['done','Request Submitted'],['now','Request Pending'],['soft','Request Confirmed']];
+const STEPS_CONFIRMED = [['done','Request Submitted'],['done','Request Pending'],['done','Request Confirmed']];
+
+// Decide what the #status screen should show for a given order.
+// Returns one of: 'pending' | 'revision' | 'confirmed' | 'skip'
+function statusViewFor(o) {
+  const qs = o.quotation_status;    // latest quotation status from orders.php
+  if (o.status === 'Pending Review') return 'pending';
+  if (o.status === 'Quoted') {
+    if (qs === 'pending')            return 'confirmed';
+    if (qs === 'revision_requested') return 'revision';
+    return 'skip';                  // accepted / revised / missing → not our concern
+  }
+  return 'skip';                    // confirmed or beyond → payment page
+}
+
+const STATUS_COPY = {
+  pending: {
+    icon: 'pending',
+    title: 'Order Confirmation<br>in Progress',
+    msg: "We're reviewing your cake request and will send a quotation soon. We'll notify you once it's ready.",
+    steps: STEPS_PENDING,
+    proceed: false
+  },
+  revision: {
+    icon: 'pending',
+    title: 'Order Confirmation<br>in Progress',
+    msg: "We received your revision request and will send an updated quotation shortly.",
+    steps: STEPS_PENDING,
+    proceed: false
+  },
+  confirmed: {
+    icon: 'confirmed',
+    title: 'Order Confirmed!',
+    msg: 'Thank you! Your quotation is ready. Please review it to continue.',
+    steps: STEPS_CONFIRMED,
+    proceed: true
+  }
+};
+
+function renderStatusView(order) {
+  const kind = statusViewFor(order);
+  if (kind === 'skip') return false;
+  const v = STATUS_COPY[kind];
+
+  document.getElementById('svIcon').innerHTML  = STATUS_ICON[v.icon];
+  document.getElementById('svTitle').innerHTML = v.title;
+  document.getElementById('svMsg').textContent = v.msg;
+  document.getElementById('svSteps').innerHTML = v.steps.map((s, i) =>
+    (i ? '<span class="sv-sep">&gt;</span>' : '') +
+    '<div class="sv-step ' + s[0] + '"><i>' + (i + 1) + '</i>' + s[1] + '</div>'
+  ).join('');
+
+  const btn = document.getElementById('svProceed');
+  btn.hidden = !v.proceed;
+  if (v.proceed) btn.href = 'quotation-accept.html?order=' + encodeURIComponent(order.order_id);
+
+  document.title = (kind === 'confirmed' ? 'Order Confirmed' : 'Order Confirmation in Progress') + ' | R&R Sweet Bites';
+  return true;
+}
 
 (async () => {
   await RR.ready;

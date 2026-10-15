@@ -3,20 +3,25 @@ declare(strict_types=1);
 require_once __DIR__ . '/../includes/db_connect.php';
 
 // Backend for admin_payment_verification.html (list, approve/decline, show images).
-// Uses the tables and helpers from db_connect.php / R_Rschema_mysql.sql.
 ini_set('display_errors', '0');
-defined('UPLOAD_DIR') || define('UPLOAD_DIR', __DIR__ . '/uploads');   // where customer images are stored
+if (session_status() !== PHP_SESSION_ACTIVE) session_start();
 
-// TEMPORARY, same idea as CUSTOMER_ID in db_connect.php: until there is an admin login,
-// act as the admin with this admin_id. Once login sets $_SESSION['admin_id'], change this to 0.
-const TEMP_ADMIN_ID = 1;
+// Canonical upload folder: <project root>/uploads (proofs go in uploads/proofs).
+const RR_UPLOADS = __DIR__ . '/../uploads';
 
 /* ---------- Helpers ---------- */
 function json_reply(array $data, int $code = 200): never {
     http_response_code($code);
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
-    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    // JSON_INVALID_UTF8_SUBSTITUTE prevents silent json_encode() failure on bad bytes.
+    $json = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_INVALID_UTF8_SUBSTITUTE);
+    if ($json === false) {
+        error_log('[RR payment-verification] json_encode failed: ' . json_last_error_msg());
+        http_response_code(500);
+        $json = json_encode(['ok' => false, 'message' => 'Response encoding error.']);
+    }
+    echo $json;
     exit;
 }
 
@@ -33,14 +38,20 @@ function read_json(): array {
     return $data;
 }
 
-function require_admin(): array {
-    $id = (int)($_SESSION['admin_id'] ?? TEMP_ADMIN_ID);
-    if ($id > 0) {
-        $st = db()->prepare('SELECT admin_id, full_name FROM admin WHERE admin_id = ?');
-        $st->execute([$id]);
-        if ($row = $st->fetch()) return $row;
+/**
+ * Requires a real logged-in admin session.
+ * $_SESSION['role'] and $_SESSION['admin_id'] are set by login-verify.php → complete_login().
+ * No fallback: the session must be present and match a real admin row.
+ */
+function require_admin_payment_verification(): array {
+    if (($_SESSION['role'] ?? '') !== 'admin' || empty($_SESSION['admin_id'])) {
+        json_reply(['ok' => false, 'message' => 'Please log in as an admin.'], 401);
     }
-    json_reply(['ok' => false, 'message' => 'Please log in as an admin.'], 401);
+    $id = (int) $_SESSION['admin_id'];
+    $st = db()->prepare('SELECT admin_id, full_name FROM admin WHERE admin_id = ?');
+    $st->execute([$id]);
+    if ($row = $st->fetch()) return $row;
+    json_reply(['ok' => false, 'message' => 'Admin account no longer exists.'], 401);
 }
 
 function pay_no($id): string { return 'PAY-' . str_pad((string)$id, 4, '0', STR_PAD_LEFT); }
@@ -49,20 +60,25 @@ function pay_no($id): string { return 'PAY-' . str_pad((string)$id, 4, '0', STR_
 function image_link(int $paymentId, string $kind, ?string $stored): ?string {
     if (!$stored) return null;
     if (preg_match('#^https?://#i', $stored)) return $stored;
-    return 'admin-payment-verification.php?file=' . $paymentId . '&kind=' . $kind . '&v=' . md5($stored);
+    return $_SERVER['SCRIPT_NAME'] . '?file=' . $paymentId . '&kind=' . $kind . '&v=' . md5($stored);
 }
 
 function serve_image(?string $stored): never {
-    $types = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif'];
-    $stored = trim((string)$stored);
+    $types  = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp', 'gif' => 'image/gif', 'pdf' => 'application/pdf'];
+    $stored = trim(str_replace('\\', '/', (string)$stored));
     $ext    = strtolower(pathinfo($stored, PATHINFO_EXTENSION));
-    $base   = realpath(UPLOAD_DIR);
+    $name   = basename($stored);
+    $roots  = array_filter([realpath(RR_UPLOADS), realpath(__DIR__ . '/uploads')]);
     $path   = false;
-    if ($stored !== '' && $base !== false && isset($types[$ext])) {
-        // the saved value may be "uploads/abc.jpg" (relative to the site) or just "abc.jpg"
-        foreach ([__DIR__ . '/' . ltrim($stored, '/\\'), $base . '/' . basename(str_replace('\\', '/', $stored))] as $try) {
+    if ($stored !== '' && $roots && isset($types[$ext])) {
+        $tries = [__DIR__ . '/../' . ltrim($stored, '/'), __DIR__ . '/' . ltrim($stored, '/')];
+        foreach ([RR_UPLOADS . '/proofs', RR_UPLOADS, __DIR__ . '/uploads/proofs', __DIR__ . '/uploads'] as $d) $tries[] = $d . '/' . $name;
+        foreach ($tries as $try) {
             $real = realpath($try);
-            if ($real !== false && is_file($real) && str_starts_with($real, $base . DIRECTORY_SEPARATOR)) { $path = $real; break; }
+            if ($real === false || !is_file($real)) continue;
+            foreach ($roots as $root) {
+                if (str_starts_with($real, $root . DIRECTORY_SEPARATOR)) { $path = $real; break 2; }
+            }
         }
     }
     if ($path === false) { http_response_code(404); exit; }
@@ -74,8 +90,15 @@ function serve_image(?string $stored): never {
     exit;
 }
 
+/**
+ * Base SELECT for the list and for the post-decide refresh.
+ * No WHERE clause here — callers can append their own (e.g. "WHERE p.payment_id = ?").
+ * Includes PayMongo columns so admin can see the reference to verify against.
+ */
 function payment_sql(): string {
-    return 'SELECT p.payment_id, p.order_id, p.payment_type, p.payment_method, p.amount, p.proof_image_url, p.status, p.remarks, p.created_at,
+    return 'SELECT p.payment_id, p.order_id, p.payment_type, p.payment_method, p.amount,
+                   p.proof_image_url, p.status, p.remarks, p.created_at,
+                   p.provider, p.provider_ref,
                    o.cake_type, o.design_description, o.flavor, o.num_layers, o.num_tiers, o.preferred_date, o.is_rush,
                    c.full_name, c.email,
                    ' . PRICE_SQL . ' AS quoted_price,
@@ -93,6 +116,8 @@ function map_payment(array $r): array {
     $layers = (int)$r['num_layers'];
     $tiers  = (int)$r['num_tiers'];
     $id     = (int)$r['payment_id'];
+    $isGateway = ($r['provider'] ?? null) === 'paymongo';
+
     $out = [
         'key'           => (string)$id,
         'rq'            => fmt_id($r['order_id']),
@@ -105,16 +130,20 @@ function map_payment(array $r): array {
         'amount'        => (float)$r['amount'],
         'pay'           => pay_no($id),
         'submitted'     => substr((string)$r['created_at'], 0, 10),
+        // 'pending_verification' → 'pending' (the frontend only knows three main states).
         'status'        => $r['status'] === 'pending_verification' ? 'pending' : $r['status'],
+        'rawStatus'     => $r['status'],
         'remarks'       => $r['remarks'] ?? '',
         'requestedDate' => date('M d, Y', strtotime((string)$r['preferred_date'])),
         'cakeSize'      => (CAKE_TYPE[$r['cake_type']] ?? $r['cake_type']) . ' · ' . $layers . ' layer' . ($layers === 1 ? '' : 's') . ' · ' . $tiers . ' tier' . ($tiers === 1 ? '' : 's'),
         'flavor'        => $r['flavor'],
         'design'        => $r['design_description'],
         'rush'          => (bool)$r['is_rush'],
-        'proofLabel'    => $method . ' proof of payment',
+        'proofLabel'    => $isGateway ? 'GCash payment · verify in PayMongo' : $method . ' proof of payment',
         'basePrice'     => $quote,
         'calc'          => [['Downpayment Due (20%)', peso($dp)], ['Balance Remaining', peso($quote - $dp)]],
+        'provider'      => $r['provider'] ?? null,
+        'providerRef'   => $r['provider_ref'] ?? null,
     ];
     if ($url = image_link($id, 'ref', $r['ref_image_url']))    { $out['refImage']   = $url; $out['refFileName']   = basename((string)$r['ref_image_url']); }
     if ($url = image_link($id, 'proof', $r['proof_image_url'])) { $out['proofImage'] = $url; $out['proofFileName'] = basename((string)$r['proof_image_url']); }
@@ -134,13 +163,14 @@ function load_stats(): array {
 }
 
 /* ---------- Requests ---------- */
-$admin  = require_admin();
+$admin  = require_admin_payment_verification();
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 // Who is logged in (fills the name/avatar in the page header)
 if ($method === 'GET' && ($_GET['action'] ?? '') === 'me') {
     $initials = strtoupper(implode('', array_map(fn($w) => mb_substr($w, 0, 1), array_slice(array_filter(explode(' ', $admin['full_name'])), 0, 2))));
-    json_reply(['ok' => true, 'name' => $admin['full_name'], 'initials' => $initials]);
+    if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(32));
+    json_reply(['ok' => true, 'name' => $admin['full_name'], 'initials' => $initials, 'csrf' => $_SESSION['csrf']]);
 }
 
 // Show an uploaded image
@@ -165,7 +195,8 @@ if ($method === 'GET' && ($_GET['action'] ?? '') === 'list') {
 if ($method === 'POST') {
     $in = read_json();
     $token = (string)($in['csrf'] ?? '');
-    if (!hash_equals($_SESSION['csrf'] ?? '', $token)) {
+    $sess  = (string)($_SESSION['csrf'] ?? '');
+    if ($sess === '' || !hash_equals($sess, $token)) {
         json_reply(['ok' => false, 'message' => 'Invalid CSRF token.'], 403);
     }
     if (($in['action'] ?? '') !== 'decide') json_reply(['ok' => false, 'message' => 'Unknown action.'], 400);
@@ -191,7 +222,7 @@ if ($method === 'POST') {
         $pdo->prepare('UPDATE payment SET status = ?, remarks = ?, verified_by_admin_id = ?, verified_at = NOW() WHERE payment_id = ?')
             ->execute([$decision, $note !== '' ? $note : null, $admin['admin_id'], $id]);
 
-        // Only a downpayment moves the order: verified -> in progress, rejected -> back to awaiting downpayment.
+        // Only a downpayment moves the order: verified → in production, rejected → back to confirmed.
         if ($p['payment_type'] === 'downpayment' && $p['order_status'] === 'downpayment_pending_verification') {
             $pdo->prepare('UPDATE `order` SET status = ? WHERE order_id = ?')
                 ->execute([$decision === 'verified' ? 'in_production' : 'confirmed', $p['order_id']]);

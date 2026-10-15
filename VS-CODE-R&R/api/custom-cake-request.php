@@ -84,18 +84,20 @@ try {
 
     // A requested date must belong to an open weekly-availability range.
     $weekStmt = $pdo->prepare(
-        "SELECT week_id FROM weekly_availability
-         WHERE status = 'open' AND week_start_date <= :date_start
-           AND week_end_date >= :date_end
-         LIMIT 1"
+        "SELECT w.week_id
+           FROM weekly_availability w
+           LEFT JOIN weekly_availability_day d
+                  ON d.week_id = w.week_id AND d.day_date = :date
+          WHERE w.status = 'open'
+            AND w.week_start_date <= :date
+            AND w.week_end_date   >= :date
+            AND (d.is_active IS NULL OR d.is_active = 1)
+          LIMIT 1"
     );
-    $weekStmt->execute([
-        'date_start' => $preferredDateInput,
-        'date_end'   => $preferredDateInput,
-    ]);
+    $weekStmt->execute(['date' => $preferredDateInput]);
     $weekId = $weekStmt->fetchColumn();
     if ($weekId === false) {
-        respond(422, ['success' => false, 'error' => 'That date is not currently available. Please choose a date from an open week.']);
+        respond(422, ['success' => false, 'error' => 'That date is not currently available. Please choose an open date.']);
     }
     $weekId = (int)$weekId;
 
@@ -141,6 +143,9 @@ try {
     if (isset($_FILES['reference_images']) && is_array($_FILES['reference_images']['name'] ?? null)) {
         $files = $_FILES['reference_images'];
         $count = count(array_filter($files['error'], static fn($e) => $e !== UPLOAD_ERR_NO_FILE));
+        if ($count === 0) {
+            respond(422, ['success' => false, 'error' => 'Please upload at least one reference image.']);
+        }
         if ($count > 3) {
             respond(422, ['success' => false, 'error' => 'Upload no more than 3 reference images.']);
         }
@@ -161,8 +166,8 @@ try {
             }
             $uploadedFiles[] = ['tmp' => $tmp, 'ext' => $allowedMimeTypes[$mime]];
         }
-    } elseif (isset($_FILES['reference_images'])) {
-        respond(422, ['success' => false, 'error' => 'Invalid image upload.']);
+    } else {
+    respond(422, ['success' => false, 'error' => 'Please upload at least one reference image.']);
     }
 
     $uploadDirectory = dirname(__DIR__) . '/uploads/order-references';
